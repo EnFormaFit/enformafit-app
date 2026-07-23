@@ -17,252 +17,275 @@
   --am:#F1C40F;--am2:#FEF9E7;--am3:#F9E79F;
   --bg:#F4F5F8;--bor:#E2E6EF;--bor2:#F0F2F8;
   --t1:#1A2B5A;--t2:#5A6480;--t3:#9199AD;
-  --r:12px;--sh:0 2px 8px rgba(26,43,90,0.08);
-  --nav-h:64px;
+  --r:12px;--sh:0 2px 8px rgba(26,43,90,.08);
+  --nav-h:62px;
 }
 html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t1);font-size:15px;overflow-x:hidden}
 
 /* LOGIN */
-.login-wrap{min-height:100vh;background:linear-gradient(160deg,var(--az) 0%,#0D1F45 100%);display:flex;align-items:center;justify-content:center;padding:24px}
-.login-box{background:#fff;border-radius:20px;padding:32px 28px;width:100%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.3)}
-.login-logo{text-align:center;margin-bottom:24px}
-.login-logo-img{width:48px;height:48px;background:var(--az);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:20px;font-weight:900;color:#fff;letter-spacing:-1px}
+.login-wrap{min-height:100vh;background:linear-gradient(160deg,var(--az) 0%,#0D1F45 100%);display:flex;align-items:center;justify-content:center;padding:20px}
+.login-box{background:#fff;border-radius:20px;padding:30px 26px;width:100%;max-width:360px;box-shadow:0 24px 64px rgba(0,0,0,.3)}
+.login-logo{text-align:center;margin-bottom:22px}
+.login-icon{width:52px;height:52px;background:var(--az);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:22px;font-weight:900;color:#fff;letter-spacing:-1px}
 .login-logo b{font-size:22px;font-weight:800;color:var(--az);display:block}
-.login-logo small{font-size:13px;color:var(--t3);margin-top:2px;display:block}
-.lfi{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
-.lfi label{font-size:12.5px;font-weight:600;color:var(--t2)}
-.lfi input{border:1.5px solid var(--bor);border-radius:10px;padding:13px 14px;font-size:15px;outline:none;font-family:inherit;transition:border .15s}
+.login-logo small{font-size:12.5px;color:var(--t3);margin-top:2px;display:block}
+.lfi{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.lfi label{font-size:12px;font-weight:600;color:var(--t2)}
+.lfi input{border:1.5px solid var(--bor);border-radius:10px;padding:12px 13px;font-size:15px;outline:none;font-family:inherit;transition:border .15s}
 .lfi input:focus{border-color:var(--az2)}
-.btn-login{width:100%;padding:14px;background:var(--vd);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;margin-top:6px;font-family:inherit;transition:background .15s}
-.btn-login:active{background:#09a85e}
-.login-err{color:var(--rj);font-size:13px;text-align:center;margin-top:10px;display:none}
+.btn-login{width:100%;padding:13px;background:var(--vd);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+.login-err{color:var(--rj);font-size:12.5px;text-align:center;margin-top:9px;display:none}
 
-/* APP SHELL */
+/* APP */
 .app{display:none;flex-direction:column;min-height:100vh}
 .app.on{display:flex}
 
 /* TOPBAR */
-.topbar{background:#fff;border-bottom:1px solid var(--bor);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20;flex-shrink:0}
+.topbar{background:#fff;border-bottom:1px solid var(--bor);padding:0 15px;height:50px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30;flex-shrink:0}
 .topbar-brand{display:flex;align-items:center;gap:8px}
-.topbar-icon{width:28px;height:28px;background:var(--az);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;flex-shrink:0;letter-spacing:-.5px}
-.topbar-sect{font-size:15px;font-weight:600;color:var(--t1)}
-.topbar-av{width:32px;height:32px;border-radius:50%;background:var(--az);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;cursor:pointer}
-
-/* DESKTOP NAV */
+.topbar-icon{width:27px;height:27px;background:var(--az);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:900;color:#fff;letter-spacing:-.5px;flex-shrink:0}
+.topbar-sect{font-size:15px;font-weight:600}
+.topbar-av{width:30px;height:30px;border-radius:50%;background:var(--az);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;cursor:pointer;flex-shrink:0}
 .desk-nav{display:none}
 @media(min-width:768px){
-  .desk-nav{display:flex;align-items:center;gap:2px}
-  .desk-ni{padding:6px 13px;border-radius:8px;font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;transition:all .15s;white-space:nowrap;background:none;border:none;font-family:inherit}
-  .desk-ni:hover{background:var(--bg);color:var(--t1)}
-  .desk-ni.on{background:var(--az3);color:var(--az);font-weight:600}
+  .desk-nav{display:flex;gap:2px}
+  .dni{padding:6px 12px;border-radius:8px;font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;border:none;background:none;font-family:inherit;transition:all .15s}
+  .dni:hover{background:var(--bg)}
+  .dni.on{background:var(--az3);color:var(--az);font-weight:600}
+  .bnav{display:none}
+  .content{padding:20px;max-width:740px;margin:0 auto;padding-bottom:20px}
 }
 
 /* BOTTOM NAV */
-.bnav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:#fff;border-top:1px solid var(--bor);display:grid;grid-template-columns:repeat(5,1fr);align-items:stretch;z-index:20;padding-bottom:env(safe-area-inset-bottom)}
-@media(min-width:768px){.bnav{display:none}}
-.bni{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:var(--t3);transition:color .15s;padding:6px 2px;border:none;background:none;font-family:inherit;position:relative}
+.bnav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:#fff;border-top:1px solid var(--bor);display:grid;grid-template-columns:repeat(5,1fr);z-index:20;padding-bottom:env(safe-area-inset-bottom)}
+.bni{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:var(--t3);border:none;background:none;font-family:inherit;padding:4px 2px;position:relative;transition:color .15s}
 .bni.on{color:var(--az)}
-.bni.center-btn{background:var(--vd);border-radius:14px;margin:6px 4px;color:#fff}
-.bni.center-btn.on{background:#09a85e}
+.bni.ctr{background:var(--vd);border-radius:12px;margin:6px 3px;color:#fff}
+.bni.ctr.on{background:#09a85e}
 .bni svg{width:21px;height:21px}
 .bni span{font-size:9.5px;font-weight:600}
-.bni-badge{position:absolute;top:6px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--rj);border:1.5px solid #fff}
+.bni-dot{position:absolute;top:5px;right:9px;width:7px;height:7px;border-radius:50%;background:var(--rj);border:1.5px solid #fff}
 
 /* CONTENT */
-.content{flex:1;padding:14px 14px calc(var(--nav-h) + 14px);overflow-y:auto;-webkit-overflow-scrolling:touch}
-@media(min-width:768px){.content{padding:20px;max-width:740px;margin:0 auto;padding-bottom:20px}}
+.content{flex:1;padding:13px 13px calc(var(--nav-h) + 13px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+
+/* SWIPE CONTAINER */
+.swipe-wrap{overflow:hidden;position:relative}
+.swipe-inner{display:flex;transition:transform .3s cubic-bezier(.4,0,.2,1);will-change:transform}
+.swipe-page{flex-shrink:0;width:100%}
 
 /* CARDS */
-.card{background:#fff;border-radius:var(--r);border:1px solid var(--bor);box-shadow:var(--sh);margin-bottom:12px;overflow:hidden}
-.card-h{padding:13px 15px;border-bottom:1px solid var(--bor);display:flex;align-items:center;justify-content:space-between;gap:8px}
-.card-h h2{font-size:14.5px;font-weight:700}
-.card-b{padding:15px}
+.card{background:#fff;border-radius:var(--r);border:1px solid var(--bor);box-shadow:var(--sh);margin-bottom:11px;overflow:hidden}
+.ch{padding:12px 14px;border-bottom:1px solid var(--bor);display:flex;align-items:center;justify-content:space-between}
+.ch h2{font-size:14px;font-weight:700}
+.cb{padding:14px}
 
 /* BADGES */
-.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:600}
-.b-vd{background:var(--vd2);color:#07854D}
-.b-az{background:var(--az3);color:var(--az2)}
-.b-nr{background:var(--nr2);color:#CC5500}
-.b-rj{background:var(--rj2);color:#CC0000}
-.b-am{background:var(--am2);color:#8B6914}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.bvd{background:var(--vd2);color:#07854D}
+.baz{background:var(--az3);color:var(--az2)}
+.bnr{background:var(--nr2);color:#CC5500}
+.brj{background:var(--rj2);color:#CC0000}
+.bam{background:var(--am2);color:#8B6914}
 
 /* REVISIÓN BANNER */
-.rev-banner{border-radius:var(--r);padding:16px;color:#fff;margin-bottom:12px;position:relative;overflow:hidden}
-.rev-banner.urgente{background:linear-gradient(135deg,var(--nr) 0%,#FF8C00 100%)}
-.rev-banner.ok{background:linear-gradient(135deg,var(--vd) 0%,#09a85e 100%)}
-.rev-banner.pronto{background:linear-gradient(135deg,var(--az) 0%,var(--az2) 100%)}
-.rev-banner::after{content:'📅';position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:36px;opacity:.15}
-.rev-banner-tag{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;opacity:.85;margin-bottom:5px}
-.rev-banner-fecha{font-size:20px;font-weight:800;margin-bottom:3px}
-.rev-banner-sub{font-size:12.5px;opacity:.85;margin-bottom:8px}
-.rev-banner-pill{display:inline-block;background:rgba(255,255,255,.22);border-radius:20px;padding:3px 11px;font-size:12.5px;font-weight:600}
-
-/* STAT GRID */
-.stat-g{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:12px}
-@media(min-width:768px){.stat-g{grid-template-columns:repeat(4,1fr)}}
-.stat-c{background:#fff;border-radius:var(--r);border:1px solid var(--bor);padding:13px;box-shadow:var(--sh);text-align:center}
-.stat-v{font-size:24px;font-weight:800;line-height:1;margin-bottom:2px}
-.stat-l{font-size:11px;color:var(--t3);font-weight:500}
-
-/* RACHA */
-.racha-card{background:linear-gradient(135deg,#E67E22,#F39C12);border-radius:var(--r);padding:14px 16px;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:12px}
-.racha-n{font-size:36px;font-weight:800;line-height:1}
-.racha-info b{font-size:15px;display:block}
-.racha-info small{font-size:12px;opacity:.85}
+.rev-ban{border-radius:var(--r);padding:14px 15px;color:#fff;margin-bottom:11px;position:relative;overflow:hidden;cursor:pointer}
+.rev-ban.urg{background:linear-gradient(135deg,var(--nr),#FF8C00)}
+.rev-ban.prx{background:linear-gradient(135deg,var(--az),var(--az2))}
+.rev-ban.ok{background:linear-gradient(135deg,var(--vd),#09a85e)}
+.rev-ban::after{content:"📅";position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:34px;opacity:.14}
+.rev-ban-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;opacity:.8;margin-bottom:4px}
+.rev-ban-fecha{font-size:19px;font-weight:800;margin-bottom:2px}
+.rev-ban-sub{font-size:12px;opacity:.82;margin-bottom:7px}
+.rev-ban-pill{display:inline-block;background:rgba(255,255,255,.22);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600}
 
 /* HOY TOCA */
-.hoy-toca{background:linear-gradient(135deg,var(--az),var(--az2));border-radius:var(--r);padding:14px 16px;color:#fff;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
-.hoy-toca-info small{font-size:11px;opacity:.7;font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px}
-.hoy-toca-info b{font-size:17px;font-weight:800;display:block}
-.hoy-toca-info span{font-size:12.5px;opacity:.8;margin-top:2px;display:block}
+.hoy-toca{background:linear-gradient(135deg,var(--az),var(--az2));border-radius:var(--r);padding:13px 15px;color:#fff;margin-bottom:11px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.ht-info small{font-size:10px;opacity:.7;font-weight:600;text-transform:uppercase;display:block;margin-bottom:2px}
+.ht-info b{font-size:16px;font-weight:800;display:block}
+.ht-info span{font-size:12px;opacity:.75;display:block;margin-top:1px}
 
-/* PROG BAR */
-.prog-bar{height:7px;background:var(--bor);border-radius:4px;overflow:hidden;margin-top:5px}
-.prog-fill{height:100%;border-radius:4px;transition:width .6s}
-
-/* SEMANAS */
-.sem-prog{display:flex;gap:3px;flex-wrap:wrap;margin:8px 0}
-.sem-box{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;flex-shrink:0}
-.sb-done{background:var(--vd);color:#fff}
-.sb-rev{background:var(--az2);color:#fff}
-.sb-cur{background:var(--nr);color:#fff}
-.sb-todo{background:var(--bg);color:var(--t3);border:1.5px solid var(--bor)}
-
-/* ENTRENO */
-.day-selector{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;-webkit-overflow-scrolling:touch}
-.day-btn{flex-shrink:0;padding:8px 14px;border-radius:20px;border:1.5px solid var(--bor);background:#fff;font-size:13px;font-weight:600;color:var(--t2);cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s}
-.day-btn.on{background:var(--az);border-color:var(--az);color:#fff}
-.day-btn.today{border-color:var(--vd);color:var(--vd)}
-.day-btn.today.on{background:var(--vd);border-color:var(--vd);color:#fff}
-.day-btn.rest{opacity:.5}
-
-.ej-card{background:#fff;border-radius:10px;border:1px solid var(--bor);margin-bottom:10px;overflow:hidden}
-.ej-header{padding:12px 14px;display:flex;align-items:flex-start;gap:10px;border-bottom:1px solid var(--bor2)}
-.ej-num{width:24px;height:24px;border-radius:50%;background:var(--az);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-.ej-nom{font-size:14.5px;font-weight:700;margin-bottom:2px}
-.ej-meta{font-size:12px;color:var(--t3)}
-.ej-ant{font-size:12px;color:var(--az2);font-weight:500}
-.ej-acl{font-size:12px;color:var(--t2);font-style:italic;margin-top:2px}
-.ej-yt{display:inline-flex;align-items:center;gap:4px;margin-top:5px;font-size:11.5px;color:var(--rj);font-weight:600;text-decoration:none;background:var(--rj2);padding:3px 9px;border-radius:20px}
-
-.series-wrap{padding:10px 14px}
-.series-header{display:grid;grid-template-columns:24px 1fr 80px 60px 36px;gap:6px;align-items:center;margin-bottom:7px;font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
-.serie-row{display:grid;grid-template-columns:24px 1fr 80px 60px 36px;gap:6px;align-items:center;margin-bottom:6px}
-.serie-n{font-size:12px;font-weight:700;color:var(--t3);text-align:center}
-.serie-ant-val{font-size:12.5px;color:var(--t3);text-align:center}
-.s-input{border:1.5px solid var(--bor);border-radius:8px;padding:8px 6px;font-size:15px;font-weight:600;text-align:center;outline:none;font-family:inherit;width:100%;transition:border .15s}
-.s-input:focus{border-color:var(--az2)}
-.serie-check{width:34px;height:34px;border-radius:50%;border:2px solid var(--bor);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s;flex-shrink:0}
-.serie-check.done{background:var(--vd);border-color:var(--vd);color:#fff}
-
-/* TIMER */
-.timer-overlay{display:none;position:fixed;bottom:calc(var(--nav-h) + 12px);left:50%;transform:translateX(-50%);background:var(--az);color:#fff;border-radius:24px;padding:12px 24px;z-index:50;box-shadow:0 8px 32px rgba(0,0,0,.3);align-items:center;gap:12px;min-width:200px}
-.timer-overlay.show{display:flex}
-.timer-n{font-size:28px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
-.timer-lbl{font-size:12px;opacity:.7}
-.timer-skip{background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:12px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit}
-
-/* NUTRICIÓN */
-.macro-g{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:12px}
-.macro-i{background:var(--bg);border-radius:10px;padding:12px;text-align:center}
-.macro-v{font-size:21px;font-weight:800}
-.macro-l{font-size:11px;color:var(--t3);margin-top:2px}
-
-/* MENU CONSTRUCTOR */
-.comida-section{border-bottom:1px solid var(--bor2);padding:14px 0}
-.comida-section:last-child{border-bottom:none}
-.comida-name{font-size:14px;font-weight:700;margin-bottom:4px}
-.comida-macros{font-size:12px;color:var(--t3);margin-bottom:10px}
-.opciones-wrap{display:flex;flex-direction:column;gap:6px}
-.opcion-btn{width:100%;text-align:left;padding:10px 13px;border:1.5px solid var(--bor);border-radius:9px;background:#fff;font-size:13.5px;color:var(--t1);cursor:pointer;font-family:inherit;transition:all .15s;display:flex;justify-content:space-between;align-items:center}
-.opcion-btn.sel{border-color:var(--vd);background:var(--vd2);color:#07854D}
-.opcion-btn:active{transform:scale(.99)}
-.opcion-macros{font-size:11.5px;color:var(--t3);white-space:nowrap;margin-left:8px}
-.opcion-btn.sel .opcion-macros{color:#07854D}
-
-/* LISTA COMPRA */
-.compra-item{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bor2);font-size:13.5px}
-.compra-item:last-child{border-bottom:none}
-.compra-nom{font-weight:500}
-.compra-cant{font-weight:700;color:var(--az2)}
+/* STAT GRID */
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px}
+@media(min-width:480px){.sg{grid-template-columns:repeat(4,1fr)}}
+.sc{background:#fff;border-radius:var(--r);border:1px solid var(--bor);padding:12px;text-align:center;box-shadow:var(--sh)}
+.sv{font-size:22px;font-weight:800;line-height:1;margin-bottom:2px}
+.sl{font-size:10.5px;color:var(--t3);font-weight:500}
 
 /* PASOS */
-.pasos-card{border-radius:var(--r);padding:16px;margin-bottom:12px;background:linear-gradient(135deg,#27AE60,#2ECC71);color:#fff}
-.pasos-num{font-size:32px;font-weight:800;line-height:1}
-.pasos-obj{font-size:13px;opacity:.85;margin-top:2px}
-.pasos-bar-wrap{background:rgba(255,255,255,.25);border-radius:6px;height:8px;margin-top:10px;overflow:hidden}
-.pasos-bar-fill{height:100%;border-radius:6px;background:#fff;transition:width .6s}
+.pasos-c{background:linear-gradient(135deg,#27AE60,#2ECC71);border-radius:var(--r);padding:13px 15px;color:#fff;margin-bottom:11px}
+.pasos-n{font-size:28px;font-weight:800;line-height:1}
+.pasos-bar{background:rgba(255,255,255,.25);border-radius:5px;height:7px;margin-top:8px;overflow:hidden}
+.pasos-fill{height:100%;background:#fff;border-radius:5px;transition:width .6s}
+
+/* RACHA */
+.racha-c{background:linear-gradient(135deg,#E67E22,#F39C12);border-radius:var(--r);padding:12px 15px;color:#fff;display:flex;align-items:center;gap:12px;margin-bottom:11px}
+.racha-n{font-size:34px;font-weight:800}
+.racha-i b{font-size:14px;display:block}
+.racha-i small{font-size:11.5px;opacity:.85}
+
+/* PROG BAR */
+.pb{height:6px;background:var(--bor);border-radius:3px;overflow:hidden;margin-top:4px}
+.pf{height:100%;border-radius:3px;transition:width .6s}
+
+/* SEMANAS */
+.sem-p{display:flex;gap:3px;flex-wrap:wrap;margin:8px 0}
+.sb{width:29px;height:29px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.sb-d{background:var(--vd);color:#fff}
+.sb-r{background:var(--az2);color:#fff}
+.sb-c{background:var(--nr);color:#fff}
+.sb-t{background:var(--bg);color:var(--t3);border:1.5px solid var(--bor)}
+
+/* DAY SELECTOR */
+.day-sel{display:flex;gap:6px;overflow-x:auto;padding-bottom:3px;margin-bottom:12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.day-sel::-webkit-scrollbar{display:none}
+.day-b{flex-shrink:0;padding:8px 13px;border-radius:20px;border:1.5px solid var(--bor);background:#fff;font-size:12.5px;font-weight:600;color:var(--t2);cursor:pointer;font-family:inherit;text-align:center;line-height:1.3;transition:all .15s}
+.day-b.on{background:var(--az);border-color:var(--az);color:#fff}
+.day-b.today{border-color:var(--vd);color:#07854D}
+.day-b.today.on{background:var(--vd);border-color:var(--vd);color:#fff}
+
+/* EJERCICIOS */
+.ej-card{background:#fff;border-radius:10px;border:1px solid var(--bor);margin-bottom:9px;overflow:hidden}
+.ej-head{padding:11px 13px;display:flex;gap:9px;border-bottom:1px solid var(--bor2)}
+.ej-num{width:22px;height:22px;border-radius:50%;background:var(--az);color:#fff;font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.ej-nom{font-size:14px;font-weight:700;margin-bottom:2px}
+.ej-meta{font-size:11.5px;color:var(--t3);margin-bottom:2px}
+.ej-ant{font-size:11.5px;color:var(--az2);font-weight:500}
+.ej-acl{font-size:11.5px;color:var(--t2);font-style:italic;margin-top:2px}
+.ej-yt{display:inline-flex;align-items:center;gap:3px;margin-top:5px;font-size:11px;color:var(--rj);font-weight:600;text-decoration:none;background:var(--rj2);padding:3px 8px;border-radius:20px;border:1px solid var(--rj3)}
+.ser-wrap{padding:9px 13px}
+.ser-hd{display:grid;grid-template-columns:20px 1fr 72px 54px 32px;gap:5px;margin-bottom:6px;font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase}
+.ser-row{display:grid;grid-template-columns:20px 1fr 72px 54px 32px;gap:5px;align-items:center;margin-bottom:5px}
+.ser-n{font-size:11.5px;font-weight:700;color:var(--t3);text-align:center}
+.ser-ant{font-size:11.5px;color:var(--t3);text-align:center}
+.si{border:1.5px solid var(--bor);border-radius:8px;padding:7px 4px;font-size:15px;font-weight:600;text-align:center;outline:none;font-family:inherit;width:100%;transition:border .15s}
+.si:focus{border-color:var(--az2)}
+.ck{width:30px;height:30px;border-radius:50%;border:2px solid var(--bor);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s;flex-shrink:0}
+.ck.on{background:var(--vd);border-color:var(--vd);color:#fff}
+
+/* TIMER */
+.timer{display:none;position:fixed;bottom:calc(var(--nav-h)+10px);left:50%;transform:translateX(-50%);background:var(--az);color:#fff;border-radius:22px;padding:10px 20px;z-index:50;box-shadow:0 6px 24px rgba(0,0,0,.3);align-items:center;gap:12px}
+.timer.show{display:flex}
+.timer-n{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}
+.timer-skip{background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:10px;padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+@media(min-width:768px){.timer{bottom:20px}}
+
+/* NUTRI */
+.macro-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:11px}
+.mac-i{background:var(--bg);border-radius:9px;padding:11px;text-align:center}
+.mac-v{font-size:20px;font-weight:800}
+.mac-l{font-size:10.5px;color:var(--t3);margin-top:2px}
+
+/* ALIMENTOS SELECTOR */
+.alim-cat{margin-bottom:14px}
+.alim-cat-title{font-size:13px;font-weight:700;color:var(--t2);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.alim-grid{display:flex;flex-wrap:wrap;gap:6px}
+.alim-btn{padding:7px 12px;border-radius:20px;border:1.5px solid var(--bor);background:#fff;font-size:12.5px;font-weight:500;color:var(--t2);cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:5px}
+.alim-btn.sel{border-color:var(--vd);background:var(--vd2);color:#07854D;font-weight:600}
+.alim-btn:active{transform:scale(.97)}
+.alim-g-input{width:52px;border:1.5px solid var(--bor);border-radius:7px;padding:4px 5px;font-size:13px;text-align:center;outline:none;font-family:inherit;margin-left:3px;display:none}
+.alim-btn.sel .alim-g-input{display:inline-block;border-color:var(--vd3)}
+
+/* RESUMEN NUTRI */
+.nutri-summary{background:var(--az3);border-radius:10px;padding:12px;margin-top:12px}
+.ns-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
+.ns-bar{height:5px;background:var(--az4);border-radius:3px;margin-top:2px;overflow:hidden}
+.ns-fill{height:100%;border-radius:3px;background:var(--az2);transition:width .4s}
+.ns-over{background:var(--rj)}
+
+/* LISTA COMPRA */
+.compra-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bor2);font-size:13.5px;align-items:center}
+.compra-item:last-child{border-bottom:none}
 
 /* PROGRESO */
-.peso-input-big{width:100%;text-align:center;font-size:48px;font-weight:800;border:none;outline:none;background:transparent;color:var(--az);font-family:inherit}
-.peso-unit{text-align:center;font-size:15px;color:var(--t3);margin-top:-4px}
-svg.ch{width:100%;height:130px}
+.peso-big{width:100%;text-align:center;font-size:46px;font-weight:800;border:none;outline:none;background:transparent;color:var(--az);font-family:inherit}
+svg.cht{width:100%;height:125px}
 
-.logro-item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--bor2)}
-.logro-item:last-child{border-bottom:none}
-.logro-ico{font-size:26px;flex-shrink:0}
+/* FOTOS PROGRESO */
+.fotos-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.fotos-scroll::-webkit-scrollbar{display:none}
+.foto-grp{flex-shrink:0;width:200px}
+.foto-grp-title{font-size:11.5px;font-weight:700;text-align:center;padding:6px;border-radius:8px 8px 0 0;margin-bottom:4px}
+.foto-grp-title.s0{background:var(--az);color:#fff}
+.foto-grp-title.s4{background:var(--vd);color:#fff}
+.foto-grp-title.pend{background:var(--az3);color:var(--az2)}
+.foto-slot{background:var(--bg);border:1.5px solid var(--bor);border-radius:8px;height:140px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;font-size:11.5px;color:var(--t3);cursor:pointer;margin-bottom:4px;transition:all .15s}
+.foto-slot.has{background:var(--vd2);border-color:var(--vd3);color:#07854D}
+.foto-slot:active{transform:scale(.97)}
+.foto-slot-lbl{font-size:10px;color:var(--t3);text-align:center;font-weight:600}
+
+/* LOGROS */
+.logro{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--bor2)}
+.logro:last-child{border-bottom:none}
+.logro.locked{opacity:.35}
+.logro-ico{font-size:24px;flex-shrink:0}
 .logro-nom{font-size:13.5px;font-weight:600}
-.logro-desc{font-size:12px;color:var(--t3);margin-top:1px}
-.logro-item.locked{opacity:.38}
-
-.foto-timeline{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}
-.foto-tl-item{flex-shrink:0;text-align:center}
-.foto-tl-box{width:90px;height:120px;border-radius:9px;background:var(--bg);border:1px solid var(--bor);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3);margin-bottom:4px}
-.foto-tl-box.has{background:var(--vd2);border-color:var(--vd3)}
-.foto-tl-lbl{font-size:11px;color:var(--t3);font-weight:600}
+.logro-desc{font-size:11.5px;color:var(--t3);margin-top:1px}
 
 /* REVISIÓN */
-.rev-progress{display:flex;gap:4px;margin-bottom:14px}
-.rev-step{flex:1;height:4px;border-radius:2px;background:var(--bor);transition:background .3s}
-.rev-step.done{background:var(--vd)}
-.rev-step.active{background:var(--nr)}
-.rev-foto-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-.rev-foto-box{border:2px dashed var(--bor);border-radius:10px;aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;background:var(--bg);transition:all .15s}
-.rev-foto-box.done{border-color:var(--vd);border-style:solid;background:var(--vd2)}
-.rev-foto-box:active{transform:scale(.97)}
-.rev-foto-lbl{font-size:11px;color:var(--t3);font-weight:600}
-.med-input{width:100%;border:1.5px solid var(--bor);border-radius:9px;padding:11px 13px;font-size:15px;outline:none;font-family:inherit;transition:border .15s}
-.med-input:focus{border-color:var(--az2)}
-.preg-q{font-size:14px;font-weight:600;margin-bottom:6px;color:var(--t1)}
-.preg-a{width:100%;border:1.5px solid var(--bor);border-radius:9px;padding:11px 13px;font-size:14px;outline:none;font-family:inherit;resize:none;transition:border .15s}
+.rev-steps{display:flex;gap:4px;margin-bottom:10px}
+.rs{flex:1;height:4px;border-radius:2px;background:var(--bor)}
+.rs.done{background:var(--vd)}
+.rs.act{background:var(--nr)}
+.rev-foto-g{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:11px}
+.rfb{border:2px dashed var(--bor);border-radius:10px;aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;background:var(--bg);transition:all .15s;-webkit-tap-highlight-color:transparent}
+.rfb.done{border-color:var(--vd);border-style:solid;background:var(--vd2)}
+.rfb:active{transform:scale(.97)}
+.rfb-lbl{font-size:11px;color:var(--t3);font-weight:600}
+.rfb.done .rfb-lbl{color:#07854D}
+.med-in{width:100%;border:1.5px solid var(--bor);border-radius:9px;padding:11px 12px;font-size:15px;outline:none;font-family:inherit;transition:border .15s}
+.med-in:focus{border-color:var(--az2)}
+.preg-q{font-size:13.5px;font-weight:600;margin-bottom:6px}
+.preg-a{width:100%;border:1.5px solid var(--bor);border-radius:9px;padding:11px 12px;font-size:13.5px;outline:none;font-family:inherit;resize:none;transition:border .15s}
 .preg-a:focus{border-color:var(--az2)}
 
+/* CHECK-IN COLLAPSIBLE */
+.ci-toggle{width:100%;text-align:left;background:#fff;border:1.5px solid var(--bor);border-radius:10px;padding:12px 14px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;justify-content:space-between;align-items:center;transition:all .15s}
+.ci-toggle.open{border-color:var(--az2);border-radius:10px 10px 0 0}
+.ci-body{border:1.5px solid var(--az2);border-top:none;border-radius:0 0 10px 10px;padding:14px;background:#fff;display:none}
+.ci-body.open{display:block}
+.ci-q{font-size:13.5px;font-weight:600;margin-bottom:6px;color:var(--t1)}
+.ci-stars{display:flex;gap:8px;margin-bottom:12px}
+.ci-star{font-size:26px;cursor:pointer;opacity:.3;transition:opacity .15s}
+.ci-star.on{opacity:1}
+
 /* PERFIL */
-.perfil-av{width:68px;height:68px;border-radius:50%;background:var(--az);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;margin:0 auto 10px}
-.trainer-card{display:flex;align-items:center;gap:12px;padding:14px;background:var(--az3);border-radius:10px;margin-bottom:12px}
-.trainer-av{width:44px;height:44px;border-radius:50%;background:var(--az);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0}
-.trainer-info b{font-size:14px;font-weight:700;display:block}
-.trainer-info small{font-size:12px;color:var(--t2)}
-.wa-btn{margin-left:auto;background:var(--vd);color:#fff;border:none;border-radius:20px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px}
+.pav{width:62px;height:62px;border-radius:50%;background:var(--az);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;margin:0 auto 9px}
+.trainer-c{display:flex;align-items:center;gap:11px;padding:13px;background:var(--az3);border-radius:10px;margin-bottom:11px}
+.trainer-av{width:42px;height:42px;border-radius:50%;background:var(--az);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
+.wa-btn{margin-left:auto;background:var(--vd);color:#fff;border:none;border-radius:20px;padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
 
 /* FAQ */
 .faq-item{border-bottom:1px solid var(--bor2)}
-.faq-q{padding:13px 15px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-size:13.5px;font-weight:600;gap:10px}
-.faq-ico{color:var(--t3);font-size:18px;flex-shrink:0;transition:transform .2s}
-.faq-a{padding:0 15px 13px;font-size:13px;color:var(--t2);line-height:1.6;display:none}
+.faq-q{padding:12px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-size:13.5px;font-weight:600;gap:8px}
+.faq-ico{color:var(--t3);font-size:17px;flex-shrink:0;transition:transform .2s}
+.faq-a{padding:0 14px 12px;font-size:13px;color:var(--t2);line-height:1.6;display:none}
 .faq-a.open{display:block}
 
+/* BUTTONS */
+.btn{padding:10px 17px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-family:inherit;transition:all .15s}
+.btn-p{background:var(--vd);color:#fff}
+.btn-p:active{background:#09a85e}
+.btn-o{background:#fff;color:var(--az2);border:1.5px solid var(--bor)}
+.btn-o:active{background:var(--az3)}
+.btn-f{width:100%;padding:13px}
+.btn-s{padding:6px 13px;font-size:13px}
+
 /* TABS */
-.tabs{display:flex;border-bottom:2px solid var(--bor);margin-bottom:13px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-.tab{padding:9px 15px;font-size:13.5px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;flex-shrink:0;transition:all .15s}
+.tabs{display:flex;border-bottom:2px solid var(--bor);margin-bottom:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:8px 14px;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;flex-shrink:0;transition:all .15s}
 .tab.on{color:var(--az);border-bottom-color:var(--az);font-weight:700}
 .tp{display:none}.tp.on{display:block}
 
 /* ALERT */
-.alert{padding:11px 13px;border-radius:9px;font-size:13px;margin-bottom:12px;line-height:1.5}
+.alert{padding:10px 12px;border-radius:9px;font-size:13px;margin-bottom:11px;line-height:1.5}
 .a-vd{background:var(--vd2);color:#07854D;border:1px solid var(--vd3)}
 .a-az{background:var(--az3);color:var(--az2);border:1px solid var(--az4)}
 .a-am{background:var(--am2);color:#8B6914;border:1px solid var(--am3)}
 
-/* BUTTONS */
-.btn{padding:10px 18px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-family:inherit;transition:all .15s}
-.btn-p{background:var(--vd);color:#fff}.btn-p:active{background:#09a85e}
-.btn-o{background:#fff;color:var(--az2);border:1.5px solid var(--bor)}.btn-o:active{background:var(--az3)}
-.btn-full{width:100%;padding:14px}
-.btn-sm{padding:7px 13px;font-size:13px}
-
 /* TOAST */
-.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--az);color:#fff;padding:10px 20px;border-radius:24px;font-size:13.5px;font-weight:600;opacity:0;transition:all .3s;z-index:200;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.toast{position:fixed;bottom:75px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--az);color:#fff;padding:9px 18px;border-radius:22px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:200;white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,.2)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.vd{background:var(--vd)}
 @media(min-width:768px){.toast{bottom:20px}}
@@ -271,17 +294,17 @@ svg.ch{width:100%;height:130px}
 <body>
 
 <!-- LOGIN -->
-<div class="login-wrap" id="login-wrap">
+<div class="login-wrap" id="lw">
   <div class="login-box">
     <div class="login-logo">
-      <div class="login-logo-img">EF</div>
+      <div class="login-icon">EF</div>
       <b>EnFormaFit</b>
       <small>Tu plan · Tu progreso · Tu transformación</small>
     </div>
-    <div class="lfi"><label>Email</label><input id="l-email" type="email" placeholder="tu@email.com" autocomplete="email"></div>
-    <div class="lfi"><label>Contraseña</label><input id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+    <div class="lfi"><label>Email</label><input id="le" type="email" placeholder="tu@email.com" autocomplete="email"></div>
+    <div class="lfi"><label>Contraseña</label><input id="lp" type="password" placeholder="••••••••" autocomplete="current-password"></div>
     <button class="btn-login" onclick="doLogin()">Entrar →</button>
-    <div class="login-err" id="l-err"></div>
+    <div class="login-err" id="lerr"></div>
   </div>
 </div>
 
@@ -290,339 +313,348 @@ svg.ch{width:100%;height:130px}
   <div class="topbar">
     <div class="topbar-brand">
       <div class="topbar-icon">EF</div>
-      <span class="topbar-sect" id="sect-title">Inicio</span>
+      <span class="topbar-sect" id="st">Inicio</span>
     </div>
     <nav class="desk-nav">
-      <button class="desk-ni on" onclick="S('inicio')">Inicio</button>
-      <button class="desk-ni" onclick="S('entreno')">Entreno</button>
-      <button class="desk-ni" onclick="S('nutricion')">Nutrición</button>
-      <button class="desk-ni" onclick="S('progreso')">Progreso</button>
-      <button class="desk-ni" onclick="S('revision')">Revisión</button>
-      <button class="desk-ni" onclick="S('perfil')">Perfil</button>
+      <button class="dni on" onclick="S('inicio')">Inicio</button>
+      <button class="dni" onclick="S('entreno')">Entreno</button>
+      <button class="dni" onclick="S('nutricion')">Nutrición</button>
+      <button class="dni" onclick="S('progreso')">Progreso</button>
+      <button class="dni" onclick="S('revision')">Revisión</button>
+      <button class="dni" onclick="S('perfil')">Perfil</button>
     </nav>
     <div class="topbar-av" id="av-btn" onclick="S('perfil')">JG</div>
   </div>
 
   <div class="content" id="content">
 
-    <!-- ══ INICIO ══ -->
+    <!-- INICIO -->
     <div id="p-inicio">
-      <div style="margin-bottom:14px">
+      <div style="margin-bottom:12px">
         <div style="font-size:19px;font-weight:800;color:var(--az)" id="saludo">¡Buenos días, Joel! 💪</div>
         <div style="font-size:13px;color:var(--t3);margin-top:2px">Semana 4 · Bloque 3 · <span style="color:var(--vd);font-weight:600">4D · Torso-Pierna · Gym</span></div>
       </div>
 
-      <!-- Próxima revisión -->
-      <div class="rev-banner urgente" id="rev-banner-inicio">
-        <div class="rev-banner-tag">📅 Próxima revisión</div>
-        <div class="rev-banner-fecha">Sábado 26 julio</div>
-        <div class="rev-banner-sub">Semana 4 — sube fotos, medidas y responde las preguntas</div>
-        <div class="rev-banner-pill">⏰ Quedan 4 días</div>
+      <!-- Banner revisión -->
+      <div class="rev-ban urg" onclick="S('revision')">
+        <div class="rev-ban-tag">📅 Próxima revisión</div>
+        <div class="rev-ban-fecha">Sábado 26 julio</div>
+        <div class="rev-ban-sub">Semana 4 — fotos, medidas y preguntas</div>
+        <div class="rev-ban-pill">⏰ Quedan 4 días</div>
       </div>
 
       <!-- Hoy toca -->
       <div class="hoy-toca" onclick="S('entreno')">
-        <div class="hoy-toca-info">
+        <div class="ht-info">
           <small>Hoy toca</small>
-          <b>LUNES — Torso A</b>
-          <span>6 ejercicios · ~50 min</span>
+          <b id="hoy-nom">LUNES — Día 1</b>
+          <span id="hoy-sub">Cargando...</span>
         </div>
-        <button class="btn btn-p btn-sm" style="flex-shrink:0">Entrenar →</button>
+        <button class="btn btn-p btn-s">Entrenar →</button>
       </div>
 
       <!-- Stats -->
-      <div class="stat-g">
-        <div class="stat-c"><div class="stat-v" style="color:var(--vd)">-3 kg</div><div class="stat-l">desde el inicio</div></div>
-        <div class="stat-c"><div class="stat-v" style="color:var(--az2)">88%</div><div class="stat-l">adherencia</div></div>
-        <div class="stat-c"><div class="stat-v" style="color:var(--nr)">S4/12</div><div class="stat-l">semana</div></div>
-        <div class="stat-c"><div class="stat-v" style="color:var(--am)">79 kg</div><div class="stat-l">peso actual</div></div>
+      <div class="sg">
+        <div class="sc"><div class="sv" style="color:var(--vd)">-3 kg</div><div class="sl">desde el inicio</div></div>
+        <div class="sc"><div class="sv" style="color:var(--az2)">88%</div><div class="sl">adherencia</div></div>
+        <div class="sc"><div class="sv" style="color:var(--nr)">S4/12</div><div class="sl">semana</div></div>
+        <div class="sc"><div class="sv" style="color:var(--am)">79 kg</div><div class="sl">peso actual</div></div>
       </div>
 
-      <!-- Pasos -->
-      <div class="pasos-card">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <!-- Pasos objetivo -->
+      <div class="pasos-c">
+        <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;margin-bottom:4px">👟 Pasos hoy</div>
-            <div class="pasos-num">7.240</div>
-            <div class="pasos-obj">Objetivo: 10.000 pasos · Faltan 2.760</div>
+            <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;margin-bottom:3px">👟 Objetivo diario de pasos</div>
+            <div class="pasos-n">10.000</div>
+            <div style="font-size:12px;opacity:.82;margin-top:1px">Intenta alcanzarlo cada día</div>
           </div>
-          <div style="text-align:right">
-            <div style="font-size:22px;font-weight:800">72%</div>
-            <div style="font-size:11px;opacity:.8">completado</div>
-          </div>
+          <div style="text-align:right;font-size:13px;opacity:.85">Anota tus pasos<br>en el check-in</div>
         </div>
-        <div class="pasos-bar-wrap"><div class="pasos-bar-fill" style="width:72%"></div></div>
       </div>
 
       <!-- Racha -->
-      <div class="racha-card">
+      <div class="racha-c">
         <div class="racha-n">🔥 7</div>
-        <div class="racha-info"><b>días de racha</b><small>¡Semana perfecta! Sigue así</small></div>
+        <div class="racha-i"><b>días de racha</b><small>¡Semana perfecta! Sigue así</small></div>
       </div>
 
       <!-- Adherencia -->
       <div class="card">
-        <div class="card-h"><h2>Adherencia esta semana</h2><span class="badge b-vd">88%</span></div>
-        <div class="card-b" style="display:flex;flex-direction:column;gap:10px">
-          <div>
-            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Entrenos</span><span style="font-weight:700;color:#07854D">4/4 ⭐</span></div>
-            <div class="prog-bar"><div class="prog-fill" style="width:100%;background:var(--vd)"></div></div>
-          </div>
-          <div>
-            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Nutrición</span><span style="font-weight:700;color:var(--az2)">6/7</span></div>
-            <div class="prog-bar"><div class="prog-fill" style="width:86%;background:var(--az2)"></div></div>
-          </div>
-          <div>
-            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Pasos</span><span style="font-weight:700;color:var(--nr)">5/7</span></div>
-            <div class="prog-bar"><div class="prog-fill" style="width:71%;background:var(--nr)"></div></div>
-          </div>
+        <div class="ch"><h2>Adherencia esta semana</h2><span class="badge bvd">88%</span></div>
+        <div class="cb" style="display:flex;flex-direction:column;gap:9px">
+          <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span>Entrenos</span><span style="font-weight:700;color:#07854D">4/4 ⭐</span></div><div class="pb"><div class="pf" style="width:100%;background:var(--vd)"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span>Nutrición</span><span style="font-weight:700;color:var(--az2)">6/7</span></div><div class="pb"><div class="pf" style="width:86%;background:var(--az2)"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span>Pasos</span><span style="font-weight:700;color:var(--nr)">5/7</span></div><div class="pb"><div class="pf" style="width:71%;background:var(--nr)"></div></div></div>
         </div>
       </div>
 
-      <!-- Progreso bloque -->
+      <!-- Semanas bloque -->
       <div class="card">
-        <div class="card-h"><h2>Bloque 3 — 12 semanas</h2></div>
-        <div class="card-b">
-          <div class="sem-prog" id="sem-prog-inicio"></div>
-          <div style="display:flex;gap:10px;font-size:11.5px;color:var(--t3);margin-top:6px;flex-wrap:wrap">
-            <span><span style="display:inline-block;width:12px;height:12px;background:var(--vd);border-radius:3px;margin-right:3px;vertical-align:middle"></span>Completada</span>
-            <span><span style="display:inline-block;width:12px;height:12px;background:var(--nr);border-radius:3px;margin-right:3px;vertical-align:middle"></span>Esta semana</span>
-            <span><span style="display:inline-block;width:12px;height:12px;background:var(--az2);border-radius:3px;margin-right:3px;vertical-align:middle"></span>Revisión</span>
+        <div class="ch"><h2>Bloque 3 — 12 semanas</h2></div>
+        <div class="cb">
+          <div class="sem-p" id="semp"></div>
+          <div style="display:flex;gap:10px;font-size:11px;color:var(--t3);margin-top:5px;flex-wrap:wrap">
+            <span><span style="display:inline-block;width:11px;height:11px;background:var(--vd);border-radius:3px;margin-right:3px;vertical-align:middle"></span>Hecha</span>
+            <span><span style="display:inline-block;width:11px;height:11px;background:var(--nr);border-radius:3px;margin-right:3px;vertical-align:middle"></span>Esta semana</span>
+            <span><span style="display:inline-block;width:11px;height:11px;background:var(--az2);border-radius:3px;margin-right:3px;vertical-align:middle"></span>Revisión</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHECK-IN SEMANAL colapsable -->
+      <div style="margin-bottom:11px">
+        <button class="ci-toggle" id="ci-btn" onclick="toggleCI()">
+          <span>📋 Check-in semanal</span>
+          <span id="ci-ico">▼</span>
+        </button>
+        <div class="ci-body" id="ci-body">
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div>
+              <div class="ci-q">¿Cuántos entrenos has completado esta semana?</div>
+              <div style="display:flex;gap:8px">{entrenos_stars}</div>
+            </div>
+            <div>
+              <div class="ci-q">¿Cuántos días has seguido bien la nutrición?</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap" id="ci-nut-days"></div>
+            </div>
+            <div>
+              <div class="ci-q">¿Cuántos días has alcanzado tu objetivo de pasos?</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap" id="ci-paso-days"></div>
+            </div>
+            <div>
+              <div class="ci-q">¿Cómo te has sentido esta semana? (1-5)</div>
+              <div class="ci-stars" id="ci-stars">
+                <span class="ci-star" onclick="setStars(1)">⭐</span>
+                <span class="ci-star" onclick="setStars(2)">⭐</span>
+                <span class="ci-star" onclick="setStars(3)">⭐</span>
+                <span class="ci-star" onclick="setStars(4)">⭐</span>
+                <span class="ci-star" onclick="setStars(5)">⭐</span>
+              </div>
+            </div>
+            <div>
+              <div class="ci-q">¿Algo que quieras contarle a tu entrenador?</div>
+              <textarea class="preg-a" rows="2" placeholder="Opcional..."></textarea>
+            </div>
+            <button class="btn btn-p btn-f" onclick="enviarCI()">Enviar check-in ✓</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ══ ENTRENO ══ -->
+    <!-- ENTRENO -->
     <div id="p-entreno" style="display:none">
-      <!-- Selector de días -->
-      <div class="day-selector" id="day-selector"></div>
-      <div id="entreno-content"></div>
+      <div class="day-sel" id="day-sel"></div>
+      <div id="ent-content"></div>
     </div>
 
-    <!-- ══ NUTRICIÓN ══ -->
+    <!-- NUTRICIÓN -->
     <div id="p-nutricion" style="display:none">
       <div class="tabs">
-        <div class="tab on" onclick="ST('n-hoy',this)">Plan de hoy</div>
-        <div class="tab" onclick="ST('n-menu',this)">Configurar menú</div>
-        <div class="tab" onclick="ST('n-compra',this)" id="tab-compra" style="display:none">🛒 Lista compra</div>
+        <div class="tab on" onclick="stab('n-hoy',this)">Mi menú</div>
+        <div class="tab" onclick="stab('n-alim',this)">Elegir alimentos</div>
+        <div class="tab" id="tab-compra" style="display:none" onclick="stab('n-compra',this)">🛒 Lista compra</div>
       </div>
 
       <div id="n-hoy" class="tp on">
         <div class="card">
-          <div class="card-h"><h2>Macros del día</h2><span class="badge b-az">2.100 kcal</span></div>
-          <div class="card-b">
+          <div class="ch"><h2>Macros del día</h2><span class="badge baz">2.100 kcal</span></div>
+          <div class="cb">
             <div class="macro-g">
-              <div class="macro-i"><div class="macro-v" style="color:#07854D">185g</div><div class="macro-l">Proteína</div></div>
-              <div class="macro-i"><div class="macro-v" style="color:var(--nr)">190g</div><div class="macro-l">Carbos</div></div>
-              <div class="macro-i"><div class="macro-v" style="color:var(--rj)">78g</div><div class="macro-l">Grasas</div></div>
+              <div class="mac-i"><div class="mac-v" style="color:#07854D">185g</div><div class="mac-l">Proteína</div></div>
+              <div class="mac-i"><div class="mac-v" style="color:var(--nr)">190g</div><div class="mac-l">Carbos</div></div>
+              <div class="mac-i"><div class="mac-v" style="color:var(--rj)">78g</div><div class="mac-l">Grasas</div></div>
             </div>
-            <div class="alert a-az" style="margin-bottom:0;font-size:13px">💧 Recuerda beber mínimo <b>2 litros de agua</b> hoy</div>
+            <!-- Objetivo peso -->
+            <div style="background:var(--az3);border-radius:9px;padding:11px;margin-top:4px">
+              <div style="font-size:12px;font-weight:700;color:var(--az2);margin-bottom:6px">📊 Tus objetivos</div>
+              <div style="display:flex;flex-direction:column;gap:4px;font-size:12.5px">
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--t2)">Peso objetivo</span><span style="font-weight:700;color:var(--az)">76 kg</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--t2)">Ritmo objetivo</span><span style="font-weight:700;color:var(--vd)">−0.5 a −0.75 kg/sem</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--t2)">Pérdida total buscada</span><span style="font-weight:700;color:var(--az)">6 kg</span></div>
+              </div>
+            </div>
+            <div class="alert a-az" style="margin-bottom:0;margin-top:9px;font-size:13px">💧 Bebe mínimo <b>2 litros de agua</b> hoy</div>
           </div>
         </div>
         <div class="card">
-          <div class="card-h"><h2>Tu menú de hoy</h2><button class="btn btn-o btn-sm" onclick="ST('n-menu',document.querySelectorAll('.tab')[1])">Cambiar →</button></div>
-          <div class="card-b" style="padding:0 15px" id="menu-hoy-display"></div>
+          <div class="ch"><h2>Tu selección de hoy</h2><button class="btn btn-o btn-s" onclick="stab('n-alim',document.querySelectorAll('.tab')[1])">Cambiar →</button></div>
+          <div id="menu-hoy" style="padding:0 14px"></div>
         </div>
         <div class="card">
-          <div class="card-b" style="display:flex;align-items:center;gap:12px">
-            <span style="font-size:26px">📄</span>
+          <div class="cb" style="display:flex;align-items:center;gap:11px">
+            <span style="font-size:24px">📄</span>
             <div style="flex:1"><div style="font-size:14px;font-weight:700">Plan completo de nutrición</div><div style="font-size:12px;color:var(--t3)">PDF con todas las opciones</div></div>
-            <button class="btn btn-o btn-sm" onclick="showToast('PDF disponible cuando el entrenador lo suba')">↓ PDF</button>
+            <button class="btn btn-o btn-s" onclick="showToast('PDF disponible cuando tu entrenador lo suba')">↓ PDF</button>
           </div>
         </div>
       </div>
 
-      <div id="n-menu" class="tp">
-        <div class="alert a-az">Elige la opción que más te apetezca en cada comida. Los macros se ajustan automáticamente.</div>
-        <div class="card">
-          <div class="card-b" style="padding:0 15px" id="menu-constructor"></div>
-        </div>
-        <button class="btn btn-p btn-full" onclick="guardarMenu()" style="margin-top:4px">Guardar menú semanal</button>
+      <div id="n-alim" class="tp">
+        <div class="alert a-az" style="font-size:13px">Elige los alimentos que más te apetezcan. Los macros ya los tiene pautados tu entrenador — solo elige con qué cubrirlos.</div>
+        <div id="alim-selector"></div>
+        <div class="nutri-summary" id="nutri-summary"></div>
+        <button class="btn btn-p btn-f" style="margin-top:11px" onclick="guardarMenu()">Guardar selección</button>
       </div>
 
       <div id="n-compra" class="tp">
-        <div class="alert a-vd">Lista generada automáticamente para la semana completa</div>
+        <div class="alert a-vd">Lista generada para la semana completa (×7 días)</div>
         <div class="card">
-          <div class="card-h"><h2>🛒 Lista de la compra</h2><button class="btn btn-o btn-sm" onclick="showToast('Lista copiada al portapapeles')">Copiar</button></div>
-          <div class="card-b" style="padding:0 15px" id="lista-compra"></div>
+          <div class="ch"><h2>🛒 Lista de la compra</h2><button class="btn btn-o btn-s" onclick="copiarLista()">Copiar</button></div>
+          <div style="padding:0 14px" id="lista-compra"></div>
         </div>
       </div>
     </div>
 
-    <!-- ══ PROGRESO ══ -->
+    <!-- PROGRESO -->
     <div id="p-progreso" style="display:none">
-      <!-- Peso hoy -->
       <div class="card">
-        <div class="card-h"><h2>Peso de hoy</h2><span style="font-size:12px;color:var(--t3)" id="fecha-hoy"></span></div>
-        <div class="card-b" style="text-align:center;padding:18px 15px">
-          <input type="number" class="peso-input-big" id="peso-input" placeholder="79.0" step="0.1" min="40" max="200" inputmode="decimal">
-          <div class="peso-unit">kg</div>
-          <button class="btn btn-p" style="margin-top:14px;padding:11px 32px" onclick="guardarPeso()">Guardar peso</button>
+        <div class="ch"><h2>Peso de hoy</h2><span style="font-size:11.5px;color:var(--t3)" id="fecha-hoy"></span></div>
+        <div class="cb" style="text-align:center;padding:18px 14px">
+          <input type="number" class="peso-big" id="peso-in" placeholder="79.0" step="0.1" min="40" max="200" inputmode="decimal">
+          <div style="text-align:center;font-size:14px;color:var(--t3);margin-top:-3px">kg</div>
+          <button class="btn btn-p" style="margin-top:13px;padding:11px 30px" onclick="guardarPeso()">Guardar</button>
         </div>
       </div>
 
-      <!-- Pasos hoy -->
-      <div class="pasos-card">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div>
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;margin-bottom:4px">👟 Pasos hoy</div>
-            <div class="pasos-num">7.240</div>
-            <div class="pasos-obj">Objetivo: 10.000 · Faltan 2.760</div>
-          </div>
-          <div style="text-align:right"><div style="font-size:22px;font-weight:800">72%</div><div style="font-size:11px;opacity:.8">completado</div></div>
-        </div>
-        <div class="pasos-bar-wrap"><div class="pasos-bar-fill" style="width:72%"></div></div>
-      </div>
-
-      <!-- Gráfico peso -->
       <div class="card">
-        <div class="card-h"><h2>Evolución del peso</h2><span style="font-size:12px;color:var(--t3)">Objetivo: 76 kg</span></div>
-        <div class="card-b">
-          <svg class="ch" viewBox="0 0 400 120">
+        <div class="ch"><h2>Evolución del peso</h2><span style="font-size:12px;color:var(--t3)">Obj: 76 kg</span></div>
+        <div class="cb">
+          <svg class="cht" viewBox="0 0 400 120">
             <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0DBF6F" stop-opacity=".2"/><stop offset="100%" stop-color="#0DBF6F" stop-opacity="0"/></linearGradient></defs>
-            <line x1="30" y1="15" x2="390" y2="15" stroke="#F0F2F8" stroke-width="1"/>
-            <line x1="30" y1="55" x2="390" y2="55" stroke="#F0F2F8" stroke-width="1"/>
-            <line x1="30" y1="90" x2="390" y2="90" stroke="#E2E6EF" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <line x1="28" y1="15" x2="392" y2="15" stroke="#F0F2F8" stroke-width="1"/>
+            <line x1="28" y1="55" x2="392" y2="55" stroke="#F0F2F8" stroke-width="1"/>
+            <line x1="28" y1="90" x2="392" y2="90" stroke="#E2E6EF" stroke-width="1.5" stroke-dasharray="4,3"/>
             <text x="2" y="18" font-size="9" fill="#9199AD">82</text>
             <text x="2" y="58" font-size="9" fill="#9199AD">79</text>
             <text x="2" y="93" font-size="9" fill="#9199AD">76</text>
-            <text x="310" y="86" font-size="9" fill="#9199AD">objetivo</text>
-            <path d="M50 22 L140 36 L230 52 L320 52 L380 48 L380 105 L50 105Z" fill="url(#g1)"/>
-            <path d="M50 22 L140 36 L230 52 L320 52 L380 48" fill="none" stroke="#0DBF6F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="308" y="86" font-size="9" fill="#9199AD">objetivo</text>
+            <path d="M50 22 L140 36 L230 52 L320 52 L382 48 L382 105 L50 105Z" fill="url(#g1)"/>
+            <path d="M50 22 L140 36 L230 52 L320 52 L382 48" fill="none" stroke="#0DBF6F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
             <circle cx="50" cy="22" r="4" fill="#0DBF6F" stroke="#fff" stroke-width="2"/>
-            <circle cx="380" cy="48" r="5" fill="#0DBF6F" stroke="#fff" stroke-width="2"/>
+            <circle cx="382" cy="48" r="5" fill="#0DBF6F" stroke="#fff" stroke-width="2"/>
             <text x="47" y="113" font-size="9" fill="#9199AD" text-anchor="middle">S1</text>
-            <text x="165" y="113" font-size="9" fill="#9199AD" text-anchor="middle">S2</text>
-            <text x="280" y="113" font-size="9" fill="#9199AD" text-anchor="middle">S3</text>
-            <text x="378" y="113" font-size="9" fill="#9199AD" text-anchor="middle">S4</text>
+            <text x="162" y="113" font-size="9" fill="#9199AD" text-anchor="middle">S2</text>
+            <text x="278" y="113" font-size="9" fill="#9199AD" text-anchor="middle">S3</text>
+            <text x="380" y="113" font-size="9" fill="#9199AD" text-anchor="middle">S4</text>
           </svg>
-          <div style="display:flex;gap:12px;font-size:12.5px;color:var(--t3);margin-top:3px">
+          <div style="display:flex;gap:12px;font-size:12px;color:var(--t3);margin-top:3px;flex-wrap:wrap">
             <span>Inicio: <b style="color:var(--t1)">82 kg</b></span>
             <span>Actual: <b style="color:#07854D">79 kg</b></span>
-            <span>Ritmo: <b style="color:#07854D">-0.75/sem ✓</b></span>
+            <span>Obj: <b style="color:var(--az)">76 kg</b></span>
+            <span>Ritmo obj: <b style="color:var(--vd)">−0.75 kg/sem</b></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fotos progreso -->
+      <div class="card">
+        <div class="ch"><h2>Mis fotos de progreso</h2></div>
+        <div class="cb">
+          <div class="fotos-scroll">
+            <div class="foto-grp">
+              <div class="foto-grp-title s0">INICIO (S0)</div>
+              <div class="foto-slot" onclick="showToast('Foto S0 — frente')"><span style="font-size:30px">📷</span><span class="foto-slot-lbl">Frente</span></div>
+              <div class="foto-slot" onclick="showToast('Foto S0 — perfil der.')"><span style="font-size:30px">📷</span><span class="foto-slot-lbl">Perfil der.</span></div>
+              <div class="foto-slot" onclick="showToast('Foto S0 — perfil izq.')"><span style="font-size:30px">📷</span><span class="foto-slot-lbl">Perfil izq.</span></div>
+              <div class="foto-slot" onclick="showToast('Foto S0 — espalda')"><span style="font-size:30px">📷</span><span class="foto-slot-lbl">Espalda</span></div>
+            </div>
+            <div class="foto-grp">
+              <div class="foto-grp-title s4">SEMANA 4</div>
+              <div class="foto-slot has" onclick="showToast('Ver foto S4 — frente')"><span style="font-size:30px">✅</span><span class="foto-slot-lbl" style="color:#07854D">Frente subida</span></div>
+              <div class="foto-slot has" onclick="showToast('Ver foto S4 — perfil der.')"><span style="font-size:30px">✅</span><span class="foto-slot-lbl" style="color:#07854D">Perfil der.</span></div>
+              <div class="foto-slot" onclick="marcarFotoProgreso(this,'S4 perfil izq.')"><span style="font-size:30px">📷</span><span class="foto-slot-lbl">Perfil izq.</span></div>
+              <div class="foto-slot" onclick="marcarFotoProgreso(this,'S4 espalda')"><span style="font-size:30px">📷</span><span class="foto-slot-lbl">Espalda</span></div>
+            </div>
+            <div class="foto-grp">
+              <div class="foto-grp-title pend">SEMANA 8</div>
+              <div class="foto-slot" style="opacity:.4"><span style="font-size:30px">⏳</span><span class="foto-slot-lbl">Frente</span></div>
+              <div class="foto-slot" style="opacity:.4"><span style="font-size:30px">⏳</span><span class="foto-slot-lbl">Perfil der.</span></div>
+              <div class="foto-slot" style="opacity:.4"><span style="font-size:30px">⏳</span><span class="foto-slot-lbl">Perfil izq.</span></div>
+              <div class="foto-slot" style="opacity:.4"><span style="font-size:30px">⏳</span><span class="foto-slot-lbl">Espalda</span></div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Logros -->
       <div class="card">
-        <div class="card-h"><h2>Mis logros</h2></div>
-        <div class="card-b" style="padding:0 15px" id="logros-container"></div>
-      </div>
-
-      <!-- Fotos progreso -->
-      <div class="card">
-        <div class="card-h"><h2>Mis fotos de progreso</h2></div>
-        <div class="card-b">
-          <div class="foto-timeline">
-            <div class="foto-tl-item">
-              <div class="foto-tl-box">📷 S0</div>
-              <div class="foto-tl-lbl">Inicio</div>
-            </div>
-            <div class="foto-tl-item">
-              <div class="foto-tl-box has" style="font-size:26px">📸</div>
-              <div class="foto-tl-lbl" style="color:var(--vd)">Sem 4</div>
-            </div>
-            <div class="foto-tl-item">
-              <div class="foto-tl-box" style="opacity:.4">S8</div>
-              <div class="foto-tl-lbl">Sem 8</div>
-            </div>
-            <div class="foto-tl-item">
-              <div class="foto-tl-box" style="opacity:.4">S12</div>
-              <div class="foto-tl-lbl">Sem 12</div>
-            </div>
-          </div>
-        </div>
+        <div class="ch"><h2>Mis logros</h2></div>
+        <div style="padding:0 14px" id="logros"></div>
       </div>
     </div>
 
-    <!-- ══ REVISIÓN ══ -->
+    <!-- REVISIÓN -->
     <div id="p-revision" style="display:none">
-      <div class="rev-banner urgente" style="margin-bottom:14px">
-        <div class="rev-banner-tag">📅 REVISIÓN SEMANA 4</div>
-        <div class="rev-banner-fecha">Sábado 26 julio</div>
-        <div class="rev-banner-sub">Sube tus fotos, medidas y responde las preguntas antes del sábado por la noche</div>
-        <div class="rev-banner-pill">⏰ Quedan 4 días</div>
+      <div class="rev-ban urg" style="margin-bottom:12px;cursor:default">
+        <div class="rev-ban-tag">📅 REVISIÓN SEMANA 4</div>
+        <div class="rev-ban-fecha">Sábado 26 julio</div>
+        <div class="rev-ban-sub">Sube fotos, medidas y responde antes del sábado</div>
+        <div class="rev-ban-pill">⏰ Quedan 4 días</div>
       </div>
 
-      <!-- Barra de progreso revisión -->
-      <div class="rev-progress">
-        <div class="rev-step active" id="rs-1"></div>
-        <div class="rev-step" id="rs-2"></div>
-        <div class="rev-step" id="rs-3"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--t3);margin-bottom:14px">
-        <span>📸 Fotos</span><span>📏 Medidas</span><span>💬 Preguntas</span>
-      </div>
+      <div class="rev-steps"><div class="rs act" id="rs1"></div><div class="rs" id="rs2"></div><div class="rs" id="rs3"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-bottom:12px"><span>📸 Fotos</span><span>📏 Medidas</span><span>💬 Preguntas</span></div>
 
-      <div class="tabs">
-        <div class="tab on" onclick="ST('r-fotos',this);setRevStep(1)">📸 Fotos</div>
-        <div class="tab" onclick="ST('r-medidas',this);setRevStep(2)">📏 Medidas</div>
-        <div class="tab" onclick="ST('r-pregs',this);setRevStep(3)">💬 Preguntas</div>
-      </div>
-
-      <div id="r-fotos" class="tp on">
-        <div class="alert a-az" style="font-size:13px">Misma ropa, mismo sitio, misma iluminación. Ropa interior o bañador.</div>
-        <div class="rev-foto-g">
-          <div><div class="rev-foto-box" id="foto-frente" onclick="marcarFoto('frente')"><span style="font-size:26px">📷</span><span class="rev-foto-lbl">Frente</span></div></div>
-          <div><div class="rev-foto-box" id="foto-perfil" onclick="marcarFoto('perfil')"><span style="font-size:26px">📷</span><span class="rev-foto-lbl">Perfil</span></div></div>
-          <div><div class="rev-foto-box" id="foto-espalda" onclick="marcarFoto('espalda')"><span style="font-size:26px">📷</span><span class="rev-foto-lbl">Espalda</span></div></div>
-        </div>
-        <!-- Comparativa -->
-        <div class="card">
-          <div class="card-h"><h2>Comparativa S0 → S4</h2></div>
-          <div class="card-b">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-              <div><div style="font-size:11px;font-weight:700;color:var(--t3);text-align:center;margin-bottom:6px">INICIO</div><div style="background:var(--bg);border-radius:8px;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--t3)">📷 S0</div></div>
-              <div><div style="font-size:11px;font-weight:700;color:var(--vd);text-align:center;margin-bottom:6px">SEMANA 4</div><div style="background:var(--vd2);border-radius:8px;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;font-size:12px;color:#07854D">📸 Subir</div></div>
+      <!-- SWIPE REVISIÓN -->
+      <div class="swipe-wrap" id="rev-swipe-wrap">
+        <div class="swipe-inner" id="rev-swipe" style="touch-action:pan-y">
+          <!-- Fotos -->
+          <div class="swipe-page">
+            <div class="alert a-az" style="font-size:13px">Misma ropa, mismo sitio, misma luz. Ropa interior o bañador.</div>
+            <div class="rev-foto-g">
+              <div><div class="rfb" id="rf-frente" onclick="marcarFoto('frente')"><span style="font-size:26px">📷</span><span class="rfb-lbl">Frente</span></div></div>
+              <div><div class="rfb" id="rf-perfil_der" onclick="marcarFoto('perfil_der')"><span style="font-size:26px">📷</span><span class="rfb-lbl">Perfil der.</span></div></div>
+              <div><div class="rfb" id="rf-perfil_izq" onclick="marcarFoto('perfil_izq')"><span style="font-size:26px">📷</span><span class="rfb-lbl">Perfil izq.</span></div></div>
+              <div><div class="rfb" id="rf-espalda" onclick="marcarFoto('espalda')"><span style="font-size:26px">📷</span><span class="rfb-lbl">Espalda</span></div></div>
+            </div>
+            <button class="btn btn-p btn-f" onclick="revSwipeNext()">Siguiente → Medidas</button>
+          </div>
+          <!-- Medidas -->
+          <div class="swipe-page">
+            <div class="alert a-am" style="font-size:12.5px">⚠️ Brazos y gemelos: contraídos, zona más amplia</div>
+            <div class="card">
+              <div class="cb" style="display:flex;flex-direction:column;gap:10px" id="med-form"></div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-o" style="flex:1" onclick="revSwipePrev()">← Fotos</button>
+              <button class="btn btn-p" style="flex:2" onclick="guardarMedidas()">Guardar → Preguntas</button>
+            </div>
+          </div>
+          <!-- Preguntas -->
+          <div class="swipe-page">
+            <div class="card">
+              <div class="cb" id="pregs-cont"></div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-o" style="flex:1" onclick="revSwipePrev()">← Medidas</button>
+              <button class="btn btn-p" style="flex:2" onclick="enviarRevision()">✓ Enviar revisión</button>
             </div>
           </div>
         </div>
-        <button class="btn btn-p btn-full" onclick="ST('r-medidas',document.querySelectorAll('.tab')[1]);setRevStep(2)">Siguiente → Medidas</button>
-      </div>
-
-      <div id="r-medidas" class="tp">
-        <div class="alert a-am" style="font-size:13px">⚠️ Brazos y gemelos: mide <b>contraído en máxima contracción</b>, zona más amplia</div>
-        <div class="card">
-          <div class="card-b" style="display:flex;flex-direction:column;gap:11px" id="medidas-form"></div>
-        </div>
-        <button class="btn btn-p btn-full" onclick="guardarMedidas()">Guardar medidas</button>
-        <button class="btn btn-o btn-full" style="margin-top:8px" onclick="ST('r-pregs',document.querySelectorAll('.tab')[2]);setRevStep(3)">Siguiente → Preguntas</button>
-      </div>
-
-      <div id="r-pregs" class="tp">
-        <div class="card">
-          <div class="card-b" id="pregs-container"></div>
-        </div>
-        <button class="btn btn-p btn-full" onclick="enviarRevision()">✓ Enviar revisión completa</button>
       </div>
     </div>
 
-    <!-- ══ PERFIL ══ -->
+    <!-- PERFIL -->
     <div id="p-perfil" style="display:none">
-      <div class="card" style="text-align:center;padding:22px 15px">
-        <div class="perfil-av" id="p-av">JG</div>
-        <div style="font-size:19px;font-weight:800;margin-bottom:3px" id="p-nombre">Joel García</div>
-        <div style="font-size:13px;color:var(--t3);margin-bottom:14px" id="p-tipo">1:1 · Bloque 3 · Semana 4 de 12</div>
+      <div class="card" style="text-align:center;padding:20px 14px">
+        <div class="pav" id="pav">JG</div>
+        <div style="font-size:18px;font-weight:800;margin-bottom:3px" id="pnom">Joel García</div>
+        <div style="font-size:13px;color:var(--t3);margin-bottom:13px">1:1 · Bloque 3 · Semana 4 de 12</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px">
-          <div style="background:var(--bg);border-radius:9px;padding:9px"><div style="font-size:17px;font-weight:800;color:var(--az)">3</div><div style="font-size:10.5px;color:var(--t3)">Bloques</div></div>
-          <div style="background:var(--bg);border-radius:9px;padding:9px"><div style="font-size:17px;font-weight:800;color:var(--vd)">-3kg</div><div style="font-size:10.5px;color:var(--t3)">Perdidos</div></div>
-          <div style="background:var(--bg);border-radius:9px;padding:9px"><div style="font-size:17px;font-weight:800;color:var(--nr)">88%</div><div style="font-size:10.5px;color:var(--t3)">Adherencia</div></div>
+          <div style="background:var(--bg);border-radius:9px;padding:9px"><div style="font-size:16px;font-weight:800;color:var(--az)">3</div><div style="font-size:10px;color:var(--t3)">Bloques</div></div>
+          <div style="background:var(--bg);border-radius:9px;padding:9px"><div style="font-size:16px;font-weight:800;color:var(--vd)">-3kg</div><div style="font-size:10px;color:var(--t3)">Perdidos</div></div>
+          <div style="background:var(--bg);border-radius:9px;padding:9px"><div style="font-size:16px;font-weight:800;color:var(--nr)">88%</div><div style="font-size:10px;color:var(--t3)">Adherencia</div></div>
         </div>
       </div>
-
-      <!-- Entrenador -->
-      <div class="trainer-card">
+      <div class="trainer-c">
         <div class="trainer-av">Á</div>
-        <div class="trainer-info"><b>Álvaro Casal</b><small>Tu entrenador personal</small></div>
+        <div><b style="font-size:14px;display:block">Álvaro Casal</b><small style="font-size:12px;color:var(--t2)">Tu entrenador personal</small></div>
         <button class="wa-btn" onclick="showToast('Abriendo WhatsApp...')">💬 WhatsApp</button>
       </div>
-
-      <!-- Mi plan -->
       <div class="card">
-        <div class="card-h"><h2>Mi plan actual</h2></div>
-        <div class="card-b" style="display:flex;flex-direction:column;gap:8px;font-size:13.5px">
+        <div class="ch"><h2>Mi plan actual</h2></div>
+        <div class="cb" style="display:flex;flex-direction:column;gap:7px;font-size:13.5px">
           <div style="display:flex;justify-content:space-between"><span style="color:var(--t3)">Rutina</span><span style="font-weight:600">4D · Torso-Pierna · Gym</span></div>
           <div style="display:flex;justify-content:space-between"><span style="color:var(--t3)">Kcal / día</span><span style="font-weight:600">2.100 kcal</span></div>
           <div style="display:flex;justify-content:space-between"><span style="color:var(--t3)">Proteína</span><span style="font-weight:600">185g / día</span></div>
@@ -630,23 +662,18 @@ svg.ch{width:100%;height:130px}
           <div style="display:flex;justify-content:space-between"><span style="color:var(--t3)">Próx. revisión</span><span style="font-weight:600;color:var(--nr)">Sáb 26 jul</span></div>
         </div>
       </div>
-
-      <!-- Documentos -->
       <div class="card">
-        <div class="card-h"><h2>Mis documentos</h2></div>
-        <div class="card-b" style="display:flex;flex-direction:column;gap:10px">
-          <div style="display:flex;align-items:center;gap:10px"><span style="font-size:22px">📄</span><div style="flex:1"><div style="font-size:14px;font-weight:600">Plan de nutrición</div><div style="font-size:12px;color:var(--t3)">PDF completo con equivalencias</div></div><button class="btn btn-o btn-sm" onclick="showToast('PDF disponible pronto')">↓</button></div>
-          <div style="display:flex;align-items:center;gap:10px"><span style="font-size:22px">💪</span><div style="flex:1"><div style="font-size:14px;font-weight:600">Hoja de entrenamiento</div><div style="font-size:12px;color:var(--t3)">Excel con todos los ejercicios</div></div><button class="btn btn-o btn-sm" onclick="showToast('Descargando...')">↓</button></div>
+        <div class="ch"><h2>Mis documentos</h2></div>
+        <div class="cb" style="display:flex;flex-direction:column;gap:9px">
+          <div style="display:flex;align-items:center;gap:10px"><span style="font-size:22px">📄</span><div style="flex:1"><div style="font-size:14px;font-weight:700">Plan de nutrición</div><div style="font-size:12px;color:var(--t3)">PDF completo</div></div><button class="btn btn-o btn-s" onclick="showToast('PDF disponible cuando tu entrenador lo suba')">↓</button></div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="font-size:22px">💪</span><div style="flex:1"><div style="font-size:14px;font-weight:700">Hoja de entreno</div><div style="font-size:12px;color:var(--t3)">Excel con ejercicios</div></div><button class="btn btn-o btn-s" onclick="showToast('Descargando...')">↓</button></div>
         </div>
       </div>
-
-      <!-- FAQ -->
       <div class="card">
-        <div class="card-h"><h2>❓ Preguntas frecuentes</h2></div>
-        <div id="faq-container"></div>
+        <div class="ch"><h2>❓ Preguntas frecuentes</h2></div>
+        <div id="faq-c"></div>
       </div>
-
-      <button class="btn btn-o btn-full" style="color:var(--rj);border-color:var(--rj3);margin-top:4px" onclick="doLogout()">Cerrar sesión</button>
+      <button class="btn btn-o btn-f" style="color:var(--rj);border-color:var(--rj3);margin-top:4px" onclick="doLogout()">Cerrar sesión</button>
     </div>
 
   </div><!-- /content -->
@@ -658,11 +685,11 @@ svg.ch{width:100%;height:130px}
       <span>Inicio</span>
     </button>
     <button class="bni" onclick="S('nutricion')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 8C8 10 5.9 16.17 3.82 22"/><path d="M9.1 9.1C3.8 14.4 3 18.8 3 22"/><path d="M7.5 3.5C7.5 3.5 10 6 10 11"/><path d="M14 2s0 3-3 5"/><path d="M22 2c0 0-4 0-6 6"/></svg>
       <span>Nutrición</span>
     </button>
-    <button class="bni center-btn" onclick="S('entreno')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+    <button class="bni ctr" onclick="S('entreno')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="2"/><path d="M2 12h3M19 12h3M12 2v3M12 19v3"/><path d="M5 5l2 2M17 17l2 2M17 7l-2 2M7 17l-2 2"/></svg>
       <span>Entreno</span>
     </button>
     <button class="bni" onclick="S('progreso')">
@@ -672,120 +699,31 @@ svg.ch{width:100%;height:130px}
     <button class="bni" onclick="S('revision')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       <span>Revisión</span>
-      <div class="bni-badge"></div>
+      <div class="bni-dot"></div>
     </button>
   </nav>
 
-  <!-- TIMER DESCANSO -->
-  <div class="timer-overlay" id="timer-overlay">
-    <div>
-      <div class="timer-lbl">⏱ Descanso</div>
-      <div class="timer-n" id="timer-n">90</div>
-    </div>
-    <button class="timer-skip" onclick="stopTimer()">Saltar</button>
+  <!-- TIMER -->
+  <div class="timer" id="timer">
+    <div><div style="font-size:10px;opacity:.7;margin-bottom:1px">⏱ Descansa</div><div class="timer-n" id="timer-n">90</div></div>
+    <button class="timer-skip" onclick="stopTimer()">Saltar →</button>
   </div>
 
 </div><!-- /app -->
-
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = 'https://enformafit-backend-production.up.railway.app';
-let authToken = localStorage.getItem('ef_token_cliente') || null;
-let currentSection = 'inicio';
-let timerInterval = null;
-let timerSecs = 90;
-let menuSelections = {};
+const DIAS_RUTINA = [{"cod": "LUNES", "nom": "Lunes", "tipo": "5 ejercicios", "rest": false, "ejercicios": [{"nom": "Sentadilla Barra Alta", "sets": 3, "reps": "6.0", "rir": "2", "acl": "", "url": "https://youtube.com/shorts/iWIZsDV4C0A?feature=share", "bw": false}, {"nom": "Sentadilla Búlgara con Mancuerna", "sets": 3, "reps": "8 - 12", "rir": "1", "acl": "Una pesa en mano contraria a la pierna que trabaja", "url": "https://youtube.com/shorts/p8c-h4Zmv4Y?feature=share", "bw": false}, {"nom": "Curl de Isquio en Máquina tumbado", "sets": 3, "reps": "10 - 16", "rir": "0", "acl": "", "url": "https://www.instagram.com/p/CuSRrovtbM3/", "bw": false}, {"nom": "Crunch Abdominal", "sets": 3, "reps": "18 - 22", "rir": "1", "acl": "No subir hasta arriba del todo", "url": "https://youtube.com/shorts/wxd9UP32iEU", "bw": false}, {"nom": "Elevaciones laterales en máquina", "sets": 3, "reps": "12 - 16", "rir": "0 + parciales", "acl": "Agarrado a la polea", "url": "https://youtube.com/shorts/WJSRyGWjDWI", "bw": false}]}, {"cod": "MARTES", "nom": "Martes", "tipo": "6 ejercicios", "rest": false, "ejercicios": [{"nom": "Press Banca Inclinado con Mancuernas", "sets": 3, "reps": "8 - 12", "rir": "1", "acl": "Banco a 30-45º", "url": "https://youtube.com/shorts/AuygbCL_LJc", "bw": false}, {"nom": "Dominadas Pronas en Máquina asistida", "sets": 3, "reps": "8 - 12", "rir": "0", "acl": "En máquina asistida", "url": "https://www.youtube.com/shorts/75tpN6zeR8U", "bw": true}, {"nom": "Press Militar en Máquina", "sets": 3, "reps": "12 - 16", "rir": "0", "acl": "", "url": "https://youtube.com/shorts/JUa25wVhu2Q", "bw": false}, {"nom": "Remo Bilateral con Mancuernas", "sets": 3, "reps": "10 - 14", "rir": "1", "acl": "Saca pecho al subir las mancuernas", "url": "https://youtube.com/shorts/z3ryK5zFru4?feature=share", "bw": false}, {"nom": "Curl de Bíceps en Polea", "sets": 3, "reps": "12 - 16", "rir": "0 + parciales", "acl": "", "url": "https://youtube.com/shorts/YfPkhV0NMsk", "bw": false}, {"nom": "Extensión de Tríceps Bilateral en Polea", "sets": 3, "reps": "12 - 16", "rir": "0 + parciales", "acl": "", "url": "https://youtube.com/shorts/M3y9Wd9aoLE", "bw": false}]}, {"cod": "MIERCOLES", "nom": "Miérc.", "tipo": "Descanso", "rest": true, "ejercicios": []}, {"cod": "JUEVES", "nom": "Jueves", "tipo": "5 ejercicios", "rest": false, "ejercicios": [{"nom": "Peso Muerto Convencional", "sets": 3, "reps": "6.0", "rir": "2", "acl": "", "url": "https://youtu.be/Y3qiZ3X56q0", "bw": false}, {"nom": "Prensa de Pierna Unilateral", "sets": 3, "reps": "8 - 12", "rir": "1", "acl": "", "url": "https://youtube.com/shorts/sQRbLBZFNYs?feature=share", "bw": false}, {"nom": "Aducción en Máquina", "sets": 3, "reps": "12 - 16", "rir": "0", "acl": "", "url": "https://youtube.com/shorts/ndcnsfeLv2s", "bw": false}, {"nom": "Elevaciones Laterales con Mancuerna", "sets": 3, "reps": "12 - 16", "rir": "0 + parciales", "acl": "Trata de pausar arriba del todo", "url": "https://youtube.com/shorts/4ewpIhq8T44", "bw": false}, {"nom": "Elevaciones de Piernas en Barra", "sets": 3, "reps": "12 - 16", "rir": "0", "acl": "Controla muy bien las bajadas", "url": "https://youtube.com/shorts/rS4LnoEK5x4?feature=share", "bw": false}]}, {"cod": "VIERNES", "nom": "Viernes", "tipo": "6 ejercicios", "rest": false, "ejercicios": [{"nom": "Press Banca con Barra con agarre ancho", "sets": 4, "reps": "6.0", "rir": "1", "acl": "", "url": "https://youtube.com/shorts/v5lNCHnkvaY?feature=share", "bw": false}, {"nom": "Jalón Neutro en Polea", "sets": 3, "reps": "12 - 16", "rir": "0", "acl": "", "url": "https://youtube.com/shorts/HYIjfBDqXbE", "bw": false}, {"nom": "Press Banca en Máquina", "sets": 3, "reps": "8 - 12", "rir": "0", "acl": "", "url": "https://www.instagram.com/reel/CtHmmoAtrrm/", "bw": false}, {"nom": "Curl de Bíceps en Banco Scott con Barra Z", "sets": 3, "reps": "12 - 16", "rir": "0 + parciales", "acl": "", "url": "https://youtube.com/shorts/9WJRmlkc4_k?feature=share", "bw": false}, {"nom": "Extensión de Tríceps con Mancuerna Overhead sentado", "sets": 3, "reps": "12 - 16", "rir": "0 + parciales", "acl": "", "url": "https://youtube.com/shorts/RGOuJNlbZiQ", "bw": false}, {"nom": "Elevaciones laterales en máquina", "sets": 3, "reps": "12 - 16", "rir": "0 + parciales", "acl": "", "url": "https://youtube.com/shorts/WJSRyGWjDWI", "bw": false}]}, {"cod": "SABADO", "nom": "Sáb.", "tipo": "Descanso", "rest": true, "ejercicios": []}, {"cod": "DOMINGO", "nom": "Dom.", "tipo": "Descanso", "rest": true, "ejercicios": []}];
+const ALIMENTOS_DB = {"proteinas": [{"nom": "Pechuga de pollo", "p": 31, "c": 0, "g": 3, "kcal_100g": 165, "u": "g"}, {"nom": "Pechuga de pavo", "p": 29, "c": 0, "g": 1, "kcal_100g": 135, "u": "g"}, {"nom": "Salmón", "p": 25, "c": 0, "g": 13, "kcal_100g": 208, "u": "g"}, {"nom": "Merluza", "p": 17, "c": 0, "g": 2, "kcal_100g": 86, "u": "g"}, {"nom": "Atún natural (escurrido)", "p": 26, "c": 0, "g": 1, "kcal_100g": 116, "u": "g"}, {"nom": "Ternera (filete)", "p": 26, "c": 0, "g": 8, "kcal_100g": 187, "u": "g"}, {"nom": "Huevos enteros", "p": 13, "c": 1, "g": 11, "kcal_100g": 155, "u": "g"}, {"nom": "Claras de huevo", "p": 11, "c": 1, "g": 0, "kcal_100g": 52, "u": "g"}, {"nom": "Whey protein", "p": 80, "c": 5, "g": 5, "kcal_100g": 385, "u": "g"}, {"nom": "Greek yogurt 0%", "p": 10, "c": 4, "g": 0, "kcal_100g": 59, "u": "g"}, {"nom": "Queso fresco 0%", "p": 12, "c": 2, "g": 0, "kcal_100g": 55, "u": "g"}, {"nom": "Requesón", "p": 11, "c": 3, "g": 1, "kcal_100g": 62, "u": "g"}, {"nom": "Jamón serrano", "p": 30, "c": 0, "g": 8, "kcal_100g": 241, "u": "g"}, {"nom": "Pechuga de pavo fiambre", "p": 20, "c": 1, "g": 2, "kcal_100g": 101, "u": "g"}, {"nom": "Bacalao", "p": 20, "c": 0, "g": 1, "kcal_100g": 82, "u": "g"}, {"nom": "Dorada", "p": 20, "c": 0, "g": 3, "kcal_100g": 96, "u": "g"}], "hidratos": [{"nom": "Arroz blanco", "p": 7, "c": 77, "g": 1, "kcal_100g": 350, "u": "g"}, {"nom": "Arroz integral", "p": 8, "c": 73, "g": 3, "kcal_100g": 353, "u": "g"}, {"nom": "Pasta", "p": 12, "c": 71, "g": 2, "kcal_100g": 352, "u": "g"}, {"nom": "Avena", "p": 17, "c": 66, "g": 7, "kcal_100g": 389, "u": "g"}, {"nom": "Pan integral", "p": 9, "c": 41, "g": 4, "kcal_100g": 247, "u": "g"}, {"nom": "Patata cocida", "p": 2, "c": 17, "g": 0, "kcal_100g": 77, "u": "g"}, {"nom": "Boniato", "p": 2, "c": 20, "g": 0, "kcal_100g": 86, "u": "g"}, {"nom": "Legumbres (lentejas)", "p": 9, "c": 20, "g": 0, "kcal_100g": 116, "u": "g"}, {"nom": "Plátano", "p": 1, "c": 23, "g": 0, "kcal_100g": 89, "u": "ud"}, {"nom": "Manzana", "p": 0, "c": 14, "g": 0, "kcal_100g": 52, "u": "ud"}, {"nom": "Naranja", "p": 1, "c": 12, "g": 0, "kcal_100g": 47, "u": "ud"}, {"nom": "Fresas", "p": 1, "c": 8, "g": 0, "kcal_100g": 32, "u": "g"}, {"nom": "Arándanos", "p": 1, "c": 14, "g": 0, "kcal_100g": 57, "u": "g"}], "grasas": [{"nom": "Aceite de oliva virgen extra", "p": 0, "c": 0, "g": 100, "kcal_100g": 884, "u": "g"}, {"nom": "Aguacate", "p": 2, "c": 9, "g": 15, "kcal_100g": 160, "u": "g"}, {"nom": "Almendras", "p": 21, "c": 22, "g": 49, "kcal_100g": 579, "u": "g"}, {"nom": "Nueces", "p": 15, "c": 14, "g": 65, "kcal_100g": 654, "u": "g"}, {"nom": "Semillas de chía", "p": 17, "c": 42, "g": 31, "kcal_100g": 486, "u": "g"}], "verduras": [{"nom": "Brócoli", "p": 3, "c": 7, "g": 0, "kcal_100g": 34, "u": "g"}, {"nom": "Espinacas", "p": 3, "c": 4, "g": 0, "kcal_100g": 23, "u": "g"}, {"nom": "Lechuga", "p": 1, "c": 3, "g": 0, "kcal_100g": 15, "u": "g"}, {"nom": "Tomate", "p": 1, "c": 4, "g": 0, "kcal_100g": 18, "u": "g"}, {"nom": "Pepino", "p": 1, "c": 4, "g": 0, "kcal_100g": 16, "u": "g"}, {"nom": "Pimiento", "p": 1, "c": 6, "g": 0, "kcal_100g": 31, "u": "g"}, {"nom": "Calabacín", "p": 2, "c": 3, "g": 0, "kcal_100g": 17, "u": "g"}, {"nom": "Champiñones", "p": 3, "c": 3, "g": 0, "kcal_100g": 22, "u": "g"}, {"nom": "Judías verdes", "p": 2, "c": 7, "g": 0, "kcal_100g": 31, "u": "g"}, {"nom": "Cebolla", "p": 1, "c": 9, "g": 0, "kcal_100g": 40, "u": "g"}]};
 
 const CLIENTE = {
-  nombre:'Joel García',iniciales:'JG',tipo:'1a1',
-  bloque:3,semana:4,semsTotal:12,revSems:[3,7,11],
-  objetivo:'definicion',entrenador:'Álvaro Casal',
+  nombre:'Joel García', iniciales:'JG', tipo:'1a1',
+  bloque:3, semana:4, semsTotal:12, revSems:[3,7,11],
+  objetivo:'definicion',
+  plan:{kcal:2100, p:185, c:190, g:78, pasos:10000, pesoObj:76, pesoIni:82, ritmo:0.75}
 };
 
-const DIAS_RUTINA = [
-  {cod:'LUNES',nom:'Lunes',tipo:'Torso A',ejercicios:[
-    {nom:'Sentadilla Multipower',sets:4,reps:'10',rir:2,ant:'67.5×10',acl:'Barra en trapecios, espalda recta',url:'https://youtube.com/shorts/iWIZsDV4C0A'},
-    {nom:'Press Banca Barra',sets:4,reps:'10',rir:2,ant:'72.5×10',acl:'Codos a 45°, no abrir',url:'https://youtube.com/shorts/example1'},
-    {nom:'Peso Muerto',sets:3,reps:'8',rir:2,ant:'87.5×8',acl:'Espalda neutra, empujar el suelo',url:'https://youtube.com/shorts/example2'},
-    {nom:'Dominadas',sets:4,reps:'6-10',rir:2,ant:'BW×8',acl:'Agarre prono, bajar del todo',url:''},
-    {nom:'Remo con Barra',sets:3,reps:'10',rir:2,ant:'62.5×10',acl:'Codo pegado al cuerpo',url:''},
-    {nom:'Press Militar Mancuernas',sets:3,reps:'12',rir:2,ant:'22×12',acl:'No arquear la espalda',url:''},
-  ]},
-  {cod:'MARTES',nom:'Martes',tipo:'Descanso',ejercicios:[]},
-  {cod:'MIERCOLES',nom:'Miérc.',tipo:'Pierna A',ejercicios:[
-    {nom:'Prensa de Piernas',sets:4,reps:'12',rir:2,ant:'160×12',acl:'Pies a la anchura de hombros',url:''},
-    {nom:'Extensiones de Cuádriceps',sets:3,reps:'15',rir:2,ant:'50×15',acl:'Extensión completa',url:''},
-    {nom:'Curl Femoral Tumbado',sets:3,reps:'12',rir:2,ant:'40×12',acl:'No levantar las caderas',url:''},
-    {nom:'Hip Thrust con Barra',sets:4,reps:'12',rir:2,ant:'80×12',acl:'Apoyo escapulas en banco',url:''},
-    {nom:'Gemelos en Máquina',sets:4,reps:'15',rir:2,ant:'60×15',acl:'Rango completo de movimiento',url:''},
-  ]},
-  {cod:'JUEVES',nom:'Jueves',tipo:'Descanso',ejercicios:[]},
-  {cod:'VIERNES',nom:'Viernes',tipo:'Torso B',ejercicios:[
-    {nom:'Press Banca Mancuernas',sets:4,reps:'10',rir:2,ant:'30×10',acl:'',url:''},
-    {nom:'Jalón al Pecho',sets:4,reps:'12',rir:2,ant:'65×12',acl:'Pecho arriba, codo abajo',url:''},
-    {nom:'Elevaciones Laterales',sets:3,reps:'15',rir:2,ant:'12×15',acl:'No balancear',url:''},
-    {nom:'Curl Bíceps Barra',sets:3,reps:'12',rir:2,ant:'32.5×12',acl:'',url:''},
-    {nom:'Extensiones Tríceps Polea',sets:3,reps:'15',rir:2,ant:'30×15',acl:'',url:''},
-  ]},
-  {cod:'SABADO',nom:'Sábado',tipo:'Pierna B',ejercicios:[
-    {nom:'Sentadilla Barra Alta',sets:4,reps:'8',rir:2,ant:'75×8',acl:'Profundidad paralela mínimo',url:'https://youtube.com/shorts/iWIZsDV4C0A'},
-    {nom:'Peso Muerto Rumano',sets:4,reps:'10',rir:2,ant:'70×10',acl:'Rodillas ligeramente flexionadas',url:''},
-    {nom:'Zancadas con Mancuernas',sets:3,reps:'12',rir:2,ant:'20×12',acl:'Rodilla trasera casi toca suelo',url:''},
-    {nom:'Abductores en Máquina',sets:3,reps:'15',rir:2,ant:'50×15',acl:'',url:''},
-  ]},
-  {cod:'DOMINGO',nom:'Dom.',tipo:'Descanso',ejercicios:[]},
-];
-
-const HOY_IDX = new Date().getDay(); // 0=dom,1=lun...
-let diaSeleccionado = 0; // índice en DIAS_RUTINA
-
-const MENU_OPCIONES = {
-  desayuno:{nom:'🌅 Desayuno',kcal_obj:480,proteina_obj:40,carbos_obj:60,grasas_obj:12,
-    opciones:[
-      {nom:'Avena + Whey + Plátano',detalle:'Avena 80g · Whey 30g · Plátano 1',p:42,c:65,g:8,kcal:496},
-      {nom:'Huevos revueltos + Tostada',detalle:'Huevos 3 · Pan integral 60g · Aceite 5g',p:28,c:45,g:18,kcal:454},
-      {nom:'Greek yogurt + Granola + Frutas',detalle:'Yogur griego 250g · Granola 40g · Fresas 100g',p:24,c:55,g:6,kcal:374},
-      {nom:'Tortilla francesa + Fruta',detalle:'Huevos 3 · Queso 20g · Naranja 1',p:30,c:25,g:16,kcal:364},
-      {nom:'Batido proteico completo',detalle:'Whey 40g · Leche desnatada 300ml · Plátano · Avena 30g',p:50,c:60,g:6,kcal:490},
-      {nom:'Biscotes + Queso fresco + Jamón',detalle:'Biscotes 40g · Queso fresco 150g · Jamón 60g',p:32,c:28,g:8,kcal:312},
-      {nom:'Porridge con fruta y semillas',detalle:'Avena 80g · Leche 200ml · Plátano · Semillas chía 10g',p:18,c:72,g:10,kcal:450},
-      {nom:'Tostadas con aguacate y huevo',detalle:'Pan integral 80g · Aguacate ½ · Huevos 2 · Tomate',p:22,c:42,g:20,kcal:436},
-    ]},
-  comida:{nom:'☀️ Comida',kcal_obj:620,proteina_obj:50,carbos_obj:70,grasas_obj:14,
-    opciones:[
-      {nom:'Arroz + Pollo + Verduras',detalle:'Arroz 150g · Pechuga 200g · Brócoli · AOVE 10g',p:52,c:68,g:14,kcal:614},
-      {nom:'Pasta + Carne picada + Tomate',detalle:'Pasta 150g · Carne 150g · Tomate natural',p:48,c:72,g:16,kcal:628},
-      {nom:'Legumbres + Arroz + Ensalada',detalle:'Lentejas 150g · Arroz 80g · Ensalada verde',p:28,c:80,g:4,kcal:468},
-      {nom:'Salmón + Patata + Ensalada',detalle:'Salmón 180g · Patata 200g · Ensalada · AOVE 10g',p:42,c:62,g:18,kcal:578},
-      {nom:'Merluza al horno + Arroz',detalle:'Merluza 200g · Arroz 150g · Limón · AOVE 10g',p:46,c:68,g:12,kcal:572},
-      {nom:'Pechuga + Patata cocida + Verdura',detalle:'Pechuga 200g · Patata 200g · Judías verdes',p:50,c:64,g:8,kcal:524},
-      {nom:'Ternera + Arroz + Brócoli',detalle:'Ternera 150g · Arroz 150g · Brócoli · AOVE 10g',p:44,c:66,g:16,kcal:588},
-      {nom:'Atún + Pasta + Tomate',detalle:'Atún natural 150g · Pasta 150g · Tomate',p:42,c:72,g:4,kcal:492},
-    ]},
-  cena:{nom:'🌙 Cena',kcal_obj:540,proteina_obj:45,carbos_obj:40,grasas_obj:16,
-    opciones:[
-      {nom:'Salmón + Verduras asadas',detalle:'Salmón 180g · Calabacín · Pimiento · AOVE 10g',p:42,c:18,g:22,kcal:438},
-      {nom:'Pollo + Ensalada completa',detalle:'Pechuga 200g · Lechuga · Tomate · Pepino · AOVE 15g',p:50,c:12,g:18,kcal:414},
-      {nom:'Tortilla + Ensalada',detalle:'Huevos 3 · Jamón 40g · Tomate · Lechuga',p:38,c:8,g:18,kcal:350},
-      {nom:'Bacalao + Puré de patata',detalle:'Bacalao 200g · Patata 150g · AOVE 10g',p:40,c:38,g:12,kcal:424},
-      {nom:'Pavo + Verduras salteadas',detalle:'Pechuga pavo 200g · Champiñones · Espinacas · AOVE 10g',p:50,c:10,g:14,kcal:374},
-      {nom:'Merluza + Arroz integral',detalle:'Merluza 200g · Arroz integral 100g · Limón',p:44,c:48,g:8,kcal:444},
-      {nom:'Revuelto de setas y jamón',detalle:'Huevos 3 · Setas 150g · Jamón serrano 40g · AOVE 10g',p:36,c:8,g:22,kcal:378},
-      {nom:'Dorada al horno + Patata',detalle:'Dorada 220g · Patata 120g · Tomate · AOVE 10g',p:42,c:30,g:14,kcal:418},
-    ]},
-  snack:{nom:'🍎 Snack',kcal_obj:200,proteina_obj:20,carbos_obj:20,grasas_obj:6,
-    opciones:[
-      {nom:'Greek yogurt + Frutos rojos',detalle:'Yogur griego 200g · Fresas 100g',p:20,c:18,g:4,kcal:188},
-      {nom:'Queso fresco + Fruta',detalle:'Queso fresco 200g · Melocotón 1',p:18,c:22,g:2,kcal:178},
-      {nom:'Whey shake',detalle:'Whey 30g · Agua 250ml',p:24,c:3,g:2,kcal:126},
-      {nom:'Almendras + Manzana',detalle:'Almendras 20g · Manzana 1',p:5,c:28,g:12,kcal:238},
-      {nom:'Requesón + Miel',detalle:'Requesón 200g · Miel 10g',p:22,c:16,g:2,kcal:170},
-      {nom:'Fiambre de pavo + Fruta',detalle:'Pavo 80g · Naranja 1',p:18,c:20,g:2,kcal:170},
-    ]},
-};
-
-const MEDIDAS_CAMPOS = [
+const MEDIDAS = [
   {id:'hombros',nom:'Hombros (zona más amplia)',u:'cm'},
   {id:'pecho',nom:'Pecho (altura pezones)',u:'cm'},
   {id:'brazo_der',nom:'Brazo derecho (zona más amplia, contraído)',u:'cm'},
@@ -795,7 +733,7 @@ const MEDIDAS_CAMPOS = [
   {id:'muslo_izq',nom:'Muslo izquierdo (zona más amplia)',u:'cm'},
   {id:'gemelo_der',nom:'Gemelo derecho (zona más amplia, contraído)',u:'cm'},
   {id:'gemelo_izq',nom:'Gemelo izquierdo (zona más amplia, contraído)',u:'cm'},
-  {id:'peso',nom:'Peso actual',u:'kg'},
+  {id:'peso_rev',nom:'Peso actual',u:'kg'},
 ];
 
 const PREGS_1A1 = ['¿Qué tal estás?','¿Cuáles han sido tus éxitos en estas semanas?','¿Cómo te has sentido con los éxitos que has conseguido?','¿Qué tal van tus entrenamientos?','¿Qué tal va tu nutrición?','¿Qué te gustaría mejorar en el siguiente bloque?','¿Hay algo que quieras comentarme?'];
@@ -803,243 +741,275 @@ const PREGS_PROG = ['¿Cómo ha ido el entrenamiento estas semanas?','¿Cómo ha
 
 const LOGROS_DEF = [
   {ico:'🏆',nom:'Primer entreno',desc:'Completaste tu primera sesión',done:true},
-  {ico:'📅',nom:'Primer mes',desc:'4 semanas dentro del programa',done:true},
-  {ico:'⚖️',nom:'-1 kg conseguido',desc:'Has bajado tu primer kilo',done:true},
-  {ico:'🔥',nom:'Racha de 14 días',desc:'14 días seguidos cumpliendo el plan',done:false,prog:'7/14'},
-  {ico:'💪',nom:'-5 kg conseguidos',desc:'5 kg desde tu peso inicial',done:false,prog:'3/5kg'},
-  {ico:'📸',nom:'Primera revisión completada',desc:'Subiste fotos y medidas en la semana 4',done:false,prog:'Pendiente'},
+  {ico:'📅',nom:'Primer mes activo',desc:'Llevas 4 semanas dentro del programa',done:true},
+  {ico:'⚖️',nom:'Primer kilo bajado',desc:'Has perdido más de 1 kg desde el inicio',done:true},
+  {ico:'📸',nom:'Primera revisión',desc:'Subiste fotos y medidas por primera vez',done:false,prog:'Pendiente'},
+  {ico:'🔥',nom:'Semana genial',desc:'6/7 en nutrición + todos los entrenos + 6/7 pasos',done:false,prog:'En progreso'},
+  {ico:'📆',nom:'Mes consistente',desc:'4 semanas seguidas por encima del 80% de adherencia',done:false,prog:'2/4 sem'},
+  {ico:'💪',nom:'-5 kg conseguidos',desc:'5 kg perdidos desde el peso inicial',done:false,prog:'3/5 kg'},
 ];
 
 const FAQ = [
-  {q:'¿Cuándo recibo mi plan?',a:'Tu entrenador lo prepara en 24-48h tras completar el formulario de onboarding. Te avisará por WhatsApp cuando esté disponible en la app.'},
-  {q:'¿Puedo cambiar ejercicios?',a:'Sí. Cuéntaselo a tu entrenador en el check-in o por WhatsApp y lo ajustamos. Para lesiones o limitaciones, avisa cuanto antes.'},
-  {q:'¿Qué hago si no puedo entrenar un día?',a:'No pasa nada. Apúntalo en el check-in. Lo que importa es la tendencia semanal, no la perfección diaria. Un día perdido no arruina nada.'},
-  {q:'¿Cuándo y cómo subo la revisión?',a:'El sábado de la semana indicada. Recibirás recordatorio el miércoles y el sábado. Entra a la sección Revisión y sigue los tres pasos: fotos, medidas y preguntas.'},
-  {q:'¿Cómo mido los brazos y gemelos?',a:'Contraídos en máxima contracción, en la zona más ancha. Siempre el mismo brazo, misma postura. Si tienes dudas, manda una foto a tu entrenador.'},
-  {q:'¿Puedo saltarme la dieta un día?',a:'Sí, con moderación. Un día puntual no arruina el progreso. Lo que importa es la constancia del 80-90% del tiempo. No te castigues por ello.'},
-  {q:'¿Cuándo veré resultados?',a:'Los primeros cambios en energía y bienestar aparecen en 1-2 semanas. Cambios visibles y en báscula a partir de la semana 3-4 con buena adherencia.'},
-  {q:'¿Qué hago si el peso no baja?',a:'Cuéntaselo a tu entrenador en el check-in. Puede haber muchos motivos (agua, ciclo hormonal, músculo ganado...). Él ajustará el plan si es necesario.'},
+  {q:'¿Cuándo recibo mi plan?',a:'Tu entrenador lo prepara en 24-48h tras completar el onboarding. Te avisará por WhatsApp.'},
+  {q:'¿Puedo cambiar ejercicios?',a:'Sí. Cuéntaselo a Álvaro en el check-in o por WhatsApp y lo ajustan.'},
+  {q:'¿Qué hago si no puedo entrenar un día?',a:'No te preocupes, desplaza un día el entrenamiento y el resto de los de la semana. Completa la semana aunque sea al final de la misma.'},
+  {q:'¿Cuándo y cómo subo la revisión?',a:'El sábado de la semana indicada. Recibirás recordatorio el miércoles y el sábado. Entra a Revisión y sigue los tres pasos: fotos, medidas y preguntas.'},
+  {q:'¿Cómo mido los brazos y gemelos?',a:'Contraídos en máxima contracción, en la zona más ancha. Siempre la misma postura.'},
+  {q:'¿Puedo salirme del plan un día?',a:'Sí. Un día puntual no arruina nada. Lo que importa es la constancia del 80-90% del tiempo.'},
+  {q:'¿Cuándo veré resultados?',a:'Energía y bienestar en 1-2 semanas. Cambios visibles y en báscula a partir de la semana 3-4.'},
+  {q:'¿Qué hago si el peso no baja?',a:'Cuéntaselo a Álvaro en el check-in. Él ajustará el plan si es necesario.'},
 ];
+
+// ── ESTADO ────────────────────────────────────────────────────────────────────
+let authToken = localStorage.getItem('ef_cli_token') || null;
+let curSect = 'inicio';
+let diaIdx = 0;
+let timerInt = null;
+let timerSecs = 90;
+let alimsSeleccionados = {};
+let revSwipeIdx = 0;
+let fotosRev = {};
+let starsVal = 0;
 
 // ── LOGIN ──────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   if (authToken) initApp();
-  document.getElementById('l-pass')?.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+  document.getElementById('lp')?.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
   document.getElementById('fecha-hoy').textContent = new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
 });
 
 function doLogin() {
-  // Demo — acepta cualquier credencial
+  const e = document.getElementById('le').value.trim();
+  const p = document.getElementById('lp').value;
+  if (!e || !p) { showErr('Introduce email y contraseña'); return; }
   authToken = 'demo_token';
-  localStorage.setItem('ef_token_cliente', authToken);
+  localStorage.setItem('ef_cli_token', authToken);
   initApp();
 }
 
+function showErr(msg) {
+  const el = document.getElementById('lerr');
+  el.textContent = msg; el.style.display = 'block';
+}
+
 function initApp() {
-  document.getElementById('login-wrap').style.display = 'none';
+  document.getElementById('lw').style.display = 'none';
   document.getElementById('app').classList.add('on');
-  document.getElementById('av-btn').textContent = CLIENTE.iniciales;
+  setSaludo();
   renderSemProg();
+  renderHoyToca();
   renderDaySelector();
   renderEntreno(0);
-  renderMenuConstructor();
+  renderAlimSelector();
   renderMenuHoy();
   renderMedidas();
   renderPreguntas();
   renderLogros();
   renderFAQ();
-  setSaludo();
-  // Mostrar tab lista compra solo para 1:1
+  initRevSwipe();
+  initEntSwipe();
   if (CLIENTE.tipo === '1a1') document.getElementById('tab-compra').style.display = '';
+  renderCIDays();
 }
 
 function doLogout() {
-  localStorage.removeItem('ef_token_cliente');
+  localStorage.removeItem('ef_cli_token');
   authToken = null;
   location.reload();
 }
 
-// ── NAVEGACIÓN ─────────────────────────────────────────────────────────────────
+// ── NAV ───────────────────────────────────────────────────────────────────────
 const SECTS = {inicio:'Inicio',entreno:'Entreno',nutricion:'Nutrición',progreso:'Progreso',revision:'Revisión',perfil:'Perfil'};
 
-function S(sect) {
-  currentSection = sect;
+function S(s) {
+  curSect = s;
   document.querySelectorAll('[id^="p-"]').forEach(el => el.style.display = 'none');
-  document.getElementById('p-' + sect).style.display = 'block';
-  document.getElementById('sect-title').textContent = SECTS[sect] || sect;
-  document.querySelectorAll('.bni').forEach(el => el.classList.remove('on'));
-  document.querySelectorAll('.bni').forEach(el => {
-    if ((el.getAttribute('onclick')||'').includes("S('" + sect + "')")) el.classList.add('on');
+  document.getElementById('p-' + s).style.display = 'block';
+  document.getElementById('st').textContent = SECTS[s] || s;
+  document.querySelectorAll('.bni').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.bni').forEach(b => {
+    if ((b.getAttribute('onclick')||''). includes("S('" + s + "')")) b.classList.add('on');
   });
-  document.querySelectorAll('.desk-ni').forEach(el => el.classList.remove('on'));
-  document.querySelectorAll('.desk-ni').forEach(el => {
-    if ((el.getAttribute('onclick')||'').includes("S('" + sect + "')")) el.classList.add('on');
+  document.querySelectorAll('.dni').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.dni').forEach(b => {
+    if ((b.getAttribute('onclick')||''). includes("S('" + s + "')")) b.classList.add('on');
   });
   document.getElementById('content').scrollTop = 0;
 }
 
-function ST(id, el) {
+function stab(id, el) {
   const tabs = el.closest('.tabs');
   tabs.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
   el.classList.add('on');
-  const container = tabs.parentElement;
-  container.querySelectorAll(':scope > .tp').forEach(t => t.classList.remove('on'));
+  const par = tabs.parentElement;
+  par.querySelectorAll(':scope > .tp').forEach(t => t.classList.remove('on'));
   document.getElementById(id)?.classList.add('on');
 }
 
-// ── SEMANAS BLOQUE ──────────────────────────────────────────────────────────────
+// ── SEMANAS ───────────────────────────────────────────────────────────────────
 function renderSemProg() {
-  const c = document.getElementById('sem-prog-inicio');
+  const c = document.getElementById('semp');
   if (!c) return;
   c.innerHTML = '';
-  for (let s = 1; s <= CLIENTE.semsTotal; s++) {
+  for (let i = 1; i <= CLIENTE.semsTotal; i++) {
     const b = document.createElement('div');
-    b.className = 'sem-box';
-    const isRev = CLIENTE.revSems.includes(s);
-    b.textContent = isRev && s !== CLIENTE.semana ? 'R' : s;
-    if (s < CLIENTE.semana) b.classList.add('sb-done');
-    else if (s === CLIENTE.semana) b.classList.add('sb-cur');
-    else if (isRev) b.classList.add('sb-rev');
-    else b.classList.add('sb-todo');
+    b.className = 'sb';
+    const isRev = CLIENTE.revSems.includes(i);
+    b.textContent = isRev && i !== CLIENTE.semana ? 'R' : i;
+    b.classList.add(i < CLIENTE.semana ? 'sb-d' : i === CLIENTE.semana ? 'sb-c' : isRev ? 'sb-r' : 'sb-t');
     c.appendChild(b);
   }
 }
 
-// ── SALUDO ──────────────────────────────────────────────────────────────────────
 function setSaludo() {
   const h = new Date().getHours();
   const sal = h < 12 ? '¡Buenos días' : h < 20 ? '¡Buenas tardes' : '¡Buenas noches';
   document.getElementById('saludo').textContent = sal + ', ' + CLIENTE.nombre.split(' ')[0] + '! 💪';
 }
 
-// ── ENTRENO ─────────────────────────────────────────────────────────────────────
+// ── HOY TOCA ──────────────────────────────────────────────────────────────────
+function renderHoyToca() {
+  const diaCods = ['DOMINGO','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO'];
+  const hoy = diaCods[new Date().getDay()];
+  const dia = DIAS_RUTINA.find(d => d.cod === hoy) || DIAS_RUTINA[0];
+  document.getElementById('hoy-nom').textContent = dia.nom.toUpperCase() + ' — ' + (dia.rest ? 'Descanso' : dia.tipo);
+  document.getElementById('hoy-sub').textContent = dia.rest ? 'Día de recuperación' : dia.ejercicios.length + ' ejercicios';
+}
+
+// ── ENTRENO ───────────────────────────────────────────────────────────────────
 function renderDaySelector() {
-  const c = document.getElementById('day-selector');
+  const c = document.getElementById('day-sel');
   if (!c) return;
-  const hoyDia = ['DOMINGO','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO'][new Date().getDay()];
-  c.innerHTML = DIAS_RUTINA.map((d, i) => {
-    const isHoy = d.cod === hoyDia;
-    const isRest = d.ejercicios.length === 0;
-    return `<button class="day-btn ${i===0?'on':''} ${isHoy?'today':''} ${isRest?'rest':''}" 
-      onclick="selDia(${i},this)" data-idx="${i}">
-      ${d.nom}<br><span style="font-size:10px;font-weight:500;opacity:.7">${d.tipo}</span>
-    </button>`;
-  }).join('');
+  const diaCods = ['DOMINGO','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO'];
+  const hoy = diaCods[new Date().getDay()];
+  c.innerHTML = DIAS_RUTINA.map((d,i) => `
+    <button class="day-b ${i===0?'on':''} ${d.cod===hoy?'today':''}"
+      onclick="selDia(${i},this)">
+      ${d.nom}<br><span style="font-size:10px;opacity:.7">${d.tipo}</span>
+    </button>
+  `).join('');
 }
 
 function selDia(idx, el) {
-  document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.day-b').forEach(b => b.classList.remove('on'));
   el.classList.add('on');
-  diaSeleccionado = idx;
+  diaIdx = idx;
   renderEntreno(idx);
 }
 
 function renderEntreno(idx) {
   const dia = DIAS_RUTINA[idx];
-  const c = document.getElementById('entreno-content');
+  const c = document.getElementById('ent-content');
   if (!c) return;
-  if (dia.ejercicios.length === 0) {
-    c.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--t3)">
-      <div style="font-size:48px;margin-bottom:12px">😴</div>
-      <div style="font-size:16px;font-weight:700;color:var(--t2);margin-bottom:6px">Día de descanso</div>
-      <div style="font-size:13.5px">Aprovecha para recuperar. El descanso es parte del entrenamiento.</div>
+  if (!dia || dia.rest || dia.ejercicios.length === 0) {
+    c.innerHTML = `<div style="text-align:center;padding:36px 16px;color:var(--t3)">
+      <div style="font-size:44px;margin-bottom:10px">😴</div>
+      <div style="font-size:15px;font-weight:700;color:var(--t2);margin-bottom:5px">Día de descanso</div>
+      <div style="font-size:13px">Recupera bien. El descanso es parte del entrenamiento.</div>
     </div>`;
     return;
   }
   c.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div><div style="font-weight:700;font-size:15px">${dia.tipo}</div><div style="font-size:12.5px;color:var(--t3)">${dia.ejercicios.length} ejercicios</div></div>
-      <button class="btn btn-p btn-sm" onclick="guardarEntreno()">✅ Guardar</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
+      <div><div style="font-weight:700;font-size:15px">${dia.tipo}</div><div style="font-size:12px;color:var(--t3)">${dia.ejercicios.length} ejercicios</div></div>
+      <button class="btn btn-p btn-s" onclick="guardarEntreno()">✅ Guardar</button>
     </div>
     ${dia.ejercicios.map((ej,ei) => `
     <div class="ej-card">
-      <div class="ej-header">
+      <div class="ej-head">
         <div class="ej-num">${ei+1}</div>
         <div style="flex:1">
           <div class="ej-nom">${ej.nom}</div>
           <div class="ej-meta">${ej.sets} series × ${ej.reps} reps · RIR ${ej.rir}</div>
-          <div class="ej-ant">Sem pasada: ${ej.ant}</div>
+          <div class="ej-ant">Sem. pasada: Sin datos previos</div>
           ${ej.acl ? `<div class="ej-acl">💡 ${ej.acl}</div>` : ''}
-          ${ej.url ? `<a href="${ej.url}" target="_blank" class="ej-yt">▶ Ver vídeo</a>` : ''}
+          ${ej.url ? `<a href="${ej.url}" target="_blank" class="ej-yt">▶ Ver en YouTube</a>` : ''}
         </div>
       </div>
-      <div class="series-wrap">
-        <div class="series-header">
-          <span style="text-align:center">#</span>
-          <span style="text-align:center">Sem anterior</span>
-          <span style="text-align:center">Kg</span>
-          <span style="text-align:center">Reps</span>
-          <span></span>
-        </div>
+      <div class="ser-wrap">
+        <div class="ser-hd"><span></span><span style="text-align:center">Ant.</span><span style="text-align:center">Kg</span><span style="text-align:center">Reps</span><span></span></div>
         ${Array.from({length:ej.sets},(_,si) => `
-          <div class="serie-row">
-            <span class="serie-n">${si+1}</span>
-            <span class="serie-ant-val">${ej.ant}</span>
-            <input type="number" class="s-input" placeholder="kg" inputmode="decimal" step="0.5">
-            <input type="number" class="s-input" placeholder="rep" inputmode="numeric">
-            <div class="serie-check" onclick="marcarSerie(this,${ei},${si})">✓</div>
+          <div class="ser-row">
+            <span class="ser-n">${si+1}</span>
+            <span class="ser-ant">—</span>
+            ${ej.bw ? '<span style="font-size:11px;color:var(--t3);text-align:center">BW</span>' : `<input type="number" class="si" placeholder="kg" inputmode="decimal" step="0.5">`}
+            <input type="number" class="si" placeholder="rep" inputmode="numeric">
+            <div class="ck" onclick="marcarSerie(this)">✓</div>
           </div>
         `).join('')}
       </div>
     </div>
-  `).join('')}`;
+    `).join('')}`
+  ;
 }
 
-function marcarSerie(el, ejIdx, serieIdx) {
-  el.classList.toggle('done');
-  if (el.classList.contains('done')) {
+function marcarSerie(el) {
+  el.classList.toggle('on');
+  if (el.classList.contains('on')) {
+    el.closest('.ser-row').style.opacity = '.6';
     startTimer();
-    el.closest('.serie-row').style.opacity = '.65';
   } else {
-    el.closest('.serie-row').style.opacity = '1';
+    el.closest('.ser-row').style.opacity = '1';
   }
 }
 
-function guardarEntreno() {
-  showToast('Entrenamiento guardado ✓', 'vd');
+function guardarEntreno() { showToast('Entrenamiento guardado ✓', 'vd'); }
+
+// ── SWIPE ENTRENO ─────────────────────────────────────────────────────────────
+function initEntSwipe() {
+  const wrap = document.getElementById('p-entreno');
+  if (!wrap) return;
+  let startX = 0;
+  wrap.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive:true});
+  wrap.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 60) {
+      const btns = document.querySelectorAll('.day-b');
+      if (dx < 0 && diaIdx < DIAS_RUTINA.length-1) {
+        selDia(diaIdx+1, btns[diaIdx+1]);
+        btns[diaIdx].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+      } else if (dx > 0 && diaIdx > 0) {
+        selDia(diaIdx-1, btns[diaIdx-1]);
+        btns[diaIdx].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+      }
+    }
+  }, {passive:true});
 }
 
-// ── TIMER ───────────────────────────────────────────────────────────────────────
+// ── TIMER ──────────────────────────────────────────────────────────────────────
 function startTimer() {
-  clearInterval(timerInterval);
+  clearInterval(timerInt);
   timerSecs = 90;
-  const overlay = document.getElementById('timer-overlay');
-  overlay.classList.add('show');
-  updateTimerDisplay();
-  timerInterval = setInterval(() => {
-    timerSecs--;
-    updateTimerDisplay();
-    if (timerSecs <= 0) stopTimer();
-  }, 1000);
+  document.getElementById('timer').classList.add('show');
+  updTimer();
+  timerInt = setInterval(() => { timerSecs--; updTimer(); if(timerSecs<=0) stopTimer(); }, 1000);
 }
-
-function updateTimerDisplay() {
-  const m = Math.floor(timerSecs/60);
-  const s = timerSecs % 60;
-  document.getElementById('timer-n').textContent = m > 0 ? m+':'+(s<10?'0':'')+s : timerSecs+'s';
+function updTimer() {
+  const m = Math.floor(timerSecs/60), s = timerSecs%60;
+  document.getElementById('timer-n').textContent = m>0 ? m+':'+String(s).padStart(2,'0') : timerSecs+'s';
 }
-
 function stopTimer() {
-  clearInterval(timerInterval);
-  document.getElementById('timer-overlay').classList.remove('show');
+  clearInterval(timerInt);
+  document.getElementById('timer').classList.remove('show');
 }
 
-// ── NUTRICIÓN ───────────────────────────────────────────────────────────────────
-function renderMenuConstructor() {
-  const c = document.getElementById('menu-constructor');
+// ── NUTRICIÓN ─────────────────────────────────────────────────────────────────
+const CAT_LABELS = {proteinas:'🥩 Proteínas',hidratos:'🍚 Hidratos',grasas:'🥑 Grasas saludables',verduras:'🥦 Verduras'};
+const CAT_COLORS = {proteinas:'#07854D',hidratos:'var(--nr)',grasas:'var(--am)',verduras:'#27AE60'};
+
+function renderAlimSelector() {
+  const c = document.getElementById('alim-selector');
   if (!c) return;
-  c.innerHTML = Object.entries(MENU_OPCIONES).map(([key, comida]) => `
-    <div class="comida-section">
-      <div class="comida-name">${comida.nom}</div>
-      <div class="comida-macros">Objetivo: ~${comida.kcal_obj} kcal · P ${comida.proteina_obj}g · C ${comida.carbos_obj}g · G ${comida.grasas_obj}g</div>
-      <div class="opciones-wrap">
-        ${comida.opciones.map((op,oi) => `
-          <button class="opcion-btn ${menuSelections[key]===oi?'sel':''}" onclick="selOpcion('${key}',${oi},this)">
-            <div>
-              <div style="font-weight:600">${op.nom}</div>
-              <div style="font-size:12px;color:var(--t3);margin-top:2px">${op.detalle}</div>
-            </div>
-            <span class="opcion-macros">${op.kcal} kcal<br>P${op.p}·C${op.c}·G${op.g}</span>
+  c.innerHTML = Object.entries(ALIMENTOS_DB).map(([cat, alims]) => `
+    <div style="margin-bottom:15px">
+      <div style="font-size:13px;font-weight:700;color:${CAT_COLORS[cat]||'var(--t2)'};margin-bottom:8px">${CAT_LABELS[cat]||cat}</div>
+      <div class="alim-grid">
+        ${alims.map((a,i) => `
+          <button class="alim-btn" onclick="toggleAlim('${cat}',${i},this)">
+            ${a.nom}
+            <input type="number" class="alim-g-input" placeholder="${a.u==='ud'?'ud':'g'}" min="0" step="5"
+              onclick="event.stopPropagation()" 
+              oninput="actualizarNutri()">
           </button>
         `).join('')}
       </div>
@@ -1047,112 +1017,211 @@ function renderMenuConstructor() {
   `).join('');
 }
 
-function selOpcion(comidaKey, opIdx, el) {
-  menuSelections[comidaKey] = opIdx;
-  el.closest('.opciones-wrap').querySelectorAll('.opcion-btn').forEach(b => b.classList.remove('sel'));
-  el.classList.add('sel');
+function toggleAlim(cat, idx, btn) {
+  btn.classList.toggle('sel');
+  const input = btn.querySelector('.alim-g-input');
+  if (btn.classList.contains('sel')) {
+    if (!alimsSeleccionados[cat]) alimsSeleccionados[cat] = {};
+    alimsSeleccionados[cat][idx] = true;
+    input.style.display = 'inline-block';
+    input.focus();
+  } else {
+    if (alimsSeleccionados[cat]) delete alimsSeleccionados[cat][idx];
+    input.style.display = 'none';
+    input.value = '';
+  }
+  actualizarNutri();
+}
+
+function actualizarNutri() {
+  let tp=0,tc=0,tg=0,tkcal=0;
+  Object.entries(alimsSeleccionados).forEach(([cat, idxs]) => {
+    const alims = ALIMENTOS_DB[cat];
+    Object.keys(idxs).forEach(idx => {
+      const btn = document.querySelectorAll(`[onclick*="toggleAlim('${cat}',${idx}"]`)[0];
+      if (!btn) return;
+      const input = btn.querySelector('.alim-g-input');
+      const cant = parseFloat(input?.value)||0;
+      if (!cant) return;
+      const a = alims[idx];
+      const mult = a.u==='ud' ? cant : cant/100;
+      tp += a.p * mult;
+      tc += a.c * mult;
+      tg += a.g * mult;
+      tkcal += a.kcal_100g * mult;
+    });
+  });
+  const sum = document.getElementById('nutri-summary');
+  if (!sum) return;
+  const objP = CLIENTE.plan.p, objC = CLIENTE.plan.c, objG = CLIENTE.plan.g, objK = CLIENTE.plan.kcal;
+  const pPct = Math.min(100,Math.round(tp/objP*100));
+  const cPct = Math.min(100,Math.round(tc/objC*100));
+  const gPct = Math.min(100,Math.round(tg/objG*100));
+  const kPct = Math.min(100,Math.round(tkcal/objK*100));
+  sum.innerHTML = `
+    <div style="font-size:12.5px;font-weight:700;color:var(--az2);margin-bottom:8px">Resumen de tu selección</div>
+    ${[['Kcal',Math.round(tkcal),objK,kPct],['Proteína',Math.round(tp),objP,pPct,'g'],['Carbos',Math.round(tc),objC,cPct,'g'],['Grasas',Math.round(tg),objG,gPct,'g']].map(([lbl,val,obj,pct,u='kcal'])=>`
+      <div class="ns-row">
+        <span>${lbl}</span>
+        <span style="font-weight:700;color:${pct>105?'var(--rj)':pct>85?'#07854D':'var(--t2)'}">${val}${u} / ${obj}${u} (${pct}%)</span>
+      </div>
+      <div class="ns-bar"><div class="ns-fill ${pct>105?'ns-over':''}" style="width:${pct}%"></div></div>
+    `).join('')}
+  `;
 }
 
 function guardarMenu() {
   renderMenuHoy();
   renderListaCompra();
-  showToast('Menú guardado ✓', 'vd');
-  ST('n-hoy', document.querySelectorAll('#p-nutricion .tab')[0]);
+  showToast('Selección guardada ✓', 'vd');
+  stab('n-hoy', document.querySelectorAll('#p-nutricion .tab')[0]);
 }
 
 function renderMenuHoy() {
-  const c = document.getElementById('menu-hoy-display');
+  const c = document.getElementById('menu-hoy');
   if (!c) return;
-  const items = Object.entries(MENU_OPCIONES).map(([key, comida]) => {
-    const selIdx = menuSelections[key];
-    const op = selIdx !== undefined ? comida.opciones[selIdx] : comida.opciones[0];
-    return `<div style="padding:12px 0;border-bottom:1px solid var(--bor2)">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-        <span style="font-size:14px;font-weight:700">${comida.nom}</span>
-        <span style="font-size:12.5px;color:var(--t3)">${op.kcal} kcal</span>
-      </div>
-      <div style="font-size:13px;font-weight:600;color:var(--az2)">${op.nom}</div>
-      <div style="font-size:12.5px;color:var(--t2);margin-top:2px">${op.detalle}</div>
-    </div>`;
+  const cats = Object.entries(ALIMENTOS_DB);
+  let html = '';
+  let alguno = false;
+  cats.forEach(([cat, alims]) => {
+    const selIdxs = alimsSeleccionados[cat] ? Object.keys(alimsSeleccionados[cat]) : [];
+    if (!selIdxs.length) return;
+    alguno = true;
+    html += `<div style="padding:10px 0;border-bottom:1px solid var(--bor2)">
+      <div style="font-size:12px;font-weight:700;color:${CAT_COLORS[cat]};margin-bottom:5px">${CAT_LABELS[cat]}</div>`;
+    selIdxs.forEach(idx => {
+      const a = alims[idx];
+      html += `<div style="font-size:13.5px;color:var(--t2)">${a.nom}</div>`;
+    });
+    html += '</div>';
   });
-  c.innerHTML = items.join('') + `<div style="padding:12px 0;text-align:center">
-    <span style="font-size:12.5px;color:var(--t3)">Total del día: ~2.100 kcal</span>
-  </div>`;
+  c.innerHTML = alguno ? html + '<div style="padding:8px 0;text-align:center;font-size:12px;color:var(--t3)">Total: ~'+CLIENTE.plan.kcal+' kcal</div>' :
+    '<div style="padding:16px 0;text-align:center;color:var(--t3);font-size:13.5px">Elige tus alimentos en la pestaña "Elegir alimentos"</div>';
 }
 
 function renderListaCompra() {
   const c = document.getElementById('lista-compra');
   if (!c) return;
-  // Agregar ingredientes de todas las comidas seleccionadas × 7 días
-  const compra = {};
-  Object.entries(MENU_OPCIONES).forEach(([key, comida]) => {
-    const selIdx = menuSelections[key] ?? 0;
-    const op = comida.opciones[selIdx];
-    // Parse detalle to extract quantities
-    op.detalle.split('·').forEach(item => {
-      const trim = item.trim();
-      const match = trim.match(/^(.+?)\s+(\d+(?:\.\d+)?)(g|ml|kg|l)?$/);
-      if (match) {
-        const nombre = match[1].trim();
-        const cantidad = parseFloat(match[2]) * 7;
-        const unidad = match[3] || 'ud';
-        if (compra[nombre]) compra[nombre] += cantidad;
-        else compra[nombre] = cantidad;
-      }
+  const agg = {};
+  Object.entries(alimsSeleccionados).forEach(([cat, idxs]) => {
+    const alims = ALIMENTOS_DB[cat];
+    Object.keys(idxs).forEach(idx => {
+      const btn = document.querySelectorAll(`[onclick*="toggleAlim('${cat}',${idx}"]`)[0];
+      const input = btn?.querySelector('.alim-g-input');
+      const cant = parseFloat(input?.value)||100;
+      const a = alims[idx];
+      const nom = a.nom;
+      const total = cant * 7;
+      agg[nom] = (agg[nom]||0) + total;
     });
   });
-  c.innerHTML = '<div style="padding:0 15px">' + Object.entries(compra).map(([nom,cant]) => `
-    <div class="compra-item">
-      <span class="compra-nom">${nom}</span>
-      <span class="compra-cant">${Math.round(cant)} g / semana</span>
+  const items = Object.entries(agg);
+  if (!items.length) {
+    c.innerHTML = '<div style="padding:14px;text-align:center;color:var(--t3);font-size:13px">Primero selecciona alimentos en "Elegir alimentos"</div>';
+    return;
+  }
+  c.innerHTML = '<div style="padding:0 14px">' + items.map(([nom,cant]) =>
+    `<div class="compra-item"><span>${nom}</span><span style="font-weight:700;color:var(--az2)">${Math.round(cant)} g</span></div>`
+  ).join('') + '</div>';
+}
+
+function copiarLista() {
+  const items = document.querySelectorAll('#lista-compra .compra-item');
+  const txt = Array.from(items).map(el => el.children[0].textContent + ': ' + el.children[1].textContent).join('\n');
+  if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => showToast('Lista copiada ✓','vd'));
+  else showToast('Lista copiada ✓','vd');
+}
+
+// ── PESO ──────────────────────────────────────────────────────────────────────
+function guardarPeso() {
+  const v = document.getElementById('peso-in').value;
+  if (!v) { showToast('Introduce tu peso'); return; }
+  showToast(v + ' kg guardado ✓', 'vd');
+  document.getElementById('peso-in').value = '';
+}
+
+// ── FOTOS PROGRESO ────────────────────────────────────────────────────────────
+function marcarFotoProgreso(el, nom) {
+  el.classList.add('has');
+  el.innerHTML = '<span style="font-size:30px">✅</span><span class="foto-slot-lbl" style="color:#07854D">Subida</span>';
+  showToast('Foto ' + nom + ' añadida ✓', 'vd');
+}
+
+// ── LOGROS ────────────────────────────────────────────────────────────────────
+function renderLogros() {
+  const c = document.getElementById('logros');
+  if (!c) return;
+  c.innerHTML = '<div style="padding:0 14px">' + LOGROS_DEF.map(l => `
+    <div class="logro ${l.done?'':' locked'}">
+      <div class="logro-ico">${l.ico}</div>
+      <div style="flex:1"><div class="logro-nom">${l.nom}</div><div class="logro-desc">${l.desc}</div></div>
+      ${l.done ? '<span class="badge bvd" style="flex-shrink:0">✓</span>' : `<span class="badge baz" style="flex-shrink:0;font-size:11px">${l.prog||''}</span>`}
     </div>
   `).join('') + '</div>';
 }
 
-// ── MEDIDAS ──────────────────────────────────────────────────────────────────────
+// ── REVISIÓN SWIPE ────────────────────────────────────────────────────────────
+function initRevSwipe() {
+  renderMedidas();
+  renderPreguntas();
+  const inner = document.getElementById('rev-swipe');
+  if (!inner) return;
+  let startX = 0;
+  inner.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive:true});
+  inner.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 60) {
+      if (dx < 0 && revSwipeIdx < 2) setRevPage(revSwipeIdx+1);
+      else if (dx > 0 && revSwipeIdx > 0) setRevPage(revSwipeIdx-1);
+    }
+  }, {passive:true});
+}
+
+function setRevPage(idx) {
+  revSwipeIdx = idx;
+  document.getElementById('rev-swipe').style.transform = 'translateX(-' + (idx*100) + '%)';
+  ['rs1','rs2','rs3'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    el.classList.remove('done','act');
+    if (i < idx) el.classList.add('done');
+    else if (i === idx) el.classList.add('act');
+  });
+}
+function revSwipeNext() { if (revSwipeIdx < 2) setRevPage(revSwipeIdx+1); }
+function revSwipePrev() { if (revSwipeIdx > 0) setRevPage(revSwipeIdx-1); }
+
+function marcarFoto(tipo) {
+  fotosRev[tipo] = true;
+  const el = document.getElementById('rf-' + tipo);
+  if (!el) return;
+  el.classList.add('done');
+  const lbl = {frente:'Frente',perfil_der:'Perfil der.',perfil_izq:'Perfil izq.',espalda:'Espalda'}[tipo];
+  el.innerHTML = '<span style="font-size:26px">✅</span><span class="rfb-lbl">' + lbl + '</span>';
+  showToast(lbl + ' añadida ✓', 'vd');
+}
+
 function renderMedidas() {
-  const c = document.getElementById('medidas-form');
+  const c = document.getElementById('med-form');
   if (!c) return;
-  c.innerHTML = MEDIDAS_CAMPOS.map(m => `
+  c.innerHTML = MEDIDAS.map(m => `
     <div>
       <label style="font-size:13px;font-weight:600;color:var(--t2);display:block;margin-bottom:5px">${m.nom} (${m.u})</label>
-      <input type="number" class="med-input" placeholder="Ej: 36" step="0.5" inputmode="decimal">
+      <input type="number" class="med-in" placeholder="Ej: 36" step="0.5" inputmode="decimal">
     </div>
   `).join('');
 }
 
 function guardarMedidas() {
   showToast('Medidas guardadas ✓', 'vd');
-  ST('r-pregs', document.querySelectorAll('#p-revision .tab')[2]);
-  setRevStep(3);
-}
-
-// ── REVISIÓN ──────────────────────────────────────────────────────────────────────
-function setRevStep(n) {
-  for (let i = 1; i <= 3; i++) {
-    const el = document.getElementById('rs-' + i);
-    if (!el) continue;
-    el.classList.remove('done','active');
-    if (i < n) el.classList.add('done');
-    else if (i === n) el.classList.add('active');
-  }
-}
-
-let fotosSubidas = {};
-function marcarFoto(tipo) {
-  fotosSubidas[tipo] = true;
-  const box = document.getElementById('foto-' + tipo);
-  box.classList.add('done');
-  box.innerHTML = '<span style="font-size:26px">✅</span><span class="rev-foto-lbl" style="color:#07854D">'+tipo.charAt(0).toUpperCase()+tipo.slice(1)+'</span>';
-  showToast('Foto ' + tipo + ' añadida ✓', 'vd');
+  revSwipeNext();
 }
 
 function renderPreguntas() {
-  const c = document.getElementById('pregs-container');
+  const c = document.getElementById('pregs-cont');
   if (!c) return;
   const pregs = CLIENTE.tipo === '1a1' ? PREGS_1A1 : PREGS_PROG;
   c.innerHTML = pregs.map((q,i) => `
-    <div style="margin-bottom:16px">
+    <div style="margin-bottom:15px">
       <div class="preg-q">${i+1}. ${q}</div>
       <textarea class="preg-a" rows="3" placeholder="Tu respuesta..."></textarea>
     </div>
@@ -1163,54 +1232,70 @@ function enviarRevision() {
   showToast('Revisión enviada ✓ Álvaro la verá pronto', 'vd');
 }
 
-// ── LOGROS ──────────────────────────────────────────────────────────────────────
-function renderLogros() {
-  const c = document.getElementById('logros-container');
-  if (!c) return;
-  c.innerHTML = '<div style="padding:0">' + LOGROS_DEF.map(l => `
-    <div class="logro-item ${l.done?'':'locked'}">
-      <div class="logro-ico">${l.ico}</div>
-      <div style="flex:1">
-        <div class="logro-nom">${l.nom}</div>
-        <div class="logro-desc">${l.desc}</div>
-      </div>
-      ${l.done ? '<span class="badge b-vd" style="flex-shrink:0">✓</span>' : 
-        `<span class="badge b-az" style="flex-shrink:0;font-size:11px">${l.prog||''}</span>`}
-    </div>
-  `).join('') + '</div>';
+// ── CHECK-IN ──────────────────────────────────────────────────────────────────
+function toggleCI() {
+  const body = document.getElementById('ci-body');
+  const btn = document.getElementById('ci-btn');
+  const ico = document.getElementById('ci-ico');
+  const open = body.classList.toggle('open');
+  btn.classList.toggle('open', open);
+  ico.textContent = open ? '▲' : '▼';
 }
 
-// ── PESO ──────────────────────────────────────────────────────────────────────────
-function guardarPeso() {
-  const v = document.getElementById('peso-input').value;
-  if (!v) { showToast('Introduce tu peso'); return; }
-  showToast(v + ' kg guardado ✓', 'vd');
-  document.getElementById('peso-input').value = '';
+function renderCIDays() {
+  ['ci-nut-days','ci-paso-days'].forEach(id => {
+    const c = document.getElementById(id);
+    if (!c) return;
+    c.innerHTML = ['L','M','X','J','V','S','D'].map((d,i) => `
+      <button onclick="this.classList.toggle('on')" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--bor);background:#fff;font-size:12.5px;font-weight:600;color:var(--t2);cursor:pointer;font-family:inherit;transition:all .15s"
+        class="" onmousedown="this.style.background='var(--vd)';this.style.color='#fff'"
+      >${d}</button>
+    `).join('');
+    // Simpler approach
+    c.innerHTML = ['L','M','X','J','V','S','D'].map((d,i) =>
+      `<button onclick="toggleDay(this)" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--bor);background:#fff;font-size:12.5px;font-weight:600;color:var(--t2);cursor:pointer;font-family:inherit;transition:all .15s">${d}</button>`
+    ).join('');
+  });
 }
 
-// ── FAQ ───────────────────────────────────────────────────────────────────────────
+function toggleDay(btn) {
+  const on = btn.style.background === 'var(--vd)';
+  btn.style.background = on ? '#fff' : 'var(--vd)';
+  btn.style.color = on ? 'var(--t2)' : '#fff';
+  btn.style.borderColor = on ? 'var(--bor)' : 'var(--vd)';
+}
+
+function setStars(n) {
+  starsVal = n;
+  document.querySelectorAll('.ci-star').forEach((s,i) => {
+    s.style.opacity = i < n ? '1' : '.3';
+  });
+}
+
+function enviarCI() {
+  showToast('Check-in enviado ✓ Álvaro lo verá el lunes', 'vd');
+  toggleCI();
+}
+
+// ── FAQ ───────────────────────────────────────────────────────────────────────
 function renderFAQ() {
-  const c = document.getElementById('faq-container');
+  const c = document.getElementById('faq-c');
   if (!c) return;
   c.innerHTML = FAQ.map((f,i) => `
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFAQ(${i})">
-        <span>${f.q}</span>
-        <span class="faq-ico" id="faq-ico-${i}">+</span>
-      </div>
-      <div class="faq-a" id="faq-a-${i}">${f.a}</div>
+      <div class="faq-q" onclick="tfaq(${i})"><span>${f.q}</span><span class="faq-ico" id="fi${i}">+</span></div>
+      <div class="faq-a" id="fa${i}">${f.a}</div>
     </div>
   `).join('');
 }
 
-function toggleFAQ(i) {
-  const a = document.getElementById('faq-a-' + i);
-  const ico = document.getElementById('faq-ico-' + i);
-  const open = a.classList.toggle('open');
-  ico.textContent = open ? '−' : '+';
+function tfaq(i) {
+  const a = document.getElementById('fa'+i);
+  const ico = document.getElementById('fi'+i);
+  ico.textContent = a.classList.toggle('open') ? '−' : '+';
 }
 
-// ── TOAST ──────────────────────────────────────────────────────────────────────────
+// ── TOAST ─────────────────────────────────────────────────────────────────────
 function showToast(msg, tipo='') {
   const t = document.getElementById('toast');
   t.textContent = msg;
