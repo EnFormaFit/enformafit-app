@@ -113,12 +113,15 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sa
 /* NUTRICIÓN */
 .sticky-tabs{position:sticky;top:0;z-index:10;background:var(--bg);padding:0 13px;border-bottom:2px solid var(--bor);margin-left:-13px;margin-right:-13px;margin-top:0;box-shadow:0 2px 8px rgba(244,245,248,0.98)}
 @media(min-width:768px){.sticky-tabs{padding:0 20px;margin-left:-20px;margin-right:-20px}}
+.nut-header-sticky{position:sticky;top:0;z-index:10;background:var(--bg);margin-left:-13px;margin-right:-13px;padding:0 13px;border-bottom:1px solid var(--bor2)}
+@media(min-width:768px){.nut-header-sticky{margin-left:-20px;margin-right:-20px;padding:0 20px}}
+.nut-days-inner{padding:6px 0 5px;border-top:2px solid var(--bor)}
 .tabs{display:flex;overflow-x:auto;scrollbar-width:none;background:var(--bg)}
 .tabs::-webkit-scrollbar{display:none}
 .tab{padding:9px 14px;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;white-space:nowrap;flex-shrink:0;transition:all .15s;touch-action:manipulation;font-family:inherit;border:none;background:none}
 .tab.on{color:var(--az);border-bottom:2.5px solid var(--az);font-weight:700;margin-bottom:-2px}
-.nut-day-sticky{position:sticky;top:40px;z-index:9;background:var(--bg);padding:7px 13px 5px;margin-left:-13px;margin-right:-13px;border-bottom:1px solid var(--bor2)}
-@media(min-width:768px){.nut-day-sticky{padding-left:20px;padding-right:20px;margin-left:-20px;margin-right:-20px;top:40px}}
+.nut-day-sticky{position:sticky;top:39px;z-index:9;background:var(--bg);padding:7px 13px 6px;margin-left:-13px;margin-right:-13px;border-bottom:1px solid var(--bor2);box-shadow:0 -2px 0 2px var(--bg)}
+@media(min-width:768px){.nut-day-sticky{padding-left:20px;padding-right:20px;margin-left:-20px;margin-right:-20px;top:39px}}
 .nut-days{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}.nut-days::-webkit-scrollbar{display:none}
 .nd{flex-shrink:0;padding:6px 12px;border-radius:20px;border:1.5px solid var(--bor);background:#fff;font-size:12.5px;font-weight:600;color:var(--t2);cursor:pointer;font-family:inherit;transition:all .15s;touch-action:manipulation}
 .nd.on{background:var(--az);border-color:var(--az);color:#fff}
@@ -294,7 +297,7 @@ const ST={
 
 let SEC='inicio',TIMID=null,TIMSEC=0;
 function save(){try{localStorage.setItem('ef7_st',JSON.stringify(ST));}catch(e){}}
-const APP_VERSION='v7.8';
+const APP_VERSION='v7.9';
 function load(){try{
   const ver=localStorage.getItem('ef7_ver');
   if(ver!==APP_VERSION){localStorage.removeItem('ef7_st');localStorage.setItem('ef7_ver',APP_VERSION);return;}
@@ -610,13 +613,15 @@ function renderNutricion(){
   else body=renderLista();
   // En tab semana, al pulsar un día → ir a menú de ese día
   const dayTabsNav=DSHORT.map((d,i)=>`<button class="nd ${i===di?'on':''}" onclick="ST.nutDay=${i};ST.nutEditing=false;ST.nutTab='menu';document.getElementById('ct').innerHTML=renderNutricion()">${d}</button>`).join('');
-  return`<div class="sticky-tabs"><div class="tabs">
-    <button class="tab ${tab==='menu'?'on':''}" onclick="ST.nutTab='menu';ST.nutEditing=false;document.getElementById('ct').innerHTML=renderNutricion()">Mi menú</button>
-    <button class="tab ${tab==='semana'?'on':''}" onclick="ST.nutTab='semana';document.getElementById('ct').innerHTML=renderNutricion()">Semana</button>
-    <button class="tab ${tab==='lista'?'on':''}" onclick="ST.nutTab='lista';document.getElementById('ct').innerHTML=renderNutricion()">Lista compra</button>
-  </div></div>
-  ${tab!=='lista'?`<div class="nut-day-sticky"><div class="nut-days">${tab==='menu'?dayTabs:dayTabsNav}</div></div><br>`:''
-  }${body}`;
+  return`<div class="nut-header-sticky">
+    <div class="tabs">
+      <button class="tab ${tab==='menu'?'on':''}" onclick="ST.nutTab='menu';ST.nutEditing=false;document.getElementById('ct').innerHTML=renderNutricion()">Mi menú</button>
+      <button class="tab ${tab==='semana'?'on':''}" onclick="ST.nutTab='semana';document.getElementById('ct').innerHTML=renderNutricion()">Semana</button>
+      <button class="tab ${tab==='lista'?'on':''}" onclick="ST.nutTab='lista';document.getElementById('ct').innerHTML=renderNutricion()">Lista compra</button>
+    </div>
+    ${tab!=='lista'?`<div class="nut-days-inner"><div class="nut-days">${tab==='menu'?dayTabs:dayTabsNav}</div></div>`:''}
+  </div>
+  ${body}`;
 }
 
 // ── MENÚ PLEGADO (vista por defecto si está guardado) ──
