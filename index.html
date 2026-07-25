@@ -289,16 +289,17 @@ const ST={
   rev:{done:false,fotos:{},medidas:{},preguntas:{}},
   ci:{done:false,entrenos:0,nutriDias:[],pasosDias:[],estrellas:0,nota:'',ciOpen:false},
   nutTab:'menu',nutDay:0,nutEditing:false,revStep:0,ejStates:{},
+  histEnt:{},
 };
 
 let SEC='inicio',TIMID=null,TIMSEC=0;
 function save(){try{localStorage.setItem('ef7_st',JSON.stringify(ST));}catch(e){}}
-const APP_VERSION='v7.5';
+const APP_VERSION='v7.6';
 function load(){try{
   const ver=localStorage.getItem('ef7_ver');
   if(ver!==APP_VERSION){localStorage.removeItem('ef7_st');localStorage.setItem('ef7_ver',APP_VERSION);return;}
   const d=localStorage.getItem('ef7_st');
-  if(d){const p=JSON.parse(d);['menu','menuGuardado','pesos','rev','ci','p','u','pasos'].forEach(k=>{if(p[k]!==undefined){if(typeof p[k]==='object'&&!Array.isArray(p[k]))Object.assign(ST[k],p[k]);else ST[k]=p[k];}});ST.nutTab=p.nutTab||'menu';ST.nutDay=p.nutDay||0;ST.revStep=p.revStep||0;}
+  if(d){const p=JSON.parse(d);['menu','menuGuardado','pesos','rev','ci','p','u','pasos','histEnt','ejStates'].forEach(k=>{if(p[k]!==undefined){if(typeof p[k]==='object'&&!Array.isArray(p[k]))Object.assign(ST[k],p[k]);else ST[k]=p[k];}});ST.nutTab=p.nutTab||'menu';ST.nutDay=p.nutDay||0;ST.revStep=p.revStep||0;}
 }catch(e){}}
 
 function doLogin(){
@@ -519,7 +520,7 @@ function renderEj(ej,ei,di,grabIdxs){
   const esGrabar=(grabIdxs||[]).includes(ei);
   if(st.collapsed){
     const done=st.series.filter(s=>s.done).length;
-    const kgs=st.series.map(s=>s.kg||'BW').join('/');
+    const kgs=st.series.filter(s=>s.done).map(s=>s.kg||'BW').join('/');
     return`<div class="ejcard">
       <div class="ejhead" onclick="ST.ejStates['${key}'].collapsed=false;renderEntDia()">
         <div class="ejnum">${ei+1}</div>
@@ -529,7 +530,7 @@ function renderEj(ej,ei,di,grabIdxs){
         </div>
       </div>
       <div class="ej-collapsed">
-        <div class="ej-col-info">✅ ${done}/${ej.sets} series · ${kgs}kg</div>
+        <div class="ej-col-info">✅ ${done}/${ej.sets} · ${kgs}kg</div>
         <button class="ej-edit-btn" onclick="ST.ejStates['${key}'].collapsed=false;renderEntDia()">Editar</button>
       </div>
     </div>`;
@@ -539,10 +540,20 @@ function renderEj(ej,ei,di,grabIdxs){
   const bwNote=ej.bw?'<div style="font-size:11.5px;color:var(--t3);margin-bottom:6px">💡 Deja vacío si es con peso corporal</div>':'';
   const grabarBadge=esGrabar?`<div class="grabar-pill">🎥 Graba este ejercicio y envíaselo a tu entrenador</div>`:'';
   let sers=`<div class="serwrap">${bwNote}<div class="serhd"><span>#</span><span>Ant.</span><span>Kg</span><span>Reps</span><span>✓</span></div>`;
+  // Buscar histórico del ejercicio (último registro, cualquier semana)
+  const hist=ST.histEnt&&ST.histEnt[ej.nom]?ST.histEnt[ej.nom]:null;
   st.series.forEach((s,si)=>{
+    // Ant: si la serie actual ya tiene datos usa esos, sino busca en historial
+    let antKg='—', antReps='';
+    if(s.done&&s.kg){antKg=s.kg;antReps=s.repsH;}
+    else if(hist&&hist.series[si]&&hist.series[si].kg){
+      antKg=hist.series[si].kg;
+      antReps=hist.series[si].reps;
+    }
+    const antTxt=antKg==='—'?'—':antKg+'kg'+(antReps?' ×'+antReps:'');
     sers+=`<div class="serrow">
       <div class="sern">${si+1}</div>
-      <div class="serant">${s.done?s.kg||'BW':'—'}</div>
+      <div class="serant" style="font-size:10.5px;line-height:1.3">${antTxt}</div>
       <input class="sinp" type="number" inputmode="decimal" placeholder="kg" value="${s.kg}" onchange="ST.ejStates['${key}'].series[${si}].kg=this.value" style="min-width:0">
       <input class="sinp" type="number" inputmode="numeric" placeholder="${ej.reps}" value="${s.repsH}" onchange="ST.ejStates['${key}'].series[${si}].repsH=this.value" style="min-width:0">
       <button class="ck ${s.done?'on':''}" onclick="toggleSer('${key}',${si})">${s.done?'✓':''}</button>
