@@ -97,8 +97,8 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sa
 .ejyt{display:inline-flex;align-items:center;gap:4px;margin-top:7px;font-size:12px;color:var(--rj);font-weight:700;text-decoration:none;background:var(--rj2);padding:4px 10px;border-radius:20px;border:1px solid var(--rj3)}
 .grabar-pill{display:inline-flex;align-items:center;gap:5px;margin-top:6px;font-size:12px;font-weight:700;background:#FFF0E5;color:#CC5500;border:1px solid #FFD4B0;padding:5px 11px;border-radius:20px}
 .serwrap{padding:11px 14px}
-.serhd{display:grid;grid-template-columns:20px 56px 1fr 56px 34px;gap:6px;margin-bottom:8px;font-size:10.5px;color:var(--t3);font-weight:700;text-transform:uppercase;text-align:center}
-.serrow{display:grid;grid-template-columns:20px 56px 1fr 56px 34px;gap:6px;align-items:center;margin-bottom:8px}
+.serhd{display:grid;grid-template-columns:20px 64px 52px 52px 34px;gap:5px;margin-bottom:8px;font-size:10.5px;color:var(--t3);font-weight:700;text-transform:uppercase;text-align:center}
+.serrow{display:grid;grid-template-columns:20px 64px 52px 52px 34px;gap:5px;align-items:center;margin-bottom:8px}
 .sern{font-size:13px;font-weight:700;color:var(--t3);text-align:center}.serant{font-size:11.5px;color:var(--t3);text-align:center;line-height:1.2}
 .sinp{border:1.5px solid var(--bor);border-radius:8px;padding:9px 4px;font-size:16px;font-weight:700;text-align:center;outline:none;font-family:inherit;width:100%;transition:border .15s;-webkit-appearance:none}
 .sinp:focus{border-color:var(--az2)}
@@ -282,7 +282,7 @@ const ST={
   u:{nom:'Joel González',init:'JG',plan:'1:1',semana:7,semTotal:12,tipo:'uno'},
   p:{macro:{kcal:1800,p:150,c:180,g:60},superavit:false,def:-400},
   menu:{},menuGuardado:{},
-  pesos:[{f:'2024-05-01',v:92.0},{f:'2024-05-08',v:91.2},{f:'2024-05-15',v:90.3},{f:'2024-05-22',v:89.5},{f:'2024-05-29',v:88.9},{f:'2024-06-05',v:88.1},{f:'2024-06-12',v:87.4}],
+  pesos:[],
   objPeso:83,
   pasos:{obj:10000},
   racha:12,adh:0.78,
@@ -689,7 +689,7 @@ function renderMenuEditor(di,isSuperavit){
     (md.proteinas_magras||[]).forEach(it=>{
       const on=ms.prot&&ms.prot.nom===it.nom&&protType==='magra';
       const idx=(_NIT.push(it)-1);
-      out+=`<button class="opt ${on?'on':''}" onclick="nitP(${di},'${meal}','magra',${idx})">${it.nom}</button>`;
+      out+=`<button class="opt ${on?'on':''}" onclick="nitP(${di},'${meal}','magra',${idx})">${it.nom}${it.cantidad?' <small>'+it.cantidad+it.u+'</small>':''}</button>`;
     });
     out+=`</div>`;
 
@@ -698,7 +698,7 @@ function renderMenuEditor(di,isSuperavit){
     (md.proteinas_grasas||[]).forEach(it=>{
       const on=ms.prot&&ms.prot.nom===it.nom&&protType==='grasa';
       const idx=(_NIT.push(it)-1);
-      out+=`<button class="opt ${on?'on':''}" onclick="nitP(${di},'${meal}','grasa',${idx})">${it.nom}</button>`;
+      out+=`<button class="opt ${on?'on':''}" onclick="nitP(${di},'${meal}','grasa',${idx})">${it.nom}${it.cantidad?' <small>'+it.cantidad+it.u+'</small>':''}</button>`;
     });
     out+=`</div>`;
 
@@ -709,7 +709,7 @@ function renderMenuEditor(di,isSuperavit){
     (md.hidratos||[]).forEach(it=>{
       const on=ms.hidrat&&ms.hidrat.nom===it.nom;
       const idx=(_NIT.push(it)-1);
-      out+=`<button class="opt ${on?'on':''}" onclick="nitI(${di},'${meal}','hidrat',${idx})">${it.nom}</button>`;
+      out+=`<button class="opt ${on?'on':''}" onclick="nitI(${di},'${meal}','hidrat',${idx})">${it.nom}${it.cantidad?' <small>'+it.cantidad+it.u+'</small>':''}</button>`;
     });
     out+=`</div>`;
 
@@ -741,7 +741,7 @@ function renderMenuEditor(di,isSuperavit){
       md.grasas.forEach(it=>{
         const on=ms.fat&&ms.fat.nom===it.nom;
         const idx=(_NIT.push(it)-1);
-        out+=`<button class="opt ${on?'on':''}" onclick="nitI(${di},'${meal}','fat',${idx})">${it.nom}</button>`;
+        out+=`<button class="opt ${on?'on':''}" onclick="nitI(${di},'${meal}','fat',${idx})">${it.nom}${it.cantidad?' <small>'+it.cantidad+it.u+'</small>':''}</button>`;
       });
       out+=`</div>`;
     }
@@ -752,7 +752,7 @@ function renderMenuEditor(di,isSuperavit){
       md.grasas_superavit.forEach(it=>{
         const on=ms.fat&&ms.fat.nom===it.nom;
         const idx=(_NIT.push(it)-1);
-        out+=`<button class="opt ${on?'on':''}" onclick="nitI(${di},'${meal}','fat',${idx})">${it.nom}</button>`;
+        out+=`<button class="opt ${on?'on':''}" onclick="nitI(${di},'${meal}','fat',${idx})">${it.nom}${it.cantidad?' <small>'+it.cantidad+it.u+'</small>':''}</button>`;
       });
       out+=`</div>`;
     }
@@ -834,37 +834,66 @@ function guardarMenu(di){
 }
 
 function generateMenuPDF(){
-  // Verificar semana completa
   const DNAMES=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
   const MEALS=['desayuno','comida','cena','snack'];
-  const MEAL_NOM={desayuno:'Desayuno',comida:'Comida',cena:'Cena',snack:'Snack'};
-  const incomplete=DNAMES.filter((_,i)=>!ST.menuGuardado[i]||Object.keys(ST.menuGuardado[i]).length<4);
+  const MEAL_NOM={desayuno:'🌅 Desayuno',comida:'☀️ Comida',cena:'🌙 Cena',snack:'🍎 Snack'};
+  const incomplete=[0,1,2,3,4,5,6].filter(i=>!ST.menuGuardado[i]||Object.keys(ST.menuGuardado[i]).length<4);
   if(incomplete.length>0){toast('Completa y guarda todos los días primero','rj');return;}
-  // Construir contenido texto del PDF
-  let txt='PLAN DE NUTRICIÓN\n';
-  txt+='EnFormaFit · '+ST.u.nom+'\n';
-  txt+='Generado el '+new Date().toLocaleDateString('es')+'\n\n';
+  
+  // Generar HTML bonito para imprimir/guardar como PDF
+  let html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;color:#1A2B5A;padding:0}
+    .header{background:linear-gradient(135deg,#1A2B5A,#2E6DA4);color:#fff;padding:32px 40px;text-align:center}
+    .header h1{font-size:28px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px}
+    .header .sub{font-size:14px;opacity:.8}
+    .week{padding:24px 40px}
+    .day{margin-bottom:28px;border:1px solid #E2E6EF;border-radius:12px;overflow:hidden;break-inside:avoid}
+    .day-header{background:#EEF3FA;padding:12px 16px;font-size:15px;font-weight:800;color:#1A2B5A;border-bottom:1px solid #E2E6EF}
+    .meals{display:grid;grid-template-columns:1fr 1fr;gap:0}
+    .meal{padding:14px 16px;border-bottom:1px solid #F0F2F8}
+    .meal:nth-child(odd){border-right:1px solid #F0F2F8}
+    .meal-title{font-size:13px;font-weight:700;color:#2E6DA4;margin-bottom:8px}
+    .alim{font-size:13px;color:#1A2B5A;padding:4px 0;display:flex;justify-content:space-between;border-bottom:1px solid #F4F5F8}
+    .alim:last-child{border-bottom:none}
+    .alim-nom{font-weight:500}
+    .alim-cant{color:#9199AD;font-size:12px;font-weight:600}
+    .water{background:#D4F7E8;border:1px solid #7BE8B4;border-radius:8px;padding:10px 16px;margin:0 40px 16px;font-size:13px;color:#07854D;font-weight:600;text-align:center}
+    .footer{text-align:center;padding:16px;font-size:11px;color:#9199AD;border-top:1px solid #E2E6EF}
+    @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+  </style></head><body>
+  <div class="header">
+    <h1>Plan de Nutrición</h1>
+    <div class="sub">${ST.u.nom} · EnFormaFit · Generado el ${new Date().toLocaleDateString('es',{day:'2-digit',month:'long',year:'numeric'})}</div>
+  </div>
+  <div class="water">💧 Bebe al menos 2 litros de agua al día</div>
+  <div class="week">`;
+  
   DNAMES.forEach((dia,di)=>{
-    txt+='═══ '+dia.toUpperCase()+' ═══\n';
     const mg=ST.menuGuardado[di]||{};
+    html+='<div class="day"><div class="day-header">'+dia+'</div><div class="meals">';
     MEALS.forEach(meal=>{
       const ms=mg[meal]||{};
-      txt+='  '+MEAL_NOM[meal]+':\n';
+      html+='<div class="meal"><div class="meal-title">'+MEAL_NOM[meal]+'</div>';
       ['prot','hidrat','fat','fruta','verd'].forEach(cat=>{
         if(ms[cat]){
           const it=ms[cat];
-          const cant=it.cantidad&&it.u?(' — '+Math.round(it.cantidad)+it.u):'';
-          txt+='    · '+it.nom+cant+'\n';
+          const cant=it.cantidad&&it.u?(Math.round(it.cantidad)+it.u):'';
+          html+='<div class="alim"><span class="alim-nom">'+it.nom+'</span><span class="alim-cant">'+cant+'</span></div>';
         }
       });
+      html+='</div>';
     });
-    txt+='\n';
+    html+='</div></div>';
   });
-  // Descargar como archivo texto (funciona sin librería externa)
-  const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
+  
+  html+=`</div><div class="footer">EnFormaFit · Tu plan de nutrición personalizado · @alvaro_casal_</div></body></html>`;
+  
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='plan_nutricion_'+ST.u.nom.replace(/\s+/g,'_')+'.txt';
+  a.download='plan_nutricion_'+ST.u.nom.replace(/\s+/g,'_')+'.html';
   a.click();
   URL.revokeObjectURL(a.href);
   toast('Plan descargado ✓','vd');
@@ -955,10 +984,10 @@ function renderLista(){
 
 // ── PROGRESO ──
 function renderProgreso(){
-  const pesos=ST.pesos;
+  const pesos=ST.pesos.length>0?ST.pesos:[{f:new Date().toISOString().split('T')[0],v:0}];
   const ultp=pesos[pesos.length-1].v;
-  const cambio=ultp-pesos[0].v;
-  const left=ultp-ST.objPeso;
+  const cambio=pesos.length>1?ultp-pesos[0].v:0;
+  const left=ultp>0?ultp-ST.objPeso:0;
   const {semana,tipo}=ST.u;
   const revSems=tipo==='programa'?[0,4,8,12]:[0,3,7,11];
   const POSES=['Frente','Perfil D.','Perfil I.','Espalda'];
@@ -1126,7 +1155,19 @@ function renderRevision(){
   const nextRev=revSems.find(s=>s>=semana)||revSems[revSems.length-1];
   const {done,fotos,medidas,preguntas}=ST.rev;
   const step=ST.revStep||0;
-  if(done)return`<div class="enviado-state"><div class="es-txt"><b>✅ Revisión S${nextRev} enviada</b><small>Tu entrenador la revisará pronto</small></div><button class="btn btns btno" onclick="ST.rev.done=false;save();render()">Editar</button></div><div class="alert avd">Revisión enviada. Tu entrenador te contactará en breve.</div>`;
+  // Historial de revisiones
+  const allRevSems=tipo==='programa'?[4,8,12]:[3,7,11];
+  let histH='<div class="card" style="margin-bottom:11px"><div class="ch"><h2>📋 Revisiones del bloque</h2></div><div class="cb" style="padding:0">';
+  allRevSems.forEach(rs=>{
+    const isPast=rs<semana;
+    const isCur=rs===nextRev;
+    const ico=isPast?'✅':isCur?'⏳':'🔒';
+    const col=isCur?'var(--nr)':isPast?'var(--vd)':'var(--t3)';
+    const st=isPast?'Completada':isCur?'Pendiente':'Próxima';
+    histH+='<div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--bor2)"><div><div style="font-size:14px;font-weight:600;color:'+col+'">'+ico+' Semana '+rs+'</div><div style="font-size:12px;color:var(--t3);margin-top:2px">'+st+'</div></div>'+(isPast?'<span style="font-size:12px;color:var(--az2);font-weight:600">Ver →</span>':'')+'</div>';
+  });
+  histH+='</div></div>';
+  if(done)return histH+`<div class="enviado-state"><div class="es-txt"><b>✅ Revisión S${nextRev} enviada</b><small>Tu entrenador la revisará pronto</small></div><button class="btn btns btno" onclick="ST.rev.done=false;save();render()">Editar</button></div><div class="alert avd">Revisión enviada. Tu entrenador te contactará en breve.</div>`;
   const STEPS=['Fotos','Medidas','Preguntas'];
   const stepsBar=STEPS.map((s,i)=>`<div style="flex:1;text-align:center"><div style="height:5px;border-radius:3px;background:${i<step?'var(--vd)':i===step?'var(--nr)':'var(--bor)'};cursor:pointer;margin:0 2px 5px" onclick="ST.revStep=${i};render()"></div><div style="font-size:10.5px;font-weight:600;color:${i===step?'var(--az)':'var(--t3)'}">${s}</div></div>`).join('');
   let content='';
@@ -1152,7 +1193,7 @@ function renderRevision(){
     content=PP.map((q,i)=>`<div style="margin-bottom:12px"><div style="font-size:13.5px;font-weight:600;margin-bottom:5px">${i+1}. ${q}</div><textarea class="preqa" placeholder="Tu respuesta..." onchange="ST.rev.preguntas[${i}]=this.value;save()">${preguntas[i]||''}</textarea></div>`).join('');
     content+=`<div style="display:flex;gap:8px"><button class="btn btno" style="flex:1" onclick="ST.revStep=1;render()">← Atrás</button><button class="btn btnp" style="flex:1" onclick="enviarRev()">Enviar revisión ✓</button></div>`;
   }
-  return`<div class="card" id="revCard" ontouchstart="revTouchStart(event)" ontouchend="revTouchEnd(event)"><div class="ch"><h2>📋 Revisión Semana ${nextRev}</h2><span class="badge bnr">Pendiente</span></div><div class="cb"><div style="display:flex;gap:4px;margin-bottom:14px">${stepsBar}</div>${content}</div></div>`;
+  return histH+`<div class="card" id="revCard" ontouchstart="revTouchStart(event)" ontouchend="revTouchEnd(event)"><div class="ch"><h2>📋 Revisión Semana ${nextRev}</h2><span class="badge bnr">Pendiente</span></div><div class="cb"><div style="display:flex;gap:4px;margin-bottom:14px">${stepsBar}</div>${content}</div></div>`;
 }
 let _rfIdx=0;
 function triggerRF(i){_rfIdx=i;document.getElementById('rfin').click();}
