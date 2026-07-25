@@ -232,7 +232,7 @@ input[type=file]{display:none}</style>
 <div class="app" id="app">
   <div class="topbar">
     <div class="tbrand">
-      <div style="font-size:16px;font-weight:800;letter-spacing:-0.5px;color:var(--az)">En<span style="color:var(--vd)">Forma</span>Fit</div>
+      <img id="topbarLogo" src="" alt="EF" style="height:26px;width:auto;display:none">
       <div class="tsect" id="st" style="margin-left:6px"> · Inicio</div>
     </div>
     <div class="tav" id="avbtn" onclick="S('perfil')">JG</div>
@@ -294,7 +294,7 @@ const ST={
 
 let SEC='inicio',TIMID=null,TIMSEC=0;
 function save(){try{localStorage.setItem('ef7_st',JSON.stringify(ST));}catch(e){}}
-const APP_VERSION='v7.7';
+const APP_VERSION='v7.8';
 function load(){try{
   const ver=localStorage.getItem('ef7_ver');
   if(ver!==APP_VERSION){localStorage.removeItem('ef7_st');localStorage.setItem('ef7_ver',APP_VERSION);return;}
@@ -313,18 +313,8 @@ function doLogin(){
   S('inicio');
 }
 // Selección directa - _NIT indexado, reconstruido en cada render
-function nitP(di,meal,tipo,idx){
-  const dbg=document.getElementById('ef-dbg');
-  if(dbg)dbg.textContent='nitP idx='+idx+' NIT.len='+_NIT.length+' item='+((_NIT[idx]&&_NIT[idx].nom)||'NOT FOUND');
-  const it=_NIT[idx];
-  if(it)selProt(di,meal,it.nom,tipo,it);
-}
-function nitI(di,meal,cat,idx){
-  const dbg=document.getElementById('ef-dbg');
-  if(dbg)dbg.textContent='nitI cat='+cat+' idx='+idx+' NIT.len='+_NIT.length+' item='+((_NIT[idx]&&_NIT[idx].nom)||'NOT FOUND');
-  const it=_NIT[idx];
-  if(it)selItem(di,meal,cat,it);
-}
+function nitP(di,meal,tipo,idx){const it=_NIT[idx];if(it)selProt(di,meal,it.nom,tipo,it);}
+function nitI(di,meal,cat,idx){const it=_NIT[idx];if(it)selItem(di,meal,cat,it);}
 function initTouchDelegation(){}
 
 function showErr(m){const el=document.getElementById('lerr');el.textContent=m;el.style.display='block';}
@@ -680,7 +670,7 @@ function renderMenuEditor(di,isSuperavit){
   _NIT=[];_NIT_VERSION++;
   const m=ST.menu[di]||{};
   const MEALS=['desayuno','comida','cena','snack'];
-  let out='<div id="ef-dbg" style="background:#1A2B5A;color:#fff;padding:8px 12px;border-radius:8px;font-size:11px;font-family:monospace;margin-bottom:8px">DEBUG: editor cargado, NIT=<span id="ef-nit">0</span> | toca un alimento</div>';
+  let out='';
 
   MEALS.forEach(meal=>{
     const md=MENU[meal];
@@ -768,7 +758,6 @@ function renderMenuEditor(di,isSuperavit){
     out+=`</div>`;
   });
 
-  // Update debug counter
   out+=`<div id="missing-alert" class="missing-alert">⚠️ Falta seleccionar algún alimento en una o más comidas</div>`;
   out+=`<div style="display:flex;gap:8px;margin-bottom:12px">
     <button class="btn btno" style="flex:1;font-size:13px" onclick="copiarDia(${di})">📋 Copiar a...</button>
@@ -1108,11 +1097,12 @@ function renderProgreso(){
       </div>
     </div>
     <button class="btn btnp btnf" onclick="addPesoConFecha()">Guardar peso ✓</button>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
-      <div class="maci"><div class="macv" style="color:${cambio<0?'var(--vd)':'var(--rj)'}">${cambio>0?'+':''}${cambio.toFixed(1)}kg</div><div class="macl">Cambio total</div></div>
-      <div class="maci"><div class="macv" style="color:var(--az)">${left.toFixed(1)}kg</div><div class="macl">Para objetivo</div></div>
-      <div class="maci"><div class="macv" style="color:var(--az2)">${ST.objPeso}kg</div><div class="macl">Objetivo</div></div>
-    </div>
+    ${pesos.length>1?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      <div class="maci"><div class="macv" style="color:var(--t2);font-size:16px">${pesos[0].v}kg</div><div class="macl">Peso inicial</div></div>
+      <div class="maci"><div class="macv" style="color:var(--az2);font-size:16px">${ST.objPeso}kg</div><div class="macl">Objetivo</div></div>
+      <div class="maci"><div class="macv" style="color:${cambio<0?'var(--vd)':'var(--rj)'};font-size:16px">${cambio>0?'+':''}${cambio.toFixed(1)}kg</div><div class="macl">Bajada total</div></div>
+      <div class="maci"><div class="macv" style="color:var(--az);font-size:16px">${(cambio/(pesos.length||1)).toFixed(1)}kg</div><div class="macl">Media semanal</div></div>
+    </div>`:''}
     ${chartSVG}
     <div style="cursor:pointer;margin-top:10px;display:flex;justify-content:space-between;align-items:center" onclick="ST.pesosOpen=!ST.pesosOpen;document.getElementById('ct').innerHTML=renderProgreso()">
       <span style="font-size:12px;font-weight:600;color:var(--t3)">HISTORIAL</span>
@@ -1209,10 +1199,28 @@ function renderRevision(){
 }
 let _rfIdx=0;
 function verRevision(sem){
-  // Por ahora ir a la revisión actual - en futuro mostrar histórico
-  ST.revStep=0;
-  render();
-  toast('Revisión S'+sem,'');
+  const hist=ST.revHistorial&&ST.revHistorial[sem];
+  if(!hist){toast('Sin datos para S'+sem,'');return;}
+  // Mostrar revisión pasada en modal
+  const POSES=['Frente','Perfil Der.','Perfil Izq.','Espalda'];
+  const MEDS=[['peso','Peso','kg'],['pecho','Pecho','cm'],['cintura','Cintura','cm'],['cadera','Cadera','cm'],['biceps','Bíceps','cm'],['muslo','Muslo','cm'],['gemelo','Gemelo','cm']];
+  const PP_PROG=['¿Cómo te sientes?','¿Cómo ha ido el entrenamiento?','¿Cómo ha ido la nutrición?','¿Qué funcionó mejor?','¿Qué cambiarías?'];
+  const PP_UNO=['¿Cómo te sientes?','¿Cuáles fueron tus éxitos?','¿Cómo te sentiste con ellos?','¿Qué tal los entrenamientos?','¿Qué tal la nutrición?','¿Qué mejorarías?','¿Algo más?'];
+  const PP=ST.u.tipo==='programa'?PP_PROG:PP_UNO;
+  let html='<div style="font-size:12px;color:var(--t3);margin-bottom:12px">'+hist.fecha+'</div>';
+  html+='<div style="font-weight:700;font-size:13px;margin-bottom:8px">📸 Fotos</div>';
+  html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px">';
+  POSES.forEach((pos,pi)=>{
+    const f=hist.fotos['rev_'+pi];
+    html+='<div style="aspect-ratio:3/5;border-radius:6px;overflow:hidden;background:var(--bg);border:1px solid var(--bor)">'+(f?'<img src="'+f+'" style="width:100%;height:100%;object-fit:cover">':'<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:10px;color:var(--t3)">'+pos+'</div>')+'</div>';
+  });
+  html+='</div>';
+  html+='<div style="font-weight:700;font-size:13px;margin-bottom:8px">📏 Medidas</div>';
+  MEDS.forEach(([k,l,u])=>{if(hist.medidas[k])html+='<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bor2);font-size:13px"><span>'+l+'</span><span style="font-weight:700">'+hist.medidas[k]+u+'</span></div>';});
+  html+='<div style="font-weight:700;font-size:13px;margin:12px 0 8px">💬 Respuestas</div>';
+  PP.forEach((q,i)=>{if(hist.preguntas[i])html+='<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;color:var(--t2)">'+q+'</div><div style="font-size:13px;color:var(--t1);margin-top:3px">'+hist.preguntas[i]+'</div></div>';});
+  html+='<button class="btn btno btnf" style="margin-top:8px" onclick="closeModal()">Cerrar</button>';
+  openModal('Revisión Semana '+sem, html);
 }
 function triggerRF(i){_rfIdx=i;document.getElementById('rfin').click();}
 function loadRF(inp){
