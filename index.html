@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>EnFormaFit</title>
@@ -112,8 +112,8 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sa
 
 /* SERIES */
 .serwrap{padding:10px 14px}
-.serhd{display:grid;grid-template-columns:22px 70px 50px 50px 34px;gap:5px;margin-bottom:7px;font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;text-align:center}
-.serrow{display:grid;grid-template-columns:22px 70px 50px 50px 34px;gap:5px;align-items:center;margin-bottom:7px}
+.serhd{display:grid;grid-template-columns:18px 62px 46px 44px 40px 30px;gap:4px;margin-bottom:7px;font-size:9.5px;color:var(--t3);font-weight:700;text-transform:uppercase;text-align:center}
+.serrow{display:grid;grid-template-columns:18px 62px 46px 44px 40px 30px;gap:4px;align-items:center;margin-bottom:7px}
 .sern{font-size:13px;font-weight:700;color:var(--t3);text-align:center}
 .serant{font-size:11px;color:var(--t2);text-align:center;line-height:1.3;font-weight:500}
 .sinp{border:1.5px solid var(--bor);border-radius:8px;padding:8px 4px;font-size:15px;font-weight:700;text-align:center;outline:none;font-family:inherit;width:100%;-webkit-appearance:none;transition:border .15s}
@@ -141,8 +141,9 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sa
 .timer-n{font-size:28px;font-weight:800;min-width:52px;text-align:center;font-variant-numeric:tabular-nums}
 
 /* NUTRICIÓN */
-.nut-sticky{position:sticky;top:0;z-index:10;background:var(--bg);margin:-14px -14px 0;padding:0 14px;border-bottom:1px solid var(--bor)}
+.nut-sticky{position:sticky;top:0;z-index:10;background:var(--bg);margin:-14px -14px 0;padding:0 14px;border-bottom:2px solid var(--bor)}
 @media(min-width:768px){.nut-sticky{margin:-20px -20px 0;padding:0 20px}}
+.nut-body{padding-top:12px}
 .tabs{display:flex;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tab{padding:9px 14px;font-size:13px;font-weight:500;color:var(--t3);border:none;background:none;cursor:pointer;font-family:inherit;border-bottom:2.5px solid transparent;margin-bottom:-1px;white-space:nowrap;flex-shrink:0;transition:all .15s}
@@ -358,7 +359,7 @@ svg.cht{width:100%;overflow:visible}
 
 <script>
 const DIAS=[{"cod": "LUNES", "nom": "Lunes", "tipo": "5 ejercicios", "rest": false, "ejercicios": [{"nom": "Sentadilla Barra Alta", "sets": 3, "reps": "6", "rir": "2", "acl": "", "url": "https://youtube.com/shorts/iWIZsDV4C0A?feature=share", "bw": false, "rest": 180}, {"nom": "Sentadilla Búlgara con Mancuerna", "sets": 3, "reps": "8 - 12", "rir": "1", "acl": "Una pesa en mano contraria a la pierna que trabaja", "url": "https://youtube.com/shorts/p8c-h4Zmv4Y?feature=share", "bw": false, "rest": 180}, {"nom": "Curl de Isquio en Máquina tumbado", "sets": 3, "reps": "10 - 16", "rir": "0", "acl": "", "url": "https://www.instagram.com/p/CuSRrovtbM3/", "bw": false, "rest": 90}, {"nom": "Crunch Abdominal", "sets": 3, "reps": "18 - 22", "rir": "1", "acl": "No subir hasta arriba del todo", "url": "https://youtube.com/shorts/wxd9UP32iEU", "bw": false, "rest": 90}, {"nom": "Elevaciones laterales en máquina", "sets": 3, "reps": "12 - 16", "rir": "0 + parciales", "acl": "Agarrado a la polea", "url": "https://youtube.com/shorts/WJSRyGWjDWI", "bw": false, "rest": 90}]}, {"cod": "MARTES", "nom": "Martes", "tipo": "6 ejercicios", "rest": false, "ejercicios": [{"nom": "Press Banca Inclinado con Mancuernas", "sets": 3, "reps": "8 - 12", "rir": "1", "acl": "Banco a 30-45º", "url": "https://youtube.com/shorts/AuygbCL_LJc", "bw": false, "rest": 180}, {"nom": "Dominadas Pronas en Máquina asistida", "sets": 3, "reps": "8 - 12", "rir": "0", "acl": "En máquina asistida", "url": "https://www.youtube.com/shorts/75tpN6zeR8U", "bw": true, "rest": 180}, {"nom": "Press Militar en Máquina", "sets": 3, "reps": "12 - 16", "rir": "0", "acl": "", "url": "https://youtube.com/shorts/JUa25wVhu2Q", "bw": false, "rest": 180}, {"nom": "Remo Bilateral con Mancuernas", "sets": 3, "reps": "10 - 14", "rir": "1", "acl": "Saca pecho al subir las mancuernas", "url": "https://youtube.com/shorts/z3ryK5zFru4?feature=share", "bw": false, "rest": 180}, {"nom": "Curl de Bíceps en Polea", "sets": 3, "reps": "12 - 16", "rir": "0 + parciales", "acl": "", "url": "https://youtube.com/shorts/YfPkhV0NMsk", "bw": false, "rest": 90}, {"nom": "Extensión de Tríceps Bilateral en Polea", "sets": 3, "reps": "12 - 16", "rir": "0 + parciales", "acl": "", "url": "https://youtube.com/shorts/M3y9Wd9aoLE", "bw": false, "rest": 90}]}, {"cod": "MIÉRCOLES", "nom": "Miérc.", "tipo": "Descanso", "rest": true, "ejercicios": []}, {"cod": "JUEVES", "nom": "Jueves", "tipo": "5 ejercicios", "rest": false, "ejercicios": [{"nom": "Peso Muerto Convencional", "sets": 3, "reps": "6", "rir": "2", "acl": "", "url": "https://youtu.be/Y3qiZ3X56q0", "bw": false, "rest": 180}, {"nom": "Prensa de Pierna Unilateral", "sets": 3, "reps": "8 - 12", "rir": "1", "acl": "", "url": "https://youtube.com/shorts/sQRbLBZFNYs?feature=share", "bw": false, "rest": 180}, {"nom": "Aducción en Máquina", "sets": 3, "reps": "12 - 16", "rir": "0", "acl": "", "url": "https://youtube.com/shorts/ndcnsfeLv2s", "bw": false, "rest": 120}, {"nom": "Elevaciones Laterales con Mancuerna", "sets": 3, "reps": "12 - 16", "rir": "0 + parciales", "acl": "Trata de pausar arriba del todo", "url": "https://youtube.com/shorts/4ewpIhq8T44", "bw": false, "rest": 90}, {"nom": "Elevaciones de Piernas en Barra", "sets": 3, "reps": "12 - 16", "rir": "0", "acl": "Controla muy bien las bajadas", "url": "https://youtube.com/shorts/rS4LnoEK5x4?feature=share", "bw": false, "rest": 90}]}, {"cod": "VIERNES", "nom": "Viernes", "tipo": "6 ejercicios", "rest": false, "ejercicios": [{"nom": "Press Banca con Barra con agarre ancho", "sets": 4, "reps": "6", "rir": "1", "acl": "", "url": "https://youtube.com/shorts/v5lNCHnkvaY?feature=share", "bw": false, "rest": 180}, {"nom": "Jalón Neutro en Polea", "sets": 3, "reps": "12 - 16", "rir": "0", "acl": "", "url": "https://youtube.com/shorts/HYIjfBDqXbE", "bw": false, "rest": 180}, {"nom": "Press Banca en Máquina", "sets": 3, "reps": "8 - 12", "rir": "0", "acl": "", "url": "https://www.instagram.com/reel/CtHmmoAtrrm/", "bw": false, "rest": 180}, {"nom": "Curl de Bíceps en Banco Scott con Barra Z", "sets": 3, "reps": "12 - 16", "rir": "0 + parciales", "acl": "", "url": "https://youtube.com/shorts/9WJRmlkc4_k?feature=share", "bw": false, "rest": 90}, {"nom": "Extensión de Tríceps con Mancuerna Overhead sentado", "sets": 3, "reps": "12 - 16", "rir": "0 + parciales", "acl": "", "url": "https://youtube.com/shorts/RGOuJNlbZiQ", "bw": false, "rest": 90}, {"nom": "Elevaciones laterales en máquina", "sets": 3, "reps": "12 - 16", "rir": "0 + parciales", "acl": "", "url": "https://youtube.com/shorts/WJSRyGWjDWI", "bw": false, "rest": 90}]}, {"cod": "SÁBADO", "nom": "Sáb.", "tipo": "Descanso", "rest": true, "ejercicios": []}, {"cod": "DOMINGO", "nom": "Dom.", "tipo": "Descanso", "rest": true, "ejercicios": []}];
-const MENU={"desayuno": {"nom": "🌅 Desayuno", "proteinas_magras": [{"nom": "Proteína en polvo (Whey)", "cantidad": 30, "u": "g", "p": 24, "c": 2, "g": 2, "kcal": 116}, {"nom": "Clara de huevo", "cantidad": 200, "u": "g", "p": 23, "c": 1, "g": 1, "kcal": 104}, {"nom": "Queso fresco batido", "cantidad": 200, "u": "g", "p": 16, "c": 8, "g": 1, "kcal": 100}, {"nom": "Yogur griego light", "cantidad": 250, "u": "g", "p": 15, "c": 10, "g": 0, "kcal": 145}, {"nom": "Jamón de pavo / cerdo", "cantidad": 100, "u": "g", "p": 20, "c": 1, "g": 2, "kcal": 96}, {"nom": "Lomo embuchado", "cantidad": 60, "u": "g", "p": 24, "c": 0, "g": 5, "kcal": 141}], "proteinas_grasas": [{"nom": "Huevo entero", "cantidad": 3, "u": "ud", "p": 19, "c": 1, "g": 15, "kcal": 216}, {"nom": "Salmón ahumado", "cantidad": 100, "u": "g", "p": 22, "c": 0, "g": 10, "kcal": 180}, {"nom": "Jamón serrano", "cantidad": 80, "u": "g", "p": 24, "c": 1, "g": 10, "kcal": 187}, {"nom": "Leche entera", "cantidad": 300, "u": "ml", "p": 9, "c": 14, "g": 11, "kcal": 189}], "hidratos": [{"nom": "Copos de avena", "cantidad": 80, "u": "g", "p": 11, "c": 48, "g": 6, "kcal": 300}, {"nom": "Pan integral", "cantidad": 80, "u": "g", "p": 7, "c": 38, "g": 2, "kcal": 208}, {"nom": "Pan blanco", "cantidad": 80, "u": "g", "p": 6, "c": 41, "g": 2, "kcal": 208}, {"nom": "Crema de arroz", "cantidad": 60, "u": "g", "p": 5, "c": 47, "g": 1, "kcal": 224}, {"nom": "Cereales sin azúcar", "cantidad": 50, "u": "g", "p": 3, "c": 41, "g": 1, "kcal": 187}, {"nom": "Cereales muesli", "cantidad": 50, "u": "g", "p": 7, "c": 33, "g": 4, "kcal": 201}, {"nom": "Tortitas de arroz/maíz", "cantidad": 4, "u": "ud", "p": 2, "c": 26, "g": 2, "kcal": 128}], "frutas": [{"nom": "Plátano", "cantidad": 1, "u": "ud", "p": 1, "c": 28, "g": 0, "kcal": 125}, {"nom": "Manzana", "cantidad": 1, "u": "ud", "p": 0, "c": 25, "g": 0, "kcal": 110}, {"nom": "Naranja", "cantidad": 1, "u": "ud", "p": 1, "c": 20, "g": 0, "kcal": 95}, {"nom": "Frutos rojos", "cantidad": 150, "u": "g", "p": 2, "c": 11, "g": 0, "kcal": 71}, {"nom": "Melocotón", "cantidad": 1, "u": "ud", "p": 1, "c": 9, "g": 1, "kcal": 60}], "grasas": [{"nom": "Frutos secos", "cantidad": 20, "u": "g", "p": 3, "c": 4, "g": 10, "kcal": 121}, {"nom": "Crema de cacahuete", "cantidad": 15, "u": "g", "p": 3, "c": 3, "g": 8, "kcal": 90}, {"nom": "Aceite de oliva virgen extra", "cantidad": 10, "u": "g", "p": 0, "c": 0, "g": 10, "kcal": 88}, {"nom": "Mantequilla", "cantidad": 10, "u": "g", "p": 0, "c": 0, "g": 8, "kcal": 73}, {"nom": "Aguacate", "cantidad": 50, "u": "g", "p": 1, "c": 5, "g": 8, "kcal": 91}, {"nom": "Chocolate negro (>85%)", "cantidad": 15, "u": "g", "p": 2, "c": 3, "g": 7, "kcal": 86}]}, "comida": {"nom": "☀️ Comida", "proteinas_magras": [{"nom": "Pechuga de pollo", "cantidad": 250, "u": "g", "p": 68, "c": 0, "g": 9, "kcal": 350}, {"nom": "Pechuga de pavo", "cantidad": 250, "u": "g", "p": 68, "c": 0, "g": 9, "kcal": 350}, {"nom": "Filete de merluza", "cantidad": 300, "u": "g", "p": 54, "c": 0, "g": 9, "kcal": 297}, {"nom": "Atún natural", "cantidad": 200, "u": "g", "p": 46, "c": 0, "g": 2, "kcal": 202}, {"nom": "Filete de lubina", "cantidad": 250, "u": "g", "p": 50, "c": 0, "g": 15, "kcal": 338}, {"nom": "Trucha", "cantidad": 250, "u": "g", "p": 58, "c": 0, "g": 15, "kcal": 365}, {"nom": "Sardinas", "cantidad": 200, "u": "g", "p": 40, "c": 0, "g": 11, "kcal": 260}, {"nom": "Solomillo de cerdo", "cantidad": 230, "u": "g", "p": 51, "c": 0, "g": 16, "kcal": 350}, {"nom": "Lomo de cerdo", "cantidad": 250, "u": "g", "p": 53, "c": 0, "g": 14, "kcal": 333}, {"nom": "Carne magra ternera", "cantidad": 230, "u": "g", "p": 62, "c": 0, "g": 12, "kcal": 352}], "proteinas_grasas": [{"nom": "Carne picada", "cantidad": 220, "u": "g", "p": 53, "c": 0, "g": 26, "kcal": 451}, {"nom": "Muslo de pollo sin piel", "cantidad": 280, "u": "g", "p": 70, "c": 0, "g": 17, "kcal": 434}, {"nom": "Contramuslo de pollo sin piel", "cantidad": 270, "u": "g", "p": 59, "c": 0, "g": 22, "kcal": 432}, {"nom": "Salmón", "cantidad": 250, "u": "g", "p": 46, "c": 0, "g": 30, "kcal": 455}, {"nom": "Huevo entero", "cantidad": 6, "u": "ud", "p": 38, "c": 2, "g": 30, "kcal": 432}, {"nom": "Costillas de cerdo", "cantidad": 185, "u": "g", "p": 50, "c": 0, "g": 28, "kcal": 453}, {"nom": "Salmón ahumado", "cantidad": 200, "u": "g", "p": 44, "c": 1, "g": 20, "kcal": 360}], "hidratos": [{"nom": "Arroz blanco", "cantidad": 80, "u": "g", "p": 6, "c": 62, "g": 1, "kcal": 282}, {"nom": "Arroz integral", "cantidad": 80, "u": "g", "p": 6, "c": 58, "g": 2, "kcal": 284}, {"nom": "Pasta", "cantidad": 80, "u": "g", "p": 10, "c": 58, "g": 1, "kcal": 288}, {"nom": "Patatas crudas", "cantidad": 300, "u": "g", "p": 0, "c": 42, "g": 5, "kcal": 219}, {"nom": "Boniato", "cantidad": 200, "u": "g", "p": 2, "c": 44, "g": 0, "kcal": 200}, {"nom": "Quinoa", "cantidad": 70, "u": "g", "p": 10, "c": 43, "g": 4, "kcal": 260}, {"nom": "Lentejas crudas", "cantidad": 70, "u": "g", "p": 18, "c": 39, "g": 1, "kcal": 247}, {"nom": "Garbanzos crudos", "cantidad": 70, "u": "g", "p": 14, "c": 34, "g": 4, "kcal": 257}, {"nom": "Alubias blancas", "cantidad": 70, "u": "g", "p": 8, "c": 36, "g": 4, "kcal": 235}], "verduras": [{"nom": "Brócoli y coliflor al vapor", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Ensalada verde con tomate", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Cebolla, pimiento y calabacín a la plancha", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Espárragos a la plancha", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Judías verdes con ajo", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Zanahoria, cebolla y pimiento al horno", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Espinacas salteadas con ajo", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Tomate, pepino y cebolla", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Calabaza asada con especias", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Pisto de verduras", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}], "grasas": [{"nom": "Aceite de oliva virgen extra", "cantidad": 10, "u": "g", "p": 0, "c": 0, "g": 10, "kcal": 88}, {"nom": "Aguacate", "cantidad": 50, "u": "g", "p": 1, "c": 5, "g": 8, "kcal": 91}, {"nom": "Queso", "cantidad": 25, "u": "g", "p": 7, "c": 0, "g": 7, "kcal": 88}, {"nom": "Aceitunas", "cantidad": 60, "u": "g", "p": 0, "c": 1, "g": 9, "kcal": 87}, {"nom": "Frutos secos", "cantidad": 15, "u": "g", "p": 2, "c": 3, "g": 8, "kcal": 91}, {"nom": "Crema de cacahuete", "cantidad": 15, "u": "g", "p": 3, "c": 3, "g": 8, "kcal": 90}, {"nom": "Semillas", "cantidad": 15, "u": "g", "p": 5, "c": 2, "g": 7, "kcal": 86}, {"nom": "Mantequilla", "cantidad": 10, "u": "g", "p": 0, "c": 0, "g": 8, "kcal": 73}]}, "cena": {"nom": "🌙 Cena", "proteinas_magras": [{"nom": "Filete de merluza", "cantidad": 250, "u": "g", "p": 45, "c": 0, "g": 8, "kcal": 248}, {"nom": "Pechuga de pavo", "cantidad": 175, "u": "g", "p": 47, "c": 0, "g": 6, "kcal": 245}, {"nom": "Atún natural", "cantidad": 200, "u": "g", "p": 46, "c": 0, "g": 2, "kcal": 202}, {"nom": "Filete de lubina", "cantidad": 200, "u": "g", "p": 40, "c": 0, "g": 12, "kcal": 270}, {"nom": "Trucha", "cantidad": 180, "u": "g", "p": 41, "c": 0, "g": 11, "kcal": 263}, {"nom": "Sardinas", "cantidad": 190, "u": "g", "p": 38, "c": 0, "g": 10, "kcal": 247}, {"nom": "Pechuga de pollo", "cantidad": 175, "u": "g", "p": 47, "c": 0, "g": 6, "kcal": 245}, {"nom": "Solomillo de cerdo", "cantidad": 165, "u": "g", "p": 36, "c": 0, "g": 12, "kcal": 251}, {"nom": "Carne magra ternera", "cantidad": 160, "u": "g", "p": 43, "c": 0, "g": 8, "kcal": 245}, {"nom": "Gambas", "cantidad": 200, "u": "g", "p": 40, "c": 2, "g": 3, "kcal": 200}], "proteinas_grasas": [{"nom": "Huevo entero", "cantidad": 4, "u": "ud", "p": 25, "c": 2, "g": 20, "kcal": 288}, {"nom": "Salmón", "cantidad": 160, "u": "g", "p": 30, "c": 0, "g": 19, "kcal": 291}, {"nom": "Salmón ahumado", "cantidad": 160, "u": "g", "p": 35, "c": 1, "g": 16, "kcal": 288}, {"nom": "Muslo de pollo sin piel", "cantidad": 185, "u": "g", "p": 46, "c": 0, "g": 11, "kcal": 287}, {"nom": "Contramuslo de pollo sin piel", "cantidad": 180, "u": "g", "p": 40, "c": 0, "g": 14, "kcal": 288}, {"nom": "Carne picada", "cantidad": 140, "u": "g", "p": 34, "c": 0, "g": 17, "kcal": 287}, {"nom": "Costillas de cerdo", "cantidad": 120, "u": "g", "p": 32, "c": 0, "g": 18, "kcal": 294}, {"nom": "Jamón serrano", "cantidad": 125, "u": "g", "p": 38, "c": 2, "g": 15, "kcal": 293}], "hidratos": [{"nom": "Patatas crudas", "cantidad": 200, "u": "g", "p": 0, "c": 28, "g": 3, "kcal": 146}, {"nom": "Boniato", "cantidad": 145, "u": "g", "p": 1, "c": 32, "g": 0, "kcal": 145}, {"nom": "Arroz blanco", "cantidad": 50, "u": "g", "p": 4, "c": 39, "g": 1, "kcal": 177}, {"nom": "Arroz integral", "cantidad": 50, "u": "g", "p": 4, "c": 37, "g": 1, "kcal": 178}, {"nom": "Pasta", "cantidad": 50, "u": "g", "p": 7, "c": 36, "g": 1, "kcal": 180}, {"nom": "Lentejas crudas", "cantidad": 50, "u": "g", "p": 13, "c": 28, "g": 1, "kcal": 177}, {"nom": "Garbanzos crudos", "cantidad": 50, "u": "g", "p": 10, "c": 24, "g": 3, "kcal": 184}, {"nom": "Sin hidrato (día descanso)", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}], "verduras": [{"nom": "Ensalada verde con tomate", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Cebolla, pimiento y calabacín a la plancha", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Brócoli y coliflor al vapor", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Espinacas salteadas con ajo", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Tomate, pepino y cebolla", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Verduras asadas al horno", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Espárragos a la plancha", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Zanahoria y puerro al vapor", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Judías verdes con ajo", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Pisto de verduras", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}], "grasas": [{"nom": "Aceite de oliva virgen extra", "cantidad": 10, "u": "g", "p": 0, "c": 0, "g": 10, "kcal": 88}, {"nom": "Aguacate", "cantidad": 50, "u": "g", "p": 1, "c": 5, "g": 8, "kcal": 91}, {"nom": "Queso", "cantidad": 25, "u": "g", "p": 7, "c": 0, "g": 7, "kcal": 88}, {"nom": "Aceitunas", "cantidad": 60, "u": "g", "p": 0, "c": 1, "g": 9, "kcal": 87}, {"nom": "Frutos secos", "cantidad": 15, "u": "g", "p": 2, "c": 3, "g": 8, "kcal": 91}, {"nom": "Semillas", "cantidad": 15, "u": "g", "p": 5, "c": 2, "g": 7, "kcal": 86}]}, "snack": {"nom": "🍎 Snack", "proteinas_magras": [{"nom": "Yogur griego light", "cantidad": 200, "u": "g", "p": 20, "c": 8, "g": 0, "kcal": 118}, {"nom": "Requesón", "cantidad": 200, "u": "g", "p": 22, "c": 6, "g": 2, "kcal": 124}, {"nom": "Queso fresco batido", "cantidad": 150, "u": "g", "p": 18, "c": 3, "g": 0, "kcal": 83}, {"nom": "Jamón de pavo fiambre", "cantidad": 80, "u": "g", "p": 16, "c": 1, "g": 2, "kcal": 81}, {"nom": "Proteína en polvo (Whey)", "cantidad": 30, "u": "g", "p": 24, "c": 2, "g": 2, "kcal": 116}, {"nom": "Huevo duro", "cantidad": 2, "u": "ud", "p": 13, "c": 1, "g": 10, "kcal": 144}, {"nom": "Jamón serrano", "cantidad": 60, "u": "g", "p": 18, "c": 1, "g": 7, "kcal": 140}], "proteinas_grasas": [], "hidratos": [{"nom": "Fruta (manzana / naranja)", "cantidad": 1, "u": "ud", "p": 0, "c": 22, "g": 0, "kcal": 100}, {"nom": "Plátano", "cantidad": 1, "u": "ud", "p": 1, "c": 28, "g": 0, "kcal": 125}, {"nom": "Frutos rojos", "cantidad": 100, "u": "g", "p": 1, "c": 8, "g": 0, "kcal": 32}], "grasas_superavit": [{"nom": "Frutos secos (porción grande)", "cantidad": 35, "u": "g", "p": 6, "c": 7, "g": 18, "kcal": 211}, {"nom": "Crema de cacahuete (porción grande)", "cantidad": 30, "u": "g", "p": 6, "c": 6, "g": 16, "kcal": 180}, {"nom": "Chocolate negro >85% (porción grande)", "cantidad": 25, "u": "g", "p": 3, "c": 5, "g": 12, "kcal": 143}], "grasas": [{"nom": "Frutos secos", "cantidad": 20, "u": "g", "p": 4, "c": 4, "g": 10, "kcal": 121}, {"nom": "Crema de cacahuete", "cantidad": 15, "u": "g", "p": 3, "c": 3, "g": 8, "kcal": 90}, {"nom": "Chocolate negro (>85%)", "cantidad": 15, "u": "g", "p": 2, "c": 3, "g": 7, "kcal": 86}]}};
+const MENU={"desayuno": {"nom": "🌅 Desayuno", "proteinas_magras": [{"nom": "Proteína en polvo (Whey)", "cantidad": 30, "u": "g", "p": 24, "c": 2, "g": 2, "kcal": 116}, {"nom": "Clara de huevo", "cantidad": 200, "u": "g", "p": 23, "c": 1, "g": 1, "kcal": 104}, {"nom": "Queso fresco batido", "cantidad": 200, "u": "g", "p": 16, "c": 8, "g": 1, "kcal": 100}, {"nom": "Yogur griego light", "cantidad": 250, "u": "g", "p": 15, "c": 10, "g": 0, "kcal": 145}, {"nom": "Jamón de pavo / cerdo", "cantidad": 100, "u": "g", "p": 20, "c": 1, "g": 2, "kcal": 96}, {"nom": "Lomo embuchado", "cantidad": 60, "u": "g", "p": 24, "c": 0, "g": 5, "kcal": 141}], "proteinas_grasas": [{"nom": "Huevo entero", "cantidad": 3, "u": "ud", "p": 19, "c": 1, "g": 15, "kcal": 216}, {"nom": "Salmón ahumado", "cantidad": 100, "u": "g", "p": 22, "c": 0, "g": 10, "kcal": 180}, {"nom": "Jamón serrano", "cantidad": 80, "u": "g", "p": 24, "c": 1, "g": 10, "kcal": 187}, {"nom": "Leche entera", "cantidad": 300, "u": "ml", "p": 9, "c": 14, "g": 11, "kcal": 189}], "hidratos": [{"nom": "Copos de avena", "cantidad": 80, "u": "g", "p": 11, "c": 48, "g": 6, "kcal": 300}, {"nom": "Pan integral", "cantidad": 80, "u": "g", "p": 7, "c": 38, "g": 2, "kcal": 208}, {"nom": "Pan blanco", "cantidad": 80, "u": "g", "p": 6, "c": 41, "g": 2, "kcal": 208}, {"nom": "Crema de arroz", "cantidad": 60, "u": "g", "p": 5, "c": 47, "g": 1, "kcal": 224}, {"nom": "Cereales sin azúcar", "cantidad": 50, "u": "g", "p": 3, "c": 41, "g": 1, "kcal": 187}, {"nom": "Cereales muesli", "cantidad": 50, "u": "g", "p": 7, "c": 33, "g": 4, "kcal": 201}, {"nom": "Tortitas de arroz/maíz", "cantidad": 4, "u": "ud", "p": 2, "c": 26, "g": 2, "kcal": 128}], "frutas": [{"nom": "Plátano", "cantidad": 1, "u": " ud"}, {"nom": "Manzana", "cantidad": 1, "u": " ud"}, {"nom": "Naranja", "cantidad": 1, "u": " ud"}, {"nom": "Pera", "cantidad": 1, "u": " ud"}, {"nom": "Melocotón", "cantidad": 1, "u": " ud"}, {"nom": "Kiwi", "cantidad": 2, "u": " uds"}, {"nom": "Frutos rojos", "cantidad": 150, "u": "g"}, {"nom": "Mango", "cantidad": 150, "u": "g"}, {"nom": "Mandarina", "cantidad": 2, "u": " uds"}, {"nom": "Piña natural", "cantidad": 150, "u": "g"}], "grasas": [{"nom": "Frutos secos", "cantidad": 20, "u": "g", "p": 3, "c": 4, "g": 10, "kcal": 121}, {"nom": "Crema de cacahuete", "cantidad": 15, "u": "g", "p": 3, "c": 3, "g": 8, "kcal": 90}, {"nom": "Aceite de oliva virgen extra", "cantidad": 10, "u": "g", "p": 0, "c": 0, "g": 10, "kcal": 88}, {"nom": "Mantequilla", "cantidad": 10, "u": "g", "p": 0, "c": 0, "g": 8, "kcal": 73}, {"nom": "Aguacate", "cantidad": 50, "u": "g", "p": 1, "c": 5, "g": 8, "kcal": 91}, {"nom": "Chocolate negro (>85%)", "cantidad": 15, "u": "g", "p": 2, "c": 3, "g": 7, "kcal": 86}]}, "comida": {"nom": "☀️ Comida", "proteinas_magras": [{"nom": "Pechuga de pollo", "cantidad": 250, "u": "g", "p": 68, "c": 0, "g": 9, "kcal": 350}, {"nom": "Pechuga de pavo", "cantidad": 250, "u": "g", "p": 68, "c": 0, "g": 9, "kcal": 350}, {"nom": "Filete de merluza", "cantidad": 300, "u": "g", "p": 54, "c": 0, "g": 9, "kcal": 297}, {"nom": "Atún natural", "cantidad": 200, "u": "g", "p": 46, "c": 0, "g": 2, "kcal": 202}, {"nom": "Filete de lubina", "cantidad": 250, "u": "g", "p": 50, "c": 0, "g": 15, "kcal": 338}, {"nom": "Trucha", "cantidad": 250, "u": "g", "p": 58, "c": 0, "g": 15, "kcal": 365}, {"nom": "Sardinas", "cantidad": 200, "u": "g", "p": 40, "c": 0, "g": 11, "kcal": 260}, {"nom": "Solomillo de cerdo", "cantidad": 230, "u": "g", "p": 51, "c": 0, "g": 16, "kcal": 350}, {"nom": "Lomo de cerdo", "cantidad": 250, "u": "g", "p": 53, "c": 0, "g": 14, "kcal": 333}, {"nom": "Carne magra ternera", "cantidad": 230, "u": "g", "p": 62, "c": 0, "g": 12, "kcal": 352}], "proteinas_grasas": [{"nom": "Carne picada", "cantidad": 220, "u": "g", "p": 53, "c": 0, "g": 26, "kcal": 451}, {"nom": "Muslo de pollo sin piel", "cantidad": 280, "u": "g", "p": 70, "c": 0, "g": 17, "kcal": 434}, {"nom": "Contramuslo de pollo sin piel", "cantidad": 270, "u": "g", "p": 59, "c": 0, "g": 22, "kcal": 432}, {"nom": "Salmón", "cantidad": 250, "u": "g", "p": 46, "c": 0, "g": 30, "kcal": 455}, {"nom": "Huevo entero", "cantidad": 6, "u": "ud", "p": 38, "c": 2, "g": 30, "kcal": 432}, {"nom": "Costillas de cerdo", "cantidad": 185, "u": "g", "p": 50, "c": 0, "g": 28, "kcal": 453}, {"nom": "Salmón ahumado", "cantidad": 200, "u": "g", "p": 44, "c": 1, "g": 20, "kcal": 360}], "hidratos": [{"nom": "Arroz blanco", "cantidad": 80, "u": "g", "p": 6, "c": 62, "g": 1, "kcal": 282}, {"nom": "Arroz integral", "cantidad": 80, "u": "g", "p": 6, "c": 58, "g": 2, "kcal": 284}, {"nom": "Pasta", "cantidad": 80, "u": "g", "p": 10, "c": 58, "g": 1, "kcal": 288}, {"nom": "Patatas crudas", "cantidad": 300, "u": "g", "p": 0, "c": 42, "g": 5, "kcal": 219}, {"nom": "Boniato", "cantidad": 200, "u": "g", "p": 2, "c": 44, "g": 0, "kcal": 200}, {"nom": "Quinoa", "cantidad": 70, "u": "g", "p": 10, "c": 43, "g": 4, "kcal": 260}, {"nom": "Lentejas crudas", "cantidad": 70, "u": "g", "p": 18, "c": 39, "g": 1, "kcal": 247}, {"nom": "Garbanzos crudos", "cantidad": 70, "u": "g", "p": 14, "c": 34, "g": 4, "kcal": 257}, {"nom": "Alubias blancas", "cantidad": 70, "u": "g", "p": 8, "c": 36, "g": 4, "kcal": 235}], "verduras": [{"nom": "Brócoli y coliflor al vapor", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Ensalada verde con tomate", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Cebolla, pimiento y calabacín a la plancha", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Espárragos a la plancha", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Judías verdes con ajo", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Zanahoria, cebolla y pimiento al horno", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Espinacas salteadas con ajo", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Tomate, pepino y cebolla", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Calabaza asada con especias", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Pisto de verduras", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}], "grasas": [{"nom": "Aceite de oliva virgen extra", "cantidad": 10, "u": "g", "p": 0, "c": 0, "g": 10, "kcal": 88}, {"nom": "Aguacate", "cantidad": 50, "u": "g", "p": 1, "c": 5, "g": 8, "kcal": 91}, {"nom": "Queso", "cantidad": 25, "u": "g", "p": 7, "c": 0, "g": 7, "kcal": 88}, {"nom": "Aceitunas", "cantidad": 60, "u": "g", "p": 0, "c": 1, "g": 9, "kcal": 87}, {"nom": "Frutos secos", "cantidad": 15, "u": "g", "p": 2, "c": 3, "g": 8, "kcal": 91}, {"nom": "Crema de cacahuete", "cantidad": 15, "u": "g", "p": 3, "c": 3, "g": 8, "kcal": 90}, {"nom": "Semillas", "cantidad": 15, "u": "g", "p": 5, "c": 2, "g": 7, "kcal": 86}, {"nom": "Mantequilla", "cantidad": 10, "u": "g", "p": 0, "c": 0, "g": 8, "kcal": 73}]}, "cena": {"nom": "🌙 Cena", "proteinas_magras": [{"nom": "Filete de merluza", "cantidad": 250, "u": "g", "p": 45, "c": 0, "g": 8, "kcal": 248}, {"nom": "Pechuga de pavo", "cantidad": 175, "u": "g", "p": 47, "c": 0, "g": 6, "kcal": 245}, {"nom": "Atún natural", "cantidad": 200, "u": "g", "p": 46, "c": 0, "g": 2, "kcal": 202}, {"nom": "Filete de lubina", "cantidad": 200, "u": "g", "p": 40, "c": 0, "g": 12, "kcal": 270}, {"nom": "Trucha", "cantidad": 180, "u": "g", "p": 41, "c": 0, "g": 11, "kcal": 263}, {"nom": "Sardinas", "cantidad": 190, "u": "g", "p": 38, "c": 0, "g": 10, "kcal": 247}, {"nom": "Pechuga de pollo", "cantidad": 175, "u": "g", "p": 47, "c": 0, "g": 6, "kcal": 245}, {"nom": "Solomillo de cerdo", "cantidad": 165, "u": "g", "p": 36, "c": 0, "g": 12, "kcal": 251}, {"nom": "Carne magra ternera", "cantidad": 160, "u": "g", "p": 43, "c": 0, "g": 8, "kcal": 245}, {"nom": "Gambas", "cantidad": 200, "u": "g", "p": 40, "c": 2, "g": 3, "kcal": 200}], "proteinas_grasas": [{"nom": "Huevo entero", "cantidad": 4, "u": "ud", "p": 25, "c": 2, "g": 20, "kcal": 288}, {"nom": "Salmón", "cantidad": 160, "u": "g", "p": 30, "c": 0, "g": 19, "kcal": 291}, {"nom": "Salmón ahumado", "cantidad": 160, "u": "g", "p": 35, "c": 1, "g": 16, "kcal": 288}, {"nom": "Muslo de pollo sin piel", "cantidad": 185, "u": "g", "p": 46, "c": 0, "g": 11, "kcal": 287}, {"nom": "Contramuslo de pollo sin piel", "cantidad": 180, "u": "g", "p": 40, "c": 0, "g": 14, "kcal": 288}, {"nom": "Carne picada", "cantidad": 140, "u": "g", "p": 34, "c": 0, "g": 17, "kcal": 287}, {"nom": "Costillas de cerdo", "cantidad": 120, "u": "g", "p": 32, "c": 0, "g": 18, "kcal": 294}, {"nom": "Jamón serrano", "cantidad": 125, "u": "g", "p": 38, "c": 2, "g": 15, "kcal": 293}], "hidratos": [{"nom": "Patatas crudas", "cantidad": 200, "u": "g", "p": 0, "c": 28, "g": 3, "kcal": 146}, {"nom": "Boniato", "cantidad": 145, "u": "g", "p": 1, "c": 32, "g": 0, "kcal": 145}, {"nom": "Arroz blanco", "cantidad": 50, "u": "g", "p": 4, "c": 39, "g": 1, "kcal": 177}, {"nom": "Arroz integral", "cantidad": 50, "u": "g", "p": 4, "c": 37, "g": 1, "kcal": 178}, {"nom": "Pasta", "cantidad": 50, "u": "g", "p": 7, "c": 36, "g": 1, "kcal": 180}, {"nom": "Lentejas crudas", "cantidad": 50, "u": "g", "p": 13, "c": 28, "g": 1, "kcal": 177}, {"nom": "Garbanzos crudos", "cantidad": 50, "u": "g", "p": 10, "c": 24, "g": 3, "kcal": 184}, {"nom": "Sin hidrato (día descanso)", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}], "verduras": [{"nom": "Ensalada verde con tomate", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Cebolla, pimiento y calabacín a la plancha", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Brócoli y coliflor al vapor", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Espinacas salteadas con ajo", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Tomate, pepino y cebolla", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Verduras asadas al horno", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Espárragos a la plancha", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Zanahoria y puerro al vapor", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Judías verdes con ajo", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}, {"nom": "Pisto de verduras", "cantidad": 0, "u": "", "p": 0, "c": 0, "g": 0, "kcal": 0}], "grasas": [{"nom": "Aceite de oliva virgen extra", "cantidad": 10, "u": "g", "p": 0, "c": 0, "g": 10, "kcal": 88}, {"nom": "Aguacate", "cantidad": 50, "u": "g", "p": 1, "c": 5, "g": 8, "kcal": 91}, {"nom": "Queso", "cantidad": 25, "u": "g", "p": 7, "c": 0, "g": 7, "kcal": 88}, {"nom": "Aceitunas", "cantidad": 60, "u": "g", "p": 0, "c": 1, "g": 9, "kcal": 87}, {"nom": "Frutos secos", "cantidad": 15, "u": "g", "p": 2, "c": 3, "g": 8, "kcal": 91}, {"nom": "Semillas", "cantidad": 15, "u": "g", "p": 5, "c": 2, "g": 7, "kcal": 86}]}, "snack": {"nom": "🍎 Snack", "proteinas_magras": [{"nom": "Yogur griego light", "cantidad": 200, "u": "g", "p": 20, "c": 8, "g": 0, "kcal": 118}, {"nom": "Queso fresco batido", "cantidad": 150, "u": "g", "p": 18, "c": 3, "g": 0, "kcal": 83}, {"nom": "Jamón de pavo fiambre", "cantidad": 80, "u": "g", "p": 16, "c": 1, "g": 2, "kcal": 81}, {"nom": "Proteína en polvo (Whey)", "cantidad": 30, "u": "g", "p": 24, "c": 2, "g": 2, "kcal": 116}, {"nom": "Huevo duro", "cantidad": 2, "u": "ud", "p": 13, "c": 1, "g": 10, "kcal": 144}, {"nom": "Jamón serrano", "cantidad": 60, "u": "g", "p": 18, "c": 1, "g": 7, "kcal": 140}], "proteinas_grasas": [], "hidratos": [{"nom": "Manzana", "cantidad": 1, "u": " ud"}, {"nom": "Naranja", "cantidad": 1, "u": " ud"}, {"nom": "Pera", "cantidad": 1, "u": " ud"}, {"nom": "Plátano", "cantidad": 1, "u": " ud"}, {"nom": "Mandarina", "cantidad": 2, "u": " uds"}, {"nom": "Melocotón", "cantidad": 1, "u": " ud"}, {"nom": "Kiwi", "cantidad": 2, "u": " uds"}, {"nom": "Frutos rojos", "cantidad": 150, "u": "g"}, {"nom": "Uvas", "cantidad": 150, "u": "g"}, {"nom": "Ciruela", "cantidad": 2, "u": " uds"}, {"nom": "Sandía", "cantidad": 300, "u": "g"}, {"nom": "Melón", "cantidad": 250, "u": "g"}, {"nom": "Piña natural", "cantidad": 200, "u": "g"}], "grasas_superavit": [{"nom": "Frutos secos (porción grande)", "cantidad": 35, "u": "g", "p": 6, "c": 7, "g": 18, "kcal": 211}, {"nom": "Crema de cacahuete (porción grande)", "cantidad": 30, "u": "g", "p": 6, "c": 6, "g": 16, "kcal": 180}, {"nom": "Chocolate negro >85% (porción grande)", "cantidad": 25, "u": "g", "p": 3, "c": 5, "g": 12, "kcal": 143}], "grasas": [{"nom": "Frutos secos", "cantidad": 20, "u": "g", "p": 4, "c": 4, "g": 10, "kcal": 121}, {"nom": "Crema de cacahuete", "cantidad": 15, "u": "g", "p": 3, "c": 3, "g": 8, "kcal": 90}, {"nom": "Chocolate negro (>85%)", "cantidad": 15, "u": "g", "p": 2, "c": 3, "g": 7, "kcal": 86}]}};
 
 // ── STATE ──
 const APP_VER='v8.0';
@@ -646,7 +647,7 @@ function renderEj(ej,ei,di,grabIdxs){
 
   let sers=`<div class="serwrap">`;
   if(ej.bw)sers+=`<div style="font-size:11px;color:var(--t3);margin-bottom:6px">💡 Deja vacío si es con peso corporal</div>`;
-  sers+=`<div class="serhd"><span>#</span><span>Anterior</span><span>Kg</span><span>Reps</span><span>✓</span></div>`;
+  sers+=`<div class="serhd"><span>#</span><span>Anterior</span><span>Kg</span><span>Reps</span><span>RIR</span><span>✓</span></div>`;
   st.series.forEach((s,si)=>{
     let antKg='—',antReps='';
     if(s.done&&s.kg){antKg=s.kg+'kg';antReps=s.repsH?'×'+s.repsH:'';}
@@ -659,6 +660,7 @@ function renderEj(ej,ei,di,grabIdxs){
       <div class="serant">${antKg}${antReps}</div>
       <input class="sinp" type="number" inputmode="decimal" placeholder="kg" value="${s.kg}" onchange="ST.ejStates['${key}'].series[${si}].kg=this.value">
       <input class="sinp" type="number" inputmode="numeric" placeholder="${ej.reps}" value="${s.repsH}" onchange="ST.ejStates['${key}'].series[${si}].repsH=this.value">
+      <input class="sinp" type="number" inputmode="numeric" placeholder="RIR" min="0" max="5" value="${s.rir||''}" onchange="ST.ejStates['${key}'].series[${si}].rir=this.value" style="color:var(--nr)">
       <button class="ck ${s.done?'on':''}" onclick="toggleSer('${key}',${si},${di})">${s.done?'✓':''}</button>
     </div>`;
   });
@@ -787,7 +789,7 @@ function renderNutricion(){
     </div>
     ${tab!=='lista'?`<div class="day-tabs">${tab==='menu'?dayTabs:dayTabsNav}</div>`:''}
   </div>
-  ${body}`;
+  <div class="nut-body">${body}</div>`;
 }
 
 function renderMenuDia(di){
@@ -1025,49 +1027,53 @@ function renderListaCompra(){
 function generateMenuPDF(){
   const DNAMES=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
   const MEALS=['desayuno','comida','cena','snack'];
-  const MEAL_NOM={desayuno:'🌅 Desayuno',comida:'☀️ Comida',cena:'🌙 Cena',snack:'🍎 Snack'};
+  const MEAL_NOM={desayuno:'Desayuno',comida:'Comida',cena:'Cena',snack:'Snack'};
   const incomplete=[0,1,2,3,4,5,6].filter(i=>!ST.menuGuardado[i]||Object.keys(ST.menuGuardado[i]).length<4);
   if(incomplete.length){toast('Guarda el menú de los 7 días primero','rj');return;}
+  // Build printable window - opens print dialog directly as PDF
+  const w=window.open('','_blank','width=900,height=700');
+  if(!w){toast('Permite ventanas emergentes','rj');return;}
   let html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><style>
+@page{size:A4 landscape;margin:12mm}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;color:#1A2B5A}
-.header{background:linear-gradient(135deg,#1A2B5A,#2E6DA4);color:#fff;padding:30px 36px;text-align:center}
-.header h1{font-size:26px;font-weight:800;margin-bottom:4px}
-.header .sub{font-size:13px;opacity:.8}
-.water{background:#D4F7E8;border:1px solid #7BE8B4;padding:10px 16px;margin:16px 36px;border-radius:8px;font-size:13px;color:#07854D;font-weight:600;text-align:center}
-.week{padding:16px 36px}
-.day{margin-bottom:20px;border:1px solid #E2E6EF;border-radius:10px;overflow:hidden;break-inside:avoid}
-.day-h{background:#EEF3FA;padding:10px 14px;font-size:14px;font-weight:800;color:#1A2B5A;border-bottom:1px solid #E2E6EF}
-.meals{display:grid;grid-template-columns:1fr 1fr}
-.meal{padding:12px 14px;border-bottom:1px solid #F0F2F8}
-.meal:nth-child(odd){border-right:1px solid #F0F2F8}
-.mt{font-size:12px;font-weight:700;color:#2E6DA4;margin-bottom:6px}
-.alim{font-size:12px;color:#1A2B5A;padding:3px 0;display:flex;justify-content:space-between;border-bottom:1px solid #F4F5F8}
-.alim:last-child{border-bottom:none}
-.alim-c{color:#9199AD;font-size:11px}
-.footer{text-align:center;padding:14px;font-size:11px;color:#9199AD;border-top:1px solid #E2E6EF;margin-top:8px}
-@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+body{font-family:Arial,Helvetica,sans-serif;background:#fff;color:#1A2B5A;font-size:11pt}
+.header{background:#1A2B5A;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;border-radius:6px}
+.header h1{font-size:16pt;font-weight:900}
+.header .sub{font-size:9pt;opacity:.85}
+.water{background:#D4F7E8;border:2px solid #0DBF6F;padding:5px 12px;margin-bottom:8px;border-radius:4px;font-size:10pt;color:#07854D;font-weight:700;text-align:center}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.day{border:1.5px solid #1A2B5A;border-radius:5px;overflow:hidden;break-inside:avoid}
+.day-h{background:#1A2B5A;color:#fff;padding:4px 7px;font-size:9.5pt;font-weight:900;text-align:center}
+.meal{padding:5px 7px;border-bottom:1px solid #E2E6EF}
+.meal:last-child{border-bottom:none}
+.mt{font-size:8pt;font-weight:900;color:#2E6DA4;margin-bottom:3px;text-transform:uppercase;letter-spacing:.3px}
+.alim{font-size:9.5pt;font-weight:700;color:#1A2B5A;padding:1px 0;line-height:1.3}
+.alim-c{font-size:8.5pt;color:#5A6480;font-weight:600}
+.footer{text-align:center;padding:6px;font-size:8pt;color:#9199AD;margin-top:8px}
 </style></head><body>
-<div class="header"><h1>Plan de Nutrición</h1><div class="sub">${ST.u.nom} · EnFormaFit · ${new Date().toLocaleDateString('es',{day:'2-digit',month:'long',year:'numeric'})}</div></div>
-<div class="water">💧 Bebe al menos 2 litros de agua al día · Objetivo: ${ST.p.macro.kcal} kcal · ${ST.p.macro.p}g proteína</div>
+<div class="header"><div><h1>Plan de Nutrición — ${ST.u.nom}</h1><div class="sub">EnFormaFit · Semana ${ST.u.semana} · ${new Date().toLocaleDateString('es',{day:'2-digit',month:'long',year:'numeric'})} · ${ST.p.macro.kcal}kcal · ${ST.p.macro.p}g proteína · ${ST.p.macro.c}g carbos · ${ST.p.macro.g}g grasa</div></div></div>
+<div class="water">💧 2 litros de agua mínimo al día · 🚶 ${ST.pasos.obj.toLocaleString('es')} pasos diarios</div>
 <div class="week">`;
   DNAMES.forEach((dia,di)=>{
     const mg=ST.menuGuardado[di]||{};
-    html+=`<div class="day"><div class="day-h">${dia}</div><div class="meals">`;
+    html+=`<div class="day"><div class="day-h">${dia}</div>`;
     MEALS.forEach(meal=>{
       const ms=mg[meal]||{};
+      const alims=[];
+      ['prot','hidrat','fat','fruta','verd'].forEach(cat=>{if(ms[cat])alims.push(ms[cat]);});
+      if(!alims.length)return;
       html+=`<div class="meal"><div class="mt">${MEAL_NOM[meal]}</div>`;
-      ['prot','hidrat','fat','fruta','verd'].forEach(cat=>{
-        if(ms[cat]){const it=ms[cat];const c=it.cantidad&&it.u?Math.round(it.cantidad)+it.u:'';html+=`<div class="alim"><span>${it.nom}</span><span class="alim-c">${c}</span></div>`;}
-      });
+      alims.forEach(it=>{const c=it.cantidad&&it.u?` <span class="alim-c">${Math.round(it.cantidad)}${it.u}</span>`:'';html+=`<div class="alim">${it.nom}${c}</div>`;});
       html+=`</div>`;
     });
-    html+=`</div></div>`;
+    html+=`</div>`;
   });
-  html+=`</div><div class="footer">EnFormaFit · Plan personalizado · @alvaro_casal_</div></body></html>`;
-  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='plan_nutricion_'+ST.u.nom.replace(/\s+/g,'_')+'.html';a.click();URL.revokeObjectURL(a.href);
-  toast('Plan descargado ✓','vd');
+  html+=`</div><div class="footer">EnFormaFit · @alvaro_casal_ · Plan personalizado</div></body></html>`;
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(()=>{w.print();},400);
+  toast('Abriendo para imprimir/guardar PDF ✓','vd');
 }
 
 // ── PROGRESO ──
@@ -1131,7 +1137,7 @@ function renderProgreso(){
   fotosH+=`</div><input type="file" accept="image/*" id="pfin" onchange="loadPF(this)">`;
 
   // Medidas comparativa
-  const MEDS=[['peso','Peso','kg'],['pecho','Pecho','cm'],['cintura','Cintura','cm'],['cadera','Cadera','cm'],['biceps','Bíceps','cm'],['muslo','Muslo','cm'],['gemelo','Gemelo','cm']];
+  const MEDS=[['peso','Peso','kg'],['pecho','Pecho','cm'],['cintura','Cintura','cm'],['cadera','Cadera','cm'],['bicepsd','Bíceps der.','cm'],['bicepsi','Bíceps izq.','cm'],['muslod','Muslo der.','cm'],['musloi','Muslo izq.','cm'],['gemelod','Gemelo der.','cm'],['gemeloi','Gemelo izq.','cm']];
   const med=ST.rev.medidas||{};
   const medIni=ST.medidasIni||{};
   const hayMeds=Object.keys(med).length>0;
@@ -1232,6 +1238,7 @@ const BODY_B64='iVBORw0KGgoAAAANSUhEUgAAALQAAAF4CAYAAAD9kNNJAAABGWlDQ1BJQ0MgUHJv
 
 function renderRevision(){
   const {semana,tipo,inicioBloque}=ST.u;
+  const semTotal=tipo==='programa'?13:12;
   const revSems=tipo==='programa'?[4,8,12]:[3,7,11];
   const nextRev=revSems.find(rs=>rs>=semana)||revSems[revSems.length-1];
   const {done,fotos,medidas,preguntas}=ST.rev;
@@ -1248,12 +1255,13 @@ function renderRevision(){
   // Historial de revisiones arriba
   let histH='<div class="card" style="margin-bottom:12px"><div class="ch"><h2>📋 Revisiones del bloque</h2></div><div class="cb" style="padding:0">';
   revSems.forEach(rs=>{
-    const isPast=rs<semana&&ST.revHistorial&&ST.revHistorial[rs];
+    const isPast=rs<nextRev;
     const isCur=rs===nextRev;
-    const isFut=rs>semana;
+    const isFut=rs>nextRev;
+    const hasData=ST.revHistorial&&ST.revHistorial[rs];
     const ico=isPast?'✅':isCur?'⏳':'🔒';
     const col=isCur?'var(--nr)':isPast?'var(--vd)':'var(--t3)';
-    const txt=isPast?'Completada':isCur?'Pendiente':'Próxima';
+    const txt=isPast?(hasData?'Completada · Toca para ver/editar':'Pasada · Sin datos'):isCur?'Pendiente':'Próxima';
     const fecha=revFecha(rs);
     const clickable=isPast||isCur;
     histH+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 15px;border-bottom:1px solid var(--bor2);cursor:${clickable?'pointer':'default'}" ${isPast?'onclick="verRevAnterior('+rs+')"':isCur?'onclick="document.getElementById(\'rev-actual\').scrollIntoView({behavior:\'smooth\'})"':''}>
@@ -1261,7 +1269,7 @@ function renderRevision(){
         <div style="font-size:14px;font-weight:700;color:${col}">${ico} Semana ${rs} ${fecha?'· <span style="font-weight:400;font-size:12px;color:var(--t3)">~'+fecha+'</span>':''}</div>
         <div style="font-size:12px;color:var(--t3);margin-top:2px">${txt}</div>
       </div>
-      ${clickable?`<span style="font-size:12px;color:var(--az2);font-weight:700">${isPast?'Ver →':'Ir →'}</span>`:''}
+      ${clickable?`<span style="font-size:12px;color:var(--az2);font-weight:700">${isPast?(hasData?'Ver/Editar →':'Sin datos'):'Ir →'}</span>`:''}
     </div>`;
   });
   histH+='</div></div>';
@@ -1274,7 +1282,7 @@ function renderRevision(){
     ['¿Cómo te sientes esta semana?','¿Cuáles fueron tus mayores éxitos?','¿Cómo te sentiste con ellos?','¿Qué tal los entrenamientos?','¿Qué tal la nutrición?','¿Qué mejorarías?','¿Algo más que quieras compartir?'];
 
   const POSES=['Frente','Perfil der.','Perfil izq.','Espalda'];
-  const MEDS=[['peso','Peso (kg)'],['pecho','Pecho (cm)'],['cintura','Cintura (cm)'],['cadera','Cadera (cm)'],['biceps','Bíceps (cm)'],['muslo','Muslo (cm)'],['gemelo','Gemelo (cm)']];
+  const MEDS=[['peso','Peso (kg)'],['pecho','Pecho (cm)'],['cintura','Cintura (cm)'],['cadera','Cadera (cm)'],['bicepsd','Bíceps der. (cm)'],['bicepsi','Bíceps izq. (cm)'],['muslod','Muslo der. (cm)'],['musloi','Muslo izq. (cm)'],['gemelod','Gemelo der. (cm)'],['gemeloi','Gemelo izq. (cm)']];
 
   const stepLabels=['📸 Fotos','📏 Medidas','💬 Preguntas'];
   const stepsBar=stepLabels.map((l,i)=>`<div class="rev-step ${i<step?'rs-done':i===step?'rs-act':'rs-fut'}" onclick="ST.rev.step=${i};render()" title="${l}"></div>`).join('');
@@ -1348,7 +1356,7 @@ function verRevAnterior(sem){
   const hist=ST.revHistorial&&ST.revHistorial[sem];
   if(!hist){toast('Sin datos guardados para S'+sem,'');return;}
   const POSES=['Frente','Perfil der.','Perfil izq.','Espalda'];
-  const MEDS=[['peso','Peso','kg'],['pecho','Pecho','cm'],['cintura','Cintura','cm'],['cadera','Cadera','cm'],['biceps','Bíceps','cm'],['muslo','Muslo','cm'],['gemelo','Gemelo','cm']];
+  const MEDS=[['peso','Peso','kg'],['pecho','Pecho','cm'],['cintura','Cintura','cm'],['cadera','Cadera','cm'],['bicepsd','Bíceps der.','cm'],['bicepsi','Bíceps izq.','cm'],['muslod','Muslo der.','cm'],['musloi','Muslo izq.','cm'],['gemelod','Gemelo der.','cm'],['gemeloi','Gemelo izq.','cm']];
   const PP=[...Array(7).keys()].map(i=>hist.preguntas&&hist.preguntas[i]).filter(Boolean);
   let html=`<div style="font-size:12px;color:var(--t3);margin-bottom:14px">${hist.fecha||''}</div>`;
   html+=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px">`;
@@ -1357,8 +1365,19 @@ function verRevAnterior(sem){
   html+=`<div style="font-weight:700;font-size:13px;margin-bottom:8px">📏 Medidas</div>`;
   MEDS.forEach(([k,l,u])=>{if(hist.medidas&&hist.medidas[k])html+=`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bor2);font-size:13px"><span style="color:var(--t2)">${l}</span><span style="font-weight:700">${hist.medidas[k]}${u}</span></div>`;});
   if(PP.length){html+=`<div style="font-weight:700;font-size:13px;margin:12px 0 8px">💬 Respuestas</div>`;PP.forEach((a,i)=>html+=`<div style="margin-bottom:8px;font-size:13px;color:var(--t2);padding-left:8px;border-left:3px solid var(--az2)">${a}</div>`);}
-  html+=`<button class="btn btno btnf" style="margin-top:12px" onclick="closeModal()">Cerrar</button>`;
+  html+=`<div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn btno" style="flex:1" onclick="closeModal()">Cerrar</button>
+    <button class="btn btnp" style="flex:1" onclick="closeModal();editarRevAnterior(${sem})">✏️ Editar</button>
+  </div>`;
   openModal('Revisión Semana '+sem,html);
+}
+function editarRevAnterior(sem){
+  const hist=ST.revHistorial&&ST.revHistorial[sem];
+  if(hist){ST.rev.fotos={...hist.fotos};ST.rev.medidas={...hist.medidas};ST.rev.preguntas={...hist.preguntas};}
+  ST.rev.done=false;ST.rev.step=0;
+  // Temporarily change semana to edit that revision
+  ST._editingSem=sem;
+  render();toast('Editando revisión S'+sem,'');
 }
 
 // ── PERFIL ──
@@ -1444,6 +1463,22 @@ function renderPerfil(){
 }
 function toggleFaq(i){const a=document.getElementById('faq'+i);if(a){a.classList.toggle('open');}}
 function logout(){document.getElementById('app').classList.remove('on');document.getElementById('lw').style.display='';document.getElementById('le').value='';document.getElementById('lp').value='';}
+
+// ── LÓGICAS INTERNAS (referencia) ──
+const LOGICAS={
+  adherencia:{
+    formula:'Entrenos×0.45 + Nutrición×0.35 + Pasos×0.20',
+    semaforo:{verde:'≥80%',naranja:'60-79%',rojo:'<60%'},
+  },
+  tmb:{formula:'88.362 + (13.397×kg) + (4.799×cm) − (5.677×edad)', nota:'Harris-Benedict hombres'},
+  revisiones:{uno:[3,7,11],programa:[4,8,12]},
+  bloque:{uno:12,programa:13},
+  pasos:{deficit_sedentario:8000,deficit_activo:10000,volumen:8000},
+  descansoSeries:{compound_grande:'3min',maquinas:'2min',aislamiento:'90s',abdomen_gemelo:'60s'},
+  snack_grasa:{solo_superavit:true,items:['Frutos secos','Crema cacahuete','Chocolate >85%']},
+  proteina:{magra_añade_grasa:true,grasa_NO_añade_grasa:true},
+  perdida_peso:{ritmo_optimo:'0.5-1kg/sem',max_recomendado:'1.2kg/sem'},
+};
 
 // ── INIT ──
 window.addEventListener('DOMContentLoaded',()=>{load();});
