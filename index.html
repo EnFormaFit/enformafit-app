@@ -962,28 +962,89 @@ function renderProgreso(){
   const {semana,tipo}=ST.u;
   const revSems=tipo==='programa'?[0,4,8,12]:[0,3,7,11];
   const POSES=['Frente','Perfil D.','Perfil I.','Espalda'];
-  // Fotos: combinar revisión + edición directa desde progreso
+  const today=new Date().toISOString().split('T')[0];
+
+  // ── GRÁFICO MEJORADO ──
+  const W=320,H=140,PL=38,PR=12,PT=16,PB=28;
+  const vals=pesos.map(p=>p.v);
+  const mn=Math.min(...vals,ST.objPeso)-1;
+  const mx=Math.max(...vals)+1;
+  const xOf=i=>(PL+(i/(vals.length-1||1))*(W-PL-PR)).toFixed(1);
+  const yOf=v=>(PT+(1-(v-mn)/(mx-mn||1))*(H-PT-PB)).toFixed(1);
+  const pts=vals.map((v,i)=>xOf(i)+','+yOf(v)).join(' ');
+  const oy=yOf(ST.objPeso);
+  // Area fill
+  const areaP=`${xOf(0)},${H-PB} `+vals.map((v,i)=>xOf(i)+','+yOf(v)).join(' ')+` ${xOf(vals.length-1)},${H-PB}`;
+  // Y axis labels
+  const yLabels=[mn+1, Math.round((mn+mx)/2), mx-1].map(v=>
+    `<text x="${PL-4}" y="${yOf(v)}" text-anchor="end" font-size="9" fill="#9199AD" dominant-baseline="middle">${v.toFixed(1)}</text>`
+  ).join('');
+  // X axis labels
+  const xLabels=pesos.filter((_,i)=>i===0||i===pesos.length-1||i===Math.floor(pesos.length/2)).map((p,_,arr)=>{
+    const i=pesos.indexOf(p);
+    const d=p.f.split('-');
+    return `<text x="${xOf(i)}" y="${H-PB+12}" text-anchor="middle" font-size="9" fill="#9199AD">${d[2]}/${d[1]}</text>`;
+  }).join('');
+  // Dots
+  const dots=vals.map((v,i)=>`<circle cx="${xOf(i)}" cy="${yOf(v)}" r="${i===vals.length-1?5:3.5}" fill="${i===vals.length-1?'var(--az2)':'var(--az3)'}" stroke="${i===vals.length-1?'#fff':'var(--az2)'}" stroke-width="${i===vals.length-1?2:1.5}"/>`).join('');
+  const chartSVG=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible">
+    <defs><linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--az2)" stop-opacity=".15"/><stop offset="100%" stop-color="var(--az2)" stop-opacity="0"/></linearGradient></defs>
+    <line x1="${PL}" y1="${PT}" x2="${PL}" y2="${H-PB}" stroke="#E2E6EF" stroke-width="1"/>
+    <line x1="${PL}" y1="${H-PB}" x2="${W-PR}" y2="${H-PB}" stroke="#E2E6EF" stroke-width="1"/>
+    <line x1="${PL}" y1="${oy}" x2="${W-PR}" y2="${oy}" stroke="var(--vd)" stroke-width="1.5" stroke-dasharray="5,3"/>
+    <text x="${W-PR}" y="${parseFloat(oy)-5}" text-anchor="end" font-size="9" fill="var(--vd)" font-weight="600">obj ${ST.objPeso}kg</text>
+    ${yLabels}${xLabels}
+    <polygon points="${areaP}" fill="url(#gr)"/>
+    <polyline points="${pts}" fill="none" stroke="var(--az2)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+  </svg>`;
+
+  // ── FOTOS COMPARADAS ──
   let fotosH=`<div class="fscroll">`;
   revSems.forEach((rs,gi)=>{
     const locked=rs>semana;
     const col=locked?'ft-gr':rs===0?'ft-vd':'ft-az';
-    const gtit=rs===0?'Inicio':'Rev. S'+rs;
+    const gtit=rs===0?'Inicio':'S'+rs;
     fotosH+=`<div class="fgrp"><div class="fgrp-t ${col}">${gtit}</div>`;
     POSES.forEach((pos,pi)=>{
-      // Buscar foto en rev.fotos (subida desde revisión) o en prog.fotos (editada desde progreso)
-      const revKey=`rev_${gi}_${pi}`;  // fotos de revisión
-      const progKey=`prog_${gi}_${pi}`; // fotos editadas desde progreso
-      // Para la revisión S3/S7/S11, la foto de revisión usa 'rev_X' donde X=pose idx
-      // Mapear: gi=1 → revisión S3, fotos rev_0/1/2/3
-      const revFotoKey=gi===1&&ST.rev.done?`rev_${pi}`:null;
-      const stored=ST.rev.fotos[progKey]||ST.rev.fotos[revKey]||(revFotoKey?ST.rev.fotos[revFotoKey]:null);
+      const revFotoKey=`rev_${pi}`;
+      const progKey=`prog_${gi}_${pi}`;
+      const stored=ST.rev.fotos[progKey]||(gi===1&&ST.rev.done?ST.rev.fotos[revFotoKey]:null);
       fotosH+=`<div class="fslot ${locked?'locked':stored?'has':''}" onclick="${locked?'':'triggerPF('+gi+','+pi+')'}">
-        ${stored?`<img src="${stored}" alt="${pos}"><div class="fslot-lbl" style="background:rgba(0,0,0,.4);position:absolute;bottom:0;left:0;right:0;color:#fff;padding:3px 0">${pos}</div>`:`<div class="fslot-lbl">${locked?'🔒<br>'+gtit:'📷<br>'+pos}</div>`}
+        ${stored?`<img src="${stored}" alt="${pos}"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.4);color:#fff;font-size:9px;font-weight:600;text-align:center;padding:2px">${pos}</div>`:`<div class="fslot-lbl">${locked?'🔒':pos}</div>`}
       </div>`;
     });
     fotosH+=`</div>`;
   });
   fotosH+=`</div><input type="file" accept="image/*" id="pfin" onchange="loadPF(this)">`;
+
+  // ── MEDIDAS COMPARADAS ──
+  const MEDS=[
+    ['peso','Peso','kg'],['pecho','Pecho','cm'],['cintura','Cintura','cm'],
+    ['cadera','Cadera','cm'],['biceps','Bíceps','cm'],['muslo','Muslo','cm'],['gemelo','Gemelo','cm']
+  ];
+  const medidas=ST.rev.medidas||{};
+  const hayMedidas=Object.keys(medidas).length>0;
+  let medsH='';
+  if(hayMedidas){
+    medsH=MEDS.map(([k,lbl,u])=>{
+      const v=medidas[k];
+      if(!v)return'';
+      const ini=ST.medidasIni?.[k];
+      const diff=ini&&v?((parseFloat(v)-parseFloat(ini)).toFixed(1)):null;
+      const good=k==='peso'||k==='cintura'||k==='cadera'?diff<0:diff>0;
+      return`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--bor2)">
+        <span style="font-size:14px;color:var(--t2)">${lbl}</span>
+        <div style="display:flex;align-items:center;gap:10px">
+          ${ini?`<span style="font-size:12px;color:var(--t3)">${ini}${u}</span><span style="font-size:11px;color:var(--t3)">→</span>`:''}
+          <span style="font-size:15px;font-weight:700;color:var(--az)">${v}${u}</span>
+          ${diff!==null?`<span style="font-size:12px;font-weight:700;color:${good?'var(--vd)':'var(--rj)'}">${diff>0?'+':''}${diff}${u}</span>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── LOGROS ──
   const LA=[
     {ico:'⚡',nom:'Primera semana',desc:'Completaste tu primera semana',done:semana>=1},
     {ico:'🏋️',nom:'Primer mes',desc:'4 semanas completadas',done:semana>=4},
@@ -992,56 +1053,51 @@ function renderProgreso(){
     {ico:'🎯',nom:'Semana perfecta',desc:'Entrenos + nutrición + pasos al 100%',done:false},
     {ico:'💪',nom:'Bloque completado',desc:'12 semanas finalizadas',done:semana>=12},
   ];
-  const today=new Date().toISOString().split('T')[0];
+
   return`
 <div class="card">
   <div class="ch"><h2>⚖️ Registrar peso</h2></div>
   <div class="cb">
-    <div style="font-size:13px;color:var(--t2);margin-bottom:10px">Apunta tu peso cada mañana, en ayunas y después de ir al baño.</div>
-    <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
-      <div style="flex:1;min-width:100px">
+    <div style="font-size:13px;color:var(--t2);margin-bottom:12px">Una vez al día, por la mañana en ayunas.</div>
+    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:14px">
+      <div style="flex:1">
         <div style="font-size:11px;font-weight:700;color:var(--t3);margin-bottom:4px">FECHA</div>
-        <input type="date" id="pesoFecha" value="${today}" max="${today}" style="width:100%;border:1.5px solid var(--bor);border-radius:9px;padding:10px 11px;font-size:14px;outline:none;font-family:inherit;color:var(--t1)">
+        <input type="date" id="pesoFecha" value="${today}" max="${today}" style="width:100%;border:1.5px solid var(--bor);border-radius:9px;padding:10px;font-size:14px;outline:none;font-family:inherit;color:var(--t1)">
       </div>
-      <div style="flex:1;min-width:80px">
+      <div style="flex:1">
         <div style="font-size:11px;font-weight:700;color:var(--t3);margin-bottom:4px">PESO (kg)</div>
-        <input type="number" inputmode="decimal" id="pesoVal" placeholder="0.0" step="0.1" style="width:100%;border:1.5px solid var(--bor);border-radius:9px;padding:10px 11px;font-size:16px;font-weight:700;outline:none;font-family:inherit;color:var(--az)">
+        <input type="number" inputmode="decimal" id="pesoVal" placeholder="0.0" step="0.1" style="width:100%;border:1.5px solid var(--bor);border-radius:9px;padding:10px;font-size:16px;font-weight:700;outline:none;font-family:inherit;color:var(--az)">
       </div>
-      <div style="padding-top:18px">
-        <button class="btn btnp" onclick="addPesoConFecha()">Guardar</button>
-      </div>
+      <button class="btn btnp" style="flex-shrink:0;padding:10px 14px" onclick="addPesoConFecha()">Guardar</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
       <div class="maci"><div class="macv" style="color:${cambio<0?'var(--vd)':'var(--rj)'}">${cambio>0?'+':''}${cambio.toFixed(1)}kg</div><div class="macl">Cambio total</div></div>
       <div class="maci"><div class="macv" style="color:var(--az)">${left.toFixed(1)}kg</div><div class="macl">Para objetivo</div></div>
       <div class="maci"><div class="macv" style="color:var(--az2)">${ST.objPeso}kg</div><div class="macl">Objetivo</div></div>
     </div>
-    <div style="font-size:11px;color:var(--t3);margin-bottom:6px;font-weight:600">EVOLUCIÓN DE PESO</div>
-    ${CHART_SVG}
-    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-top:4px">
-      <span>${pesos[0].f.split('-').reverse().slice(0,2).join('/')}</span>
-      <span style="color:var(--vd);font-weight:600">obj ${ST.objPeso}kg</span>
-      <span>${pesos[pesos.length-1].f.split('-').reverse().slice(0,2).join('/')}</span>
+    ${chartSVG}
+    <div style="cursor:pointer;margin-top:10px;display:flex;justify-content:space-between;align-items:center" onclick="ST.pesosOpen=!ST.pesosOpen;document.getElementById('ct').innerHTML=renderProgreso()">
+      <span style="font-size:12px;font-weight:600;color:var(--t3)">HISTORIAL</span>
+      <span style="font-size:13px;color:var(--t3)">${ST.pesosOpen?'▲':'▼'}</span>
     </div>
+    ${ST.pesosOpen?`<div style="margin-top:8px">${[...pesos].reverse().map(p=>{const d=p.f.split('-');return '<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bor2);font-size:13px"><span style="color:var(--t2)">'+d[2]+'/'+d[1]+'/'+d[0].slice(2)+'</span><span style="font-weight:700;color:var(--az)">'+p.v+' kg</span></div>';}).join('')}</div>`:''}
   </div>
 </div>
+
 <div class="card">
-  <div class="ch" style="cursor:pointer" onclick="ST.pesosOpen=!ST.pesosOpen;document.getElementById('ct').innerHTML=renderProgreso()">
-    <h2>📋 Historial de pesos</h2>
-    <span style="color:var(--t3)">${ST.pesosOpen?'▲':'▼'}</span>
-  </div>
-  ${ST.pesosOpen?`<div class="cb" style="padding:0">
-    ${[...ST.pesos].reverse().map(p=>{const d=p.f.split('-');return '<div class="compra-item" style="padding:10px 14px"><span style="color:var(--t2)">'+d[2]+'/'+d[1]+'/'+d[0].slice(2)+'</span><span style="font-weight:700;color:var(--az)">'+p.v+' kg</span></div>';}).join('')}
-  </div>`:''}
+  <div class="ch"><h2>📸 Fotos de progreso</h2><span class="badge baz">Toca para añadir</span></div>
+  <div class="cb" style="padding-bottom:8px">${fotosH}</div>
 </div>
-<div class="card"><div class="ch" style="cursor:pointer" onclick="ST.fotosOpen=!ST.fotosOpen;render()"><h2>📸 Fotos de progreso</h2><span style="font-size:16px;color:var(--t3)">${ST.fotosOpen!==false?'▲':'▼'}</span></div>${ST.fotosOpen!==false?`<div class="cb" style="padding-bottom:8px">${fotosH}</div>`:''}</div>
+
+${hayMedidas?`<div class="card">
+  <div class="ch"><h2>📏 Evolución de medidas</h2></div>
+  <div class="cb" style="padding:0 14px">${medsH}</div>
+</div>`:''}
+
 <div class="card"><div class="ch"><h2>🏆 Logros</h2></div><div class="cb">
   ${LA.map(l=>`<div class="logro ${l.done?'':'locked'}"><div class="logro-ico">${l.ico}</div><div><div class="logro-nom">${l.nom}</div><div class="logro-desc">${l.desc}</div></div>${l.done?'<span class="badge bvd">✓</span>':''}</div>`).join('')}
 </div></div>`;
 }
-let _pfGi=0,_pfPi=0;
-function triggerPF(gi,pi){_pfGi=gi;_pfPi=pi;document.getElementById('pfin').click();}
-function loadPF(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{ST.rev.fotos[`prog_${_pfGi}_${_pfPi}`]=e.target.result;save();render();};r.readAsDataURL(f);}
 function addPeso(v){const n=parseFloat(v);if(isNaN(n)||n<30||n>300)return;const today=new Date().toISOString().split('T')[0];const last=ST.pesos[ST.pesos.length-1];if(last.f===today)last.v=n;else ST.pesos.push({f:today,v:n});save();toast('Peso guardado ✓','vd');}
 function addPesoConFecha(){
   const v=document.getElementById('pesoVal').value;
