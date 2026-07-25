@@ -111,7 +111,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sa
 .timer{display:none;position:fixed;bottom:calc(var(--nav)+10px);left:50%;transform:translateX(-50%);background:rgba(26,43,90,.96);backdrop-filter:blur(10px);color:#fff;border-radius:22px;padding:10px 20px;z-index:50;box-shadow:0 8px 28px rgba(0,0,0,.35);align-items:center;gap:12px}
 .timer.show{display:flex}.timer-n{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums;min-width:52px;text-align:center}
 /* NUTRICIÓN */
-.sticky-tabs{position:sticky;top:0;z-index:10;background:var(--bg);padding:0 13px;border-bottom:2px solid var(--bor);margin-left:-13px;margin-right:-13px;margin-top:0}
+.sticky-tabs{position:sticky;top:0;z-index:10;background:var(--bg);padding:0 13px;border-bottom:2px solid var(--bor);margin-left:-13px;margin-right:-13px;margin-top:0;box-shadow:0 2px 8px rgba(244,245,248,0.98)}
 @media(min-width:768px){.sticky-tabs{padding:0 20px;margin-left:-20px;margin-right:-20px}}
 .tabs{display:flex;overflow-x:auto;scrollbar-width:none;background:var(--bg)}
 .tabs::-webkit-scrollbar{display:none}
@@ -220,7 +220,10 @@ input[type=file]{display:none}</style>
 <div class="lw" id="lw">
   <div class="lb">
     <div class="llo">
-      <img id="loginLogoImg" onload="window._LOGO_SRC=this.src" src="logo.png" alt="EnFormaFit">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" style="height:36px;width:auto">
+  <rect width="200" height="60" rx="8" fill="#1A2B5A"/>
+  <text x="16" y="38" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="22" font-weight="800" fill="white">En<tspan fill="#0DBF6F">Forma</tspan>Fit</text>
+</svg>
       <small>Tu plan · Tu progreso · Tu transformación</small>
     </div>
     <div class="lfi"><label>Email</label><input id="le" type="email" placeholder="tu@email.com" autocomplete="email"></div>
@@ -232,8 +235,11 @@ input[type=file]{display:none}</style>
 <div class="app" id="app">
   <div class="topbar">
     <div class="tbrand">
-      <img id="topbarLogo" src="" alt="EnFormaFit" style="height:26px;width:auto;display:none">
-      <div class="tsect" id="st" style="margin-left:4px"> · Inicio</div>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" style="height:26px;width:auto">
+  <rect width="200" height="60" rx="8" fill="#1A2B5A"/>
+  <text x="16" y="38" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="22" font-weight="800" fill="white">En<tspan fill="#0DBF6F">Forma</tspan>Fit</text>
+</svg>
+      <div class="tsect" id="st" style="margin-left:6px"> · Inicio</div>
     </div>
     <div class="tav" id="avbtn" onclick="S('perfil')">JG</div>
   </div>
@@ -294,7 +300,7 @@ const ST={
 
 let SEC='inicio',TIMID=null,TIMSEC=0;
 function save(){try{localStorage.setItem('ef7_st',JSON.stringify(ST));}catch(e){}}
-const APP_VERSION='v7.6';
+const APP_VERSION='v7.7';
 function load(){try{
   const ver=localStorage.getItem('ef7_ver');
   if(ver!==APP_VERSION){localStorage.removeItem('ef7_st');localStorage.setItem('ef7_ver',APP_VERSION);return;}
@@ -309,9 +315,7 @@ function doLogin(){
   document.getElementById('lw').style.display='none';
   document.getElementById('app').classList.add('on');
   document.getElementById('avbtn').textContent=ST.u.init;
-  // Reutilizar logo del login en topbar sin duplicar base64
-  const topbarLogo=document.getElementById('topbarLogo');
-  if(topbarLogo&&window._LOGO_SRC){topbarLogo.src=window._LOGO_SRC;topbarLogo.style.display='block';}
+  // Logo inline - no action needed
   S('inicio');
 }
 // Selección directa - _NIT indexado, reconstruido en cada render
@@ -488,7 +492,7 @@ function buildEntHTML(di){
     body=d.ejercicios.map((ej,ei)=>renderEj(ej,ei,di,grabIdxs)).join('');
     body+=`<button class="btn btnp btnf" onclick="guardarDia(${di})">Guardar entrenamiento ✓</button>`;
   }
-  return`<div class="day-sticky"><div class="day-sel">${dayBtns}</div></div>${body}`;
+  return`<div class="day-sticky"><div class="day-sel">${dayBtns}</div></div><div id="ent-swipe" ontouchstart="entTS(event)" ontouchend="entTE(event)">${body}</div>`;
 }
 
 function getGrabarIdxs(diaIdx){
@@ -1099,17 +1103,17 @@ function renderProgreso(){
   <div class="ch"><h2>⚖️ Registrar peso</h2></div>
   <div class="cb">
     <div style="font-size:13px;color:var(--t2);margin-bottom:12px">Una vez al día, por la mañana en ayunas.</div>
-    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:14px">
-      <div style="flex:1">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div>
         <div style="font-size:11px;font-weight:700;color:var(--t3);margin-bottom:4px">FECHA</div>
-        <input type="date" id="pesoFecha" value="${today}" max="${today}" style="width:100%;border:1.5px solid var(--bor);border-radius:9px;padding:10px;font-size:14px;outline:none;font-family:inherit;color:var(--t1)">
+        <input type="date" id="pesoFecha" value="${today}" max="${today}" style="width:100%;border:1.5px solid var(--bor);border-radius:9px;padding:9px 8px;font-size:13px;outline:none;font-family:inherit;color:var(--t1)">
       </div>
-      <div style="flex:1">
+      <div>
         <div style="font-size:11px;font-weight:700;color:var(--t3);margin-bottom:4px">PESO (kg)</div>
-        <input type="number" inputmode="decimal" id="pesoVal" placeholder="0.0" step="0.1" style="width:100%;border:1.5px solid var(--bor);border-radius:9px;padding:10px;font-size:16px;font-weight:700;outline:none;font-family:inherit;color:var(--az)">
+        <input type="number" inputmode="decimal" id="pesoVal" placeholder="0.0" step="0.1" style="width:100%;border:1.5px solid var(--bor);border-radius:9px;padding:9px 8px;font-size:15px;font-weight:700;outline:none;font-family:inherit;color:var(--az)">
       </div>
-      <button class="btn btnp" style="flex-shrink:0;padding:10px 14px" onclick="addPesoConFecha()">Guardar</button>
     </div>
+    <button class="btn btnp btnf" onclick="addPesoConFecha()">Guardar peso ✓</button>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
       <div class="maci"><div class="macv" style="color:${cambio<0?'var(--vd)':'var(--rj)'}">${cambio>0?'+':''}${cambio.toFixed(1)}kg</div><div class="macl">Cambio total</div></div>
       <div class="maci"><div class="macv" style="color:var(--az)">${left.toFixed(1)}kg</div><div class="macl">Para objetivo</div></div>
@@ -1131,8 +1135,11 @@ function renderProgreso(){
 
 ${hayMedidas?`<div class="card">
   <div class="ch"><h2>📏 Evolución de medidas</h2></div>
-  <div class="cb" style="padding:0 14px">${medsH}</div>
-</div>`:''}
+  <div class="cb" style="padding:10px 14px">
+    <div style="font-size:12px;color:var(--t3);margin-bottom:10px">Los datos se actualizan con cada revisión que envías.</div>
+    ${medsH}
+  </div>
+</div>`:`<div class="card"><div class="ch"><h2>📏 Evolución de medidas</h2></div><div class="cb" style="text-align:center;padding:24px;color:var(--t3)"><div style="font-size:32px;margin-bottom:8px">📏</div><div style="font-size:13px">Las medidas aparecerán aquí cuando envíes tu primera revisión.</div></div></div>`}
 
 <div class="card"><div class="ch"><h2>🏆 Logros</h2></div><div class="cb">
   ${LA.map(l=>`<div class="logro ${l.done?'':'locked'}"><div class="logro-ico">${l.ico}</div><div><div class="logro-nom">${l.nom}</div><div class="logro-desc">${l.desc}</div></div>${l.done?'<span class="badge bvd">✓</span>':''}</div>`).join('')}
@@ -1223,7 +1230,17 @@ function loadRF(inp){
   };
   r.readAsDataURL(f);
 }
-function enviarRev(){ST.rev.done=true;save();render();toast('Revisión enviada ✓','vd');}
+function enviarRev(){
+  ST.rev.done=true;
+  ST.revStep=0;
+  // Guardar medidas iniciales si es la primera revisión
+  if(!ST.medidasIni&&ST.rev.medidas&&Object.keys(ST.rev.medidas).length>0){
+    ST.medidasIni=JSON.parse(JSON.stringify(ST.rev.medidas));
+  }
+  save();
+  render();
+  toast('Revisión S'+ST.u.semana+' enviada ✓','vd');
+}
 
 // ── PERFIL ──
 function renderPerfil(){
@@ -1268,12 +1285,41 @@ function renderPerfil(){
 }
 function toggleFaq(i){const a=document.getElementById('faq'+i);const ic=document.getElementById('fa'+i);ic.textContent=a.classList.toggle('open')?'▲':'▼';}
 function logout(){document.getElementById('app').classList.remove('on');document.getElementById('lw').style.display='flex';}
+function goRevision(){S('revision');}
+function viewRevision(semRev){
+  // Mostrar revisión pasada en modo lectura
+  const {done,fotos,medidas,preguntas}=ST.rev;
+  const {tipo}=ST.u;
+  const PP=tipo==='programa'?['¿Cómo te sientes?','¿Cómo ha ido el entrenamiento estas semanas?','¿Cómo ha ido la nutrición?','¿Qué es lo que mejor ha funcionado?','¿Qué cambiarías de cara al siguiente bloque?']:['¿Cómo te sientes?','¿Cuáles han sido tus éxitos en estas semanas?','¿Cómo te has sentido con los éxitos que has conseguido?','¿Qué tal van tus entrenamientos?','¿Qué tal va tu nutrición?','¿Qué te gustaría mejorar en el siguiente bloque?','¿Hay algo que quieras comentarme?'];
+  const POSES=['Frente','Perfil Der.','Perfil Izq.','Espalda'];
+  const MEDS=[['peso','Peso','kg'],['pecho','Pecho','cm'],['cintura','Cintura','cm'],['cadera','Cadera','cm'],['biceps','Bíceps','cm'],['muslo','Muslo','cm'],['gemelo','Gemelo','cm']];
+  let html='<div class="card"><div class="ch"><h2>📋 Revisión Semana '+semRev+'</h2><span class="badge bvd">✅ Completada</span></div><div class="cb">';
+  // Fotos
+  html+='<div style="font-size:13px;font-weight:700;margin-bottom:8px">Fotos</div><div class="rfg">';
+  POSES.forEach((pos,pi)=>{const k='rev_'+pi;const img=fotos[k];html+='<div class="rfb '+(img?'done':'')+'">'+( img?'<img src="'+img+'" alt="'+pos+'"><div class="rfb-lbl" style="background:rgba(0,0,0,.4);position:absolute;bottom:0;left:0;right:0;color:#fff;padding:4px 0">'+pos+'</div>':'<div class="rfb-lbl">'+pos+'</div>')+'</div>';});
+  html+='</div>';
+  // Medidas
+  if(Object.keys(medidas).length>0){html+='<div style="font-size:13px;font-weight:700;margin:12px 0 8px">Medidas</div>';MEDS.forEach(([k,l,u])=>{if(medidas[k])html+='<div class="compra-item"><span>'+l+'</span><span style="font-weight:700;color:var(--az)">'+medidas[k]+u+'</span></div>';});}
+  // Preguntas
+  if(Object.keys(preguntas).length>0){html+='<div style="font-size:13px;font-weight:700;margin:12px 0 8px">Respuestas</div>';PP.forEach((q,i)=>{if(preguntas[i])html+='<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;color:var(--t3);margin-bottom:3px">'+q+'</div><div style="font-size:13px;color:var(--t1)">'+preguntas[i]+'</div></div>';});}
+  html+='<button class="btn btno btnf" onclick="goRevision()">← Volver</button></div></div>';
+  document.getElementById('ct').innerHTML=html;
+}
 
 // ── MODAL / TOAST ──
 function openModal(t,c){document.getElementById('modalT').textContent=t;document.getElementById('modalC').innerHTML=c;document.getElementById('modalBg').classList.add('show');}
 function closeModal(){document.getElementById('modalBg').classList.remove('show');}
 function toast(msg,tipo){const el=document.getElementById('toast');el.textContent=msg;el.className='toast show'+(tipo?' '+tipo:'');setTimeout(()=>el.classList.remove('show'),2800);}
 
+// ── SWIPE ENTRENO ──
+let _entTX=0;
+function entTS(e){_entTX=e.touches[0].clientX;}
+function entTE(e){
+  const dx=e.changedTouches[0].clientX-_entTX;
+  if(Math.abs(dx)<60)return;
+  const nextDay=(dx<0)?Math.min(curDay+1,DIAS.length-1):Math.max(curDay-1,0);
+  if(nextDay!==curDay){curDay=nextDay;document.getElementById('ct').innerHTML=renderEntreno();}
+}
 // ── SWIPE REVISIÓN ──
 let _revTX=0;
 function revTouchStart(e){_revTX=e.touches[0].clientX;}
