@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:sans-serif;background:#f4f5f8;height:100vh;display:flex;flex-direction:column}
+.topbar{background:#1A2B5A;color:#fff;padding:12px 16px;font-weight:700;flex-shrink:0;font-size:16px}
+.sticky-tabs{position:sticky;top:0;z-index:10;background:#f4f5f8;padding:0 13px;border-bottom:2px solid #E2E6EF}
+.tabs{display:flex}
+.tab{padding:9px 14px;font-size:13px;font-weight:700;color:#1A2B5A;border-bottom:2.5px solid #1A2B5A;border:none;background:none;font-family:inherit}
+.nut-day-sticky{position:sticky;top:40px;z-index:9;background:#f4f5f8;padding:7px 13px 5px;border-bottom:1px solid #E2E6EF}
+.nut-days{display:flex;gap:6px;overflow-x:auto}
+.nd{flex-shrink:0;padding:6px 12px;border-radius:20px;border:1.5px solid #E2E6EF;background:#fff;font-size:12.5px;font-weight:600;color:#5A6480;cursor:pointer;font-family:inherit}
+.nd.on{background:#1A2B5A;border-color:#1A2B5A;color:#fff}
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:13px}
+.cat-lbl{font-size:11px;font-weight:700;color:#5A6480;margin-bottom:5px;text-transform:uppercase}
+.opts{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.opt{padding:7px 11px;border-radius:20px;border:1.5px solid #E2E6EF;background:#fff;font-size:13px;font-weight:500;color:#5A6480;cursor:pointer;font-family:inherit;touch-action:manipulation;-webkit-user-select:none}
+.opt.on{border-color:#0DBF6F;background:#D4F7E8;color:#07854D;font-weight:600}
+.meal{margin-bottom:20px;font-weight:800;font-size:15px;margin-top:12px}
+#log{background:#fff;border-radius:8px;padding:10px;margin-top:12px;font-size:11px;font-family:monospace;min-height:60px;white-space:pre-wrap;border:1px solid #E2E6EF}
+</style>
+</head>
+<body>
+<div class="topbar">EnFormaFit — Test Nutrición Real</div>
+<div class="content" id="ct">
+  <div class="sticky-tabs">
+    <div class="tabs"><button class="tab">Mi menú</button></div>
+  </div>
+  <div class="nut-day-sticky">
+    <div class="nut-days">
+      <button class="nd on">Lun</button>
+      <button class="nd">Mar</button>
+      <button class="nd">Mié</button>
+    </div>
+  </div>
+  <div id="menu-content"></div>
+  <div id="log">Toca los alimentos...\n</div>
+</div>
+
+<script>
+const _NIT = [];
+let selected = {prot: null, hidrat: null};
+
+function log(m) {
+  const el = document.getElementById('log');
+  el.textContent += new Date().toISOString().slice(11,22) + ' ' + m + '\n';
+}
+
+function nitP(di, meal, tipo, idx) {
+  log('nitP called: di='+di+' meal='+meal+' tipo='+tipo+' idx='+idx);
+  const it = _NIT[idx];
+  log('item: ' + (it ? it.nom : 'NOT FOUND - _NIT.length='+_NIT.length));
+  if (!it) return;
+  selected.prot = it.nom;
+  render();
+}
+
+function nitI(di, meal, cat, idx) {
+  log('nitI called: cat='+cat+' idx='+idx);
+  const it = _NIT[idx];
+  log('item: ' + (it ? it.nom : 'NOT FOUND'));
+  if (!it) return;
+  selected[cat] = it.nom;
+  render();
+}
+
+function render() {
+  _NIT.length = 0; // reset
+  const PROTS = ['Pechuga de pollo','Merluza','Whey Protein','Huevo entero','Salmón','Atún natural'];
+  const HIDRATOS = ['Arroz blanco 80g','Pasta 80g','Patata 200g','Boniato 150g'];
+  
+  let out = '<div class="meal">🌅 Desayuno</div>';
+  
+  out += '<div class="cat-lbl">Proteína</div><div class="opts">';
+  PROTS.forEach(nom => {
+    const idx = _NIT.length;
+    _NIT.push({nom});
+    const on = selected.prot === nom;
+    out += `<button class="opt ${on?'on':''}" onclick="nitP(0,'desayuno','magra',${idx})">${nom}</button>`;
+  });
+  out += '</div>';
+  
+  out += '<div class="cat-lbl">Hidrato</div><div class="opts">';
+  HIDRATOS.forEach(nom => {
+    const idx = _NIT.length;
+    _NIT.push({nom});
+    const on = selected.hidrat === nom;
+    out += `<button class="opt ${on?'on':''}" onclick="nitI(0,'desayuno','hidrat',${idx})">${nom}</button>`;
+  });
+  out += '</div>';
+  
+  out += '<div style="margin-top:8px;font-size:13px;color:#666">Seleccionado: prot=<b>' + (selected.prot||'ninguna') + '</b>, hidrat=<b>' + (selected.hidrat||'ninguno') + '</b></div>';
+  
+  document.getElementById('menu-content').innerHTML = out;
+  log('render() done, _NIT.length=' + _NIT.length);
+}
+
+render();
+</script>
+</body>
+</html>
