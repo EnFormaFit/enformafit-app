@@ -437,18 +437,133 @@ function render(){
 }
 
 // ── LOGIN ──
-function doLogin(){
-  const e=document.getElementById('le').value;
+// ── API LAYER ──
+const API='https://enformafit-backend-production.up.railway.app';
+let _tk=localStorage.getItem('ef_tk')||null;
+
+async function api(method,path,body){
+  const opts={method,headers:{'Content-Type':'application/json'}};
+  if(_tk)opts.headers['Authorization']='Bearer '+_tk;
+  if(body)opts.body=JSON.stringify(body);
+  const r=await fetch(API+path,opts);
+  const d=await r.json();
+  if(!r.ok)throw new Error(d.error||String(r.status));
+  return d;
+}
+
+async function doLogin(){
+  const e=document.getElementById('le').value.trim();
   const p=document.getElementById('lp').value;
-  if(!e||!p){const el=document.getElementById('lerr');el.textContent='Rellena email y contraseña';el.style.display='block';return;}
+  const errEl=document.getElementById('lerr');
+  if(!e||!p){errEl.textContent='Rellena email y contraseña';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  const btn=document.querySelector('.lbtn');
+  if(btn)btn.textContent='Entrando...';
+  try{
+    const data=await api('POST','/api/auth/login',{email:e,password:p});
+    _tk=data.token;
+    localStorage.setItem('ef_tk',_tk);
+    localStorage.setItem('ef_role',data.role||'cliente');
+    await loadClienteData();
+    showApp();
+  }catch(err){
+    errEl.textContent=err.message.includes('Credenciales')||err.message==='401'?'Email o contraseña incorrectos':err.message;
+    errEl.style.display='block';
+    if(btn)btn.textContent='Entrar →';
+  }
+}
+
+async function loadClienteData(){
+  try{
+    // 1. Perfil del cliente
+    const perfil=await api('GET','/api/clientes/me/perfil');
+    const nom=perfil.nombre||ST.u.nom;
+    const partes=nom.trim().split(' ');
+    const init=(partes[0]?.[0]||'')+(partes[1]?.[0]||'');
+    ST.u.nom=nom;
+    ST.u.init=init.toUpperCase()||'CL';
+    ST.u.tipo=perfil.tipo==='1a1'?'uno':'programa';
+    ST.u.semTotal=perfil.tipo==='1a1'?13:14;
+    if(perfil.dias_entreno)ST.u.diasEnt=perfil.dias_entreno;
+    if(perfil.kcal_asignadas)ST.p.macro.kcal=perfil.kcal_asignadas;
+
+    // 2. Bloque activo y rutina
+    try{
+      const rutina=await api('GET','/api/entreno/mi-rutina');
+      if(rutina){
+        ST.u.semana=rutina.semana_actual||ST.u.semana;
+        if(rutina.fecha_inicio)ST.u.inicioBloque=rutina.fecha_inicio.split('T')[0];
+        // Load exercises if available
+        if(rutina.ejercicios){
+          try{
+            const ejes=typeof rutina.ejercicios==='string'?JSON.parse(rutina.ejercicios):rutina.ejercicios;
+            if(Array.isArray(ejes)||typeof ejes==='object')window._apiEjercicios=ejes;
+          }catch(e){}
+        }
+      }
+    }catch(e){console.warn('[API] No hay rutina activa');}
+
+    // 3. Historial de pesos
+    try{
+      const pesosAPI=await api('GET','/api/entreno/peso');
+      if(pesosAPI&&pesosAPI.length){
+        ST.pesos=pesosAPI.map(p=>({f:p.fecha.split('T')[0],v:parseFloat(p.peso)}));
+        if(ST.pesos.length)ST.pesoInicial=ST.pesos[ST.pesos.length-1].v;
+      }
+    }catch(e){console.warn('[API] No hay pesos');}
+
+    // 4. Merge con localStorage (datos offline: menú, entrenos, check-in, revisión)
+    try{
+      const cached=localStorage.getItem('ef8');
+      if(cached){
+        const c=JSON.parse(cached);
+        if(c.menu&&Object.keys(c.menu).length)ST.menu=c.menu;
+        if(c.menuGuardado)ST.menuGuardado=c.menuGuardado;
+        if(c.ejStates)ST.ejStates=c.ejStates;
+        if(c.histEnt&&Object.keys(c.histEnt).length)ST.histEnt=c.histEnt;
+        if(c.rev)ST.rev=c.rev;
+        if(c.revHistorial)ST.revHistorial=c.revHistorial;
+        if(c.medidasIni)ST.medidasIni=c.medidasIni;
+        if(c.ci)ST.ci=c.ci;
+        if(c.listaCheck)ST.listaCheck=c.listaCheck;
+      }
+    }catch(e){}
+
+    localStorage.setItem('ef_nom',nom);
+  }catch(err){
+    console.warn('[API] loadClienteData error:',err);
+    // Si falla la API, usamos datos del localStorage como fallback
+    try{
+      const cached=localStorage.getItem('ef8');
+      if(cached)Object.assign(ST,JSON.parse(cached));
+    }catch(e){}
+  }
+}
+
+function showApp(){
   document.getElementById('lw').style.display='none';
   document.getElementById('app').classList.add('on');
-  document.getElementById('avbtn').textContent=ST.u.init;
+  document.getElementById('avbtn').textContent=ST.u.init||'CL';
   const li=document.getElementById('loginLogoImg')||document.querySelector('.llo img');
   const tl=document.getElementById('topLogo');
   if(li&&tl)tl.src=li.src;
   S('inicio');
 }
+
+// Auto-login si hay token guardado
+window.addEventListener('DOMContentLoaded',async()=>{
+  if(_tk){
+    try{
+      await loadClienteData();
+      showApp();
+      return;
+    }catch(e){
+      _tk=null;
+      localStorage.removeItem('ef_tk');
+    }
+  }
+});
+
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('lw').style.display!=='none')doLogin();});
 
 // ── TOAST & MODAL ──
@@ -564,7 +679,22 @@ function renderCI(){
 }
 function refreshCI(){const ct=document.getElementById('ct');if(ct&&SEC==='inicio')ct.innerHTML=renderInicio();}
 function toggleCIdia(t,i){const a=t==='nutri'?ST.ci.nutriDias:ST.ci.pasosDias;const idx=a.indexOf(i);if(idx>=0)a.splice(idx,1);else a.push(i);refreshCI();}
-function enviarCI(){ST.ci.done=true;save();refreshCI();toast('Check-in enviado ✓','vd');}
+function enviarCI(){
+  ST.ci.done=true;save();refreshCI();toast('Check-in enviado ✓','vd');
+  // Sync check-in to API
+  if(_tk){
+    const semIni=ST.u.inicioBloque||new Date().toISOString().split('T')[0];
+    api('POST','/api/entreno/checkin',{
+      semana_inicio:semIni,
+      dias_entreno_real:ST.ci.entrenos,
+      dias_nutricion:ST.ci.nutriDias,
+      dias_pasos:ST.ci.pasosDias,
+      orgullos:ST.ci.nota||'',
+      compromisos:'',
+      sensaciones:ST.ci.nota||''
+    }).catch(e=>console.warn('[API] CI sync error:',e));
+  }
+}
 
 // ── ENTRENO ──
 let curDay=null,_entTX=0;
@@ -1241,6 +1371,7 @@ function addPeso(){
   if(i>=0)ST.pesos[i].v=n;
   else{ST.pesos.push({f,v:n});ST.pesos.sort((a,b)=>a.f.localeCompare(b.f));}
   save();toast('Peso guardado ✓','vd');
+  if(_tk)api('POST','/api/entreno/peso',{fecha:f,peso:n}).catch(e=>console.warn('[API] Peso:',e));
   document.getElementById('ct').innerHTML=renderProgreso();
 }
 
@@ -1392,6 +1523,13 @@ function editarRevAnterior(sem){
 }
 
 // ── PERFIL ──
+function logout(){
+  _tk=null;
+  localStorage.removeItem('ef_tk');
+  localStorage.removeItem('ef_role');
+  location.reload();
+}
+
 function renderPerfil(){
   const u=ST.u;
   const edad=u.dob?Math.floor((new Date()-new Date(u.dob))/31557600000):'—';
