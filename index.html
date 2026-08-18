@@ -1662,23 +1662,7 @@ function renderPerfil(){
 <button class="btn btngr btnf" style="margin-top:4px" onclick="logout()">Cerrar sesión</button>`;
 }
 function toggleFaq(i){const a=document.getElementById('faq'+i);if(a){a.classList.toggle('open');}}
-function logout(){document.getElementById('app').classList.remove('on');document.getElementById('lw').style.display='';document.getElementById('le').value='';document.getElementById('lp').value='';}
-
-// ── LÓGICAS INTERNAS (referencia) ──
-const LOGICAS={
-  adherencia:{
-    formula:'Entrenos×0.45 + Nutrición×0.35 + Pasos×0.20',
-    semaforo:{verde:'≥80%',naranja:'60-79%',rojo:'<60%'},
-  },
-  tmb:{formula:'88.362 + (13.397×kg) + (4.799×cm) − (5.677×edad)', nota:'Harris-Benedict hombres'},
-  revisiones:{uno:[3,7,11],programa:[4,8,12]},
-  bloque:{uno:12,programa:13},
-  pasos:{deficit_sedentario:8000,deficit_activo:10000,volumen:8000},
-  descansoSeries:{compound_grande:'3min',maquinas:'2min',aislamiento:'90s',abdomen_gemelo:'60s'},
-  snack_grasa:{solo_superavit:true,items:['Frutos secos','Crema cacahuete','Chocolate >85%']},
-  proteina:{magra_añade_grasa:true,grasa_NO_añade_grasa:true},
-  perdida_peso:{ritmo_optimo:'0.5-1kg/sem',max_recomendado:'1.2kg/sem'},
-};
+;
 
 // ── INIT ──
 window.addEventListener('DOMContentLoaded',()=>{load();});
