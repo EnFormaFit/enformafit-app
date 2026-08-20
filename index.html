@@ -488,12 +488,17 @@ async function loadClienteData(){
     ST.u.tipo=perfil.tipo==='1a1'?'uno':'programa';
     ST.u.semTotal=perfil.tipo==='1a1'?13:14;
     ST.u.lesiones=perfil.lesiones||'';
+    ST.u.altura=perfil.altura||ST.u.altura||175;
+    ST.u.diasEnt=perfil.dias_entreno||ST.u.diasEnt||4;
+    if(perfil.fecha_nacimiento)ST.u.dob=perfil.fecha_nacimiento.split('T')[0];
+    if(perfil.peso_inicial)ST.pesoInicial=parseFloat(perfil.peso_inicial);
 
     // Apply plan data
     if(plan){
       ST.u.semana=plan.semana_actual||ST.u.semana;
       ST.u.inicioBloque=plan.fecha_inicio?plan.fecha_inicio.split('T')[0]:ST.u.inicioBloque;
       ST.objPeso=plan.objetivo_kg||ST.objPeso;
+      ST.u.obj=ST.objPeso;
       
       // Macros from plan
       if(plan.macros){
