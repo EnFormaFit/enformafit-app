@@ -1298,6 +1298,7 @@ function buildPesoGridApp(pesos,inicioBloque,semanaActual){
     const dw=d.getDay();const di=dw===0?6:dw-1;
     if(!pm[sem])pm[sem]={};pm[sem][di]=p.v;ss.add(sem);
   });
+  const maxSem=semanaActual||Math.max(1,...(ss.size?ss:[1]));
   const sa=Array.from({length:maxSem+1},function(_,i){return i;});
   const md={};sa.forEach(s=>{const vs=Object.values(pm[s]||{}).filter(v=>v>0);md[s]=vs.length?+(vs.reduce((a,b)=>a+b,0)/vs.length).toFixed(1):null;});
   let h='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="border-collapse:collapse;font-size:10.5px;min-width:'+(52+sa.length*52)+'px">';
