@@ -556,7 +556,20 @@ async function loadClienteData(){
               kcal:110,prot:0.5,carbs:25,grasa:0.3});
           }
         });
-        if(Object.keys(newMenu).length>0)ST.menu=newMenu;
+        if(Object.keys(newMenu).length>0){
+          ST.menu=newMenu;
+          ['desayuno','comida','cena','snack'].forEach(function(meal){
+            if(!newMenu[meal]||!newMenu[meal].length)return;
+            var mealObj={};
+            var catMap={prot:'proteinas_magras',hidrat:'hidratos',fat:'grasas',fruta:'frutas',verd:'verduras'};
+            newMenu[meal].forEach(function(it){
+              var key=catMap[it.cat]||'proteinas_magras';
+              if(!mealObj[key])mealObj[key]=[];
+              mealObj[key].push({nom:it.nom,cantidad:it.cantidad,u:it.u||'g',p:it.prot||0,c:it.carbs||0,g:it.grasa||0,kcal:it.kcal||0});
+            });
+            MENU[meal]=mealObj;
+          });
+        }
       }
     }
 
@@ -564,7 +577,7 @@ async function loadClienteData(){
     try{
       const pesosAPI=await api('GET','/api/entreno/peso');
       if(pesosAPI&&pesosAPI.length){
-        ST.pesos=pesosAPI.map(p=>({f:p.fecha.split('T')[0],v:parseFloat(p.peso)}))
+        ST.pesos=pesosAPI.map(p=>({f:p.fecha.split('T')[0],v:parseFloat(p.peso)})).sort((a,b)=>a.f.localeCompare(b.f))
           .sort((a,b)=>a.f.localeCompare(b.f));
         ST.pesoInicial=ST.pesos[0]?.v||ST.pesoInicial;
       }
@@ -1649,89 +1662,72 @@ function logout(){
 
 function renderPerfil(){
   const u=ST.u;
-  const edad=u.dob?Math.floor((new Date()-new Date(u.dob))/31557600000):'—';
   const macro=ST.p.macro;
-  const ed=ST.perfilEditing;
-
+  const edad=u.dob?Math.floor((new Date()-new Date(u.dob))/31557600000):'—';
+  const pesoAct=ST.pesos&&ST.pesos.length?ST.pesos[ST.pesos.length-1].v:(ST.pesoInicial||'—');
+  const objPeso=ST.objPeso||'—';
+  const altura=u.altura||'—';
+  const diasEnt=u.diasEnt||DIAS.filter(d=>!d.rest).length||4;
   const FAQS=[
-    ['¿Con qué frecuencia debo entrenar?',`${DIAS.filter(d=>!d.rest).length} días a la semana según tu plan actual.`],
+    ['¿Con qué frecuencia debo entrenar?',diasEnt+' días a la semana según tu plan actual.'],
     ['¿Puedo cambiar ejercicios?','Habla con tu entrenador. El plan está diseñado con progresión específica.'],
     ['¿Qué pasa si me salto un entreno?','No pasa nada. Retoma al día siguiente sin intentar compensar.'],
-    ['¿Cuándo veré resultados?','Los primeros cambios en energía y rendimiento: 2-3 semanas. Cambios visuales: 4-6 semanas.'],
-    ['¿Puedo comer fuera del menú?','Ocasionalmente sí. Trata de respetar las proporciones de proteína, hidrato y grasa.'],
+    ['¿Cómo sé si estoy progresando?','Revisa tus pesos semanales y el aumento de cargas en tus ejercicios.'],
   ];
-
-  return`
-<div class="card">
-  <div class="cb" style="text-align:center;padding-top:20px">
-    <div class="pav">${u.init}</div>
-    <div style="font-size:17px;font-weight:800;margin-bottom:2px">${u.nom}</div>
-    <div style="font-size:13px;color:var(--t3)">${u.plan} · Semana ${u.semana}/${u.semTotal}</div>
-  </div>
-</div>
-
-<div class="card">
-  <div class="ch">
-    <h2>👤 Mis datos</h2>
-    <button class="btn btns ${ed?'btnp':'btno'}" onclick="ST.perfilEditing=!ST.perfilEditing;render()">${ed?'Guardar ✓':'Editar'}</button>
-  </div>
-  <div class="cb">
-    ${[
-      ['Fecha de nacimiento','dob','date',u.dob||''],
-      ['Edad',null,null,edad+' años'],
-      ['Altura',null,null,u.altura+'cm'],
-      ['Peso inicial',null,null,u.peso+'kg'],
-      ['Objetivo',null,null,u.objetivo+'kg'],
-    ].map(([l,k,t,v])=>`<div class="perfil-dato">
-      <label>${l}</label>
-      ${ed&&k?`<input class="perfil-edit-input" type="${t}" value="${v}" onchange="ST.u['${k}']=this.value;save()">`:`<span class="val">${v}</span>`}
-    </div>`).join('')}
-    <div class="perfil-dato" style="flex-direction:column;align-items:flex-start;gap:6px">
-      <label>Molestias / Lesiones</label>
-      ${ed?`<textarea class="preqa" style="margin-bottom:0" onchange="ST.u.lesiones=this.value;save()">${u.lesiones||''}</textarea>`:`<span class="val" style="font-size:13px;color:var(--t2)">${u.lesiones||'Ninguna'}</span>`}
+  return`<div style="padding:16px">
+    <div class="card" style="margin-bottom:12px">
+      <div class="ch"><h2>👤 Mi perfil</h2></div>
+      <div class="cb">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:24px;font-weight:800;color:var(--az)">${pesoAct}kg</div>
+            <div style="font-size:10px;color:var(--t3)">Peso actual</div>
+          </div>
+          <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:24px;font-weight:800;color:var(--vd)">${objPeso}kg</div>
+            <div style="font-size:10px;color:var(--t3)">Objetivo</div>
+          </div>
+          <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:24px;font-weight:800;color:var(--az2)">${altura}cm</div>
+            <div style="font-size:10px;color:var(--t3)">Altura</div>
+          </div>
+          <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:24px;font-weight:800;color:var(--nr)">${edad}</div>
+            <div style="font-size:10px;color:var(--t3)">Edad</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px">
+          <div style="text-align:center;padding:8px;background:var(--az3);border-radius:6px">
+            <div style="font-size:16px;font-weight:800;color:var(--az)">${macro.kcal}</div>
+            <div style="font-size:9px;color:var(--t3)">kcal</div>
+          </div>
+          <div style="text-align:center;padding:8px;background:var(--az3);border-radius:6px">
+            <div style="font-size:16px;font-weight:800;color:var(--az)">${macro.p}g</div>
+            <div style="font-size:9px;color:var(--t3)">prot</div>
+          </div>
+          <div style="text-align:center;padding:8px;background:var(--az3);border-radius:6px">
+            <div style="font-size:16px;font-weight:800;color:var(--az)">${macro.c}g</div>
+            <div style="font-size:9px;color:var(--t3)">carbs</div>
+          </div>
+          <div style="text-align:center;padding:8px;background:var(--az3);border-radius:6px">
+            <div style="font-size:16px;font-weight:800;color:var(--az)">${macro.g}g</div>
+            <div style="font-size:9px;color:var(--t3)">grasa</div>
+          </div>
+        </div>
+        ${u.lesiones?'<div style="background:rgba(255,200,0,.1);border:1px solid rgba(255,200,0,.3);border-radius:8px;padding:8px;font-size:12px;margin-bottom:8px">⚠️ <b>Lesiones:</b> '+u.lesiones+'</div>':''}
+        <div style="font-size:11px;color:var(--t3);text-align:center">S${u.semana}/${u.semTotal} · ${diasEnt} días/sem · Bloque ${u.bloque||1}</div>
+      </div>
     </div>
-  </div>
-</div>
-
-<div class="card">
-  <div class="ch"><h2>🍽️ Plan nutricional</h2></div>
-  <div class="cb">
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">
-      <div class="maci"><div class="macv" style="color:var(--nr);font-size:17px">${macro.kcal}</div><div class="macl">kcal/día</div></div>
-      <div class="maci"><div class="macv" style="color:var(--az2);font-size:17px">${macro.p}g</div><div class="macl">Proteína</div></div>
-      <div class="maci"><div class="macv" style="color:var(--vd);font-size:17px">${macro.c}g</div><div class="macl">Carbos</div></div>
-      <div class="maci"><div class="macv" style="color:var(--nr);font-size:17px">${macro.g}g</div><div class="macl">Grasa</div></div>
+    <div class="card">
+      <div class="ch"><h2>❓ Preguntas frecuentes</h2></div>
+      <div class="cb" style="padding:0">
+        ${FAQS.map((q,i)=>'<div style="padding:12px 16px;border-bottom:1px solid var(--bor2);cursor:pointer" onclick="var a=this.querySelector(\'.faq-a\');a.style.display=a.style.display===\'none\'?\'block\':\'none\'"><div style="font-weight:600;font-size:13px">'+q[0]+'</div><div class="faq-a" style="display:none;font-size:12px;color:var(--t2);margin-top:6px">'+q[1]+'</div></div>').join('')}
+      </div>
     </div>
-    <button class="btn btno btnf" onclick="generateMenuPDF()">📄 Descargar menú semanal</button>
-  </div>
-</div>
-
-<div class="trainer-c">
-  <div class="trainer-av">A</div>
-  <div>
-    <div style="font-weight:700;font-size:14px">Álvaro Casal</div>
-    <div style="font-size:12px;color:var(--az2)">@alvaro_casal_ · Tu entrenador</div>
-    <a href="https://instagram.com/alvaro_casal_" target="_blank" style="font-size:12px;color:var(--az2);text-decoration:none">Escribir en Instagram →</a>
-  </div>
-</div>
-
-<div class="card">
-  <div class="ch"><h2>❓ Preguntas frecuentes</h2></div>
-  <div class="cb" style="padding:0">
-    ${FAQS.map((f,i)=>`<div class="faq-item">
-      <button class="faq-q" onclick="toggleFaq(${i})">${f[0]}<span style="flex-shrink:0">▼</span></button>
-      <div class="faq-a" id="faq${i}">${f[1]}</div>
-    </div>`).join('')}
-  </div>
-</div>
-
-<button class="btn btngr btnf" style="margin-top:4px" onclick="logout()">Cerrar sesión</button>`;
+  </div>`;
 }
-function toggleFaq(i){const a=document.getElementById('faq'+i);if(a){a.classList.toggle('open');}}
-;
 
-// ── INIT ──
-window.addEventListener('DOMContentLoaded',()=>{load();});
+
 </script>
 </body>
 </html>
