@@ -1287,41 +1287,44 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 }
 
 // ── PROGRESO ──
-function buildPesoGridApp(pesos,inicioBloque,semanaActual){
+function buildPesoGridApp(pesos,inicioBloque,semActual){
   if(!pesos||!pesos.length)return'<div style="color:var(--t3);font-size:12px;text-align:center;padding:8px">Sin registros de peso aún</div>';
-  const DN=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-  const fi=inicioBloque?new Date(inicioBloque):null;
-  const pm={};const ss=new Set();
-  pesos.forEach(p=>{
-    const d=new Date(p.f);let sem=1;
-    if(fi){const diff=Math.floor((d-fi)/(7*24*60*60*1000));sem=Math.max(1,diff+1);}
-    const dw=d.getDay();const di=dw===0?6:dw-1;
-    if(!pm[sem])pm[sem]={};pm[sem][di]=p.v;ss.add(sem);
+  var DN=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  var fi=inicioBloque?new Date(inicioBloque):null;
+  var pm={};var maxS=parseInt(semActual)||1;
+  pesos.forEach(function(p){
+    var d=new Date(p.f);var sem=1;
+    if(fi){var diff=Math.floor((d-fi)/(7*24*60*60*1000));sem=Math.max(1,diff+1);}
+    var dw=d.getDay();var di=dw===0?6:dw-1;
+    if(!pm[sem])pm[sem]={};pm[sem][di]=p.v;
+    if(sem>maxS)maxS=sem;
   });
-  const maxSem=semanaActual||Math.max(1,...(ss.size?ss:[1]));
-  const sa=Array.from({length:maxSem+1},function(_,i){return i;});
-  const md={};sa.forEach(s=>{const vs=Object.values(pm[s]||{}).filter(v=>v>0);md[s]=vs.length?+(vs.reduce((a,b)=>a+b,0)/vs.length).toFixed(1):null;});
-  let h='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="border-collapse:collapse;font-size:10.5px;min-width:'+(52+sa.length*52)+'px">';
+  var sa=[];for(var i=0;i<=maxS;i++)sa.push(i);
+  var md={};
+  sa.forEach(function(s){
+    var vs=Object.values(pm[s]||{}).filter(function(v){return v>0;});
+    md[s]=vs.length?+(vs.reduce(function(a,b){return a+b;},0)/vs.length).toFixed(1):null;
+  });
+  var h='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="border-collapse:collapse;font-size:10.5px;min-width:'+(52+sa.length*52)+'px">';
   h+='<thead><tr style="background:var(--az)"><th style="padding:4px 7px;text-align:left;color:rgba(255,255,255,.8);font-size:9px;position:sticky;left:0;background:var(--az)">Día</th>';
-  sa.forEach(s=>{h+='<th style="padding:4px 8px;text-align:center;color:#fff;font-size:9px;min-width:48px">S'+s+'</th>';});
+  sa.forEach(function(s){h+='<th style="padding:4px 8px;text-align:center;color:#fff;font-size:9px;min-width:48px">'+(s===0?'S0':'S'+s)+'</th>';});
   h+='</tr></thead><tbody>';
-  DN.forEach((d,di)=>{
+  DN.forEach(function(d,di){
     h+='<tr><td style="padding:4px 7px;font-weight:700;font-size:9px;color:var(--t2);background:var(--bg);position:sticky;left:0">'+d+'</td>';
-    sa.forEach(s=>{
-      const v=pm[s]&&pm[s][di]!=null?pm[s][di]:null;const m=md[s];
-      const bg=v==null?'transparent':m&&v>m?'rgba(255,26,26,.1)':m&&v<m?'rgba(13,191,111,.1)':'transparent';
-      const col=v==null?'var(--t3)':m&&v>m?'var(--rj)':m&&v<m?'var(--vd)':'var(--t1)';
+    sa.forEach(function(s){
+      var v=pm[s]&&pm[s][di]!=null?pm[s][di]:null;var m=md[s];
+      var bg=v==null?'transparent':m&&v>m?'rgba(255,26,26,.1)':m&&v<m?'rgba(13,191,111,.1)':'transparent';
+      var col=v==null?'#ccc':m&&v>m?'var(--rj)':m&&v<m?'var(--vd)':'var(--t1)';
       h+='<td style="padding:4px 5px;text-align:center;background:'+bg+';color:'+col+';font-weight:'+(v?'700':'400')+'">'+(v||'—')+'</td>';
     });
     h+='</tr>';
   });
   h+='<tr style="background:var(--az3);border-top:2px solid var(--az4)"><td style="padding:4px 7px;font-weight:700;font-size:9px;color:var(--az);background:var(--az3);position:sticky;left:0">Media</td>';
-  sa.forEach(s=>{h+='<td style="padding:4px 5px;text-align:center;font-weight:800;font-size:11px;color:var(--az)">'+(md[s]||'—')+'</td>';});
+  sa.forEach(function(s){h+='<td style="padding:4px 5px;text-align:center;font-weight:800;font-size:11px;color:var(--az)">'+(md[s]||'—')+'</td>';});
   h+='</tr><tr><td style="padding:4px 7px;font-weight:700;font-size:9px;color:var(--t3);background:#fff;position:sticky;left:0">Cambio</td>';
-  sa.forEach((s,i)=>{
-    const c=md[s];const p=i>0?md[sa[i-1]]:null;
-    let str='—',col='var(--t3)';
-    if(c!=null&&p!=null){const d=+(c-p).toFixed(1);str=(d>0?'+':'')+d;col=d<0?'var(--vd)':d>0?'var(--rj)':'var(--t3)';}
+  sa.forEach(function(s,i){
+    var c=md[s];var p=i>0?md[sa[i-1]]:null;var str='—',col='var(--t3)';
+    if(c!=null&&p!=null){var dif=+(c-p).toFixed(1);str=(dif>0?'+':'')+dif;col=dif<0?'var(--vd)':dif>0?'var(--rj)':'var(--t3)';}
     h+='<td style="padding:4px 5px;text-align:center;font-weight:700;color:'+col+'">'+str+'</td>';
   });
   h+='</tr></tbody></table></div>';return h;
