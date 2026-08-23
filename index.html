@@ -321,6 +321,10 @@ svg.cht{width:100%;overflow:visible}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 4v16M18 4v16M2 8h4M18 8h4M2 16h4M18 16h4M6 12h12"/></svg>
       <span>Entreno</span>
     </button>
+    <button class="bni" id="nci" onclick="S('checkin')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      <span>Check-in</span>
+    </button>
     <button class="bni" id="np" onclick="S('progreso')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
       <span>Progreso</span>
@@ -419,19 +423,19 @@ function load(){try{
 
 // ── NAV ──
 let SEC='inicio';
-const TITLES={inicio:'Inicio',nutricion:'Nutrición',entreno:'Entreno',progreso:'Progreso',revision:'Revisión',perfil:'Perfil'};
+const TITLES={inicio:'Inicio',nutricion:'Nutrición',entreno:'Entreno',progreso:'Progreso',checkin:'Check-in',revision:'Revisión',perfil:'Perfil'};
 function S(s){
   SEC=s;
   document.getElementById('st').textContent=TITLES[s]||s;
-  ['ni','nn','ne','np','nr'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('on');});
-  const nm={inicio:'ni',nutricion:'nn',entreno:'ne',progreso:'np',revision:'nr'};
+  ['ni','nn','ne','nci','np','nr'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('on');});
+  const nm={inicio:'ni',nutricion:'nn',entreno:'ne',checkin:'nci',progreso:'np',revision:'nr'};
   if(nm[s])document.getElementById(nm[s])?.classList.add('on');
   render();
 }
 function render(){
   const ct=document.getElementById('ct');
   if(!ct)return;
-  const fns={inicio:renderInicio,nutricion:renderNutricion,entreno:renderEntreno,progreso:renderProgreso,revision:renderRevision,perfil:renderPerfil};
+  const fns={inicio:renderInicio,nutricion:renderNutricion,entreno:renderEntreno,checkin:renderCI,progreso:renderProgreso,revision:renderRevision,perfil:renderPerfil};
   ct.innerHTML=(fns[SEC]||renderInicio)();
   ct.scrollTop=0;
 }
