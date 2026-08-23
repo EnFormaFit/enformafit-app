@@ -490,13 +490,10 @@ async function loadClienteData(){
     ST.u.lesiones=perfil.lesiones||'';
     ST.u.altura=perfil.altura||ST.u.altura||175;
     ST.u.diasEnt=perfil.dias_entreno||ST.u.diasEnt||4;
-    if(perfil.fecha_nacimiento){
-      ST.u.dob=perfil.fecha_nacimiento.split('T')[0];
-    }
+    if(perfil.fecha_nacimiento)ST.u.dob=perfil.fecha_nacimiento.split('T')[0];
     if(perfil.peso_inicial)ST.pesoInicial=parseFloat(perfil.peso_inicial);
     ST.u.altura=parseInt(perfil.altura)||ST.u.altura||175;
     ST.u.diasEnt=parseInt(perfil.dias_entreno)||ST.u.diasEnt||4;
-    if(perfil.peso_inicial)ST.pesoInicial=parseFloat(perfil.peso_inicial);
 
     // Apply plan data
     if(plan){
@@ -1666,56 +1663,56 @@ function logout(){
 }
 
 function renderPerfil(){
-  const u=ST.u;
-  const macro=ST.p.macro;
-  const edad=(()=>{
+  var u=ST.u;
+  var macro=ST.p.macro;
+  var edad=(function(){
     if(!u.dob)return'—';
-    const b=new Date(u.dob);const n=new Date();
-    let age=n.getFullYear()-b.getFullYear();
+    var b=new Date(u.dob);var n=new Date();
+    var age=n.getFullYear()-b.getFullYear();
     if(n.getMonth()<b.getMonth()||(n.getMonth()===b.getMonth()&&n.getDate()<b.getDate()))age--;
     return age;
   })();
-  const pesoAct=ST.pesos&&ST.pesos.length?ST.pesos[ST.pesos.length-1].v:(ST.pesoInicial||'—');
-  const objPeso=ST.objPeso||'—';
-  const altura=u.altura||'—';
-  const diasEnt=u.diasEnt||DIAS.filter(d=>!d.rest).length||4;
-  const FAQS=[
-    ['¿Con qué frecuencia debo entrenar?',diasEnt+' días/semana según tu plan.'],
+  var pesoAct=ST.pesos&&ST.pesos.length?ST.pesos[ST.pesos.length-1].v:(ST.pesoInicial||'—');
+  var objPeso=ST.objPeso||'—';
+  var altura=u.altura||'—';
+  var diasEnt=u.diasEnt||DIAS.filter(function(d){return!d.rest;}).length||4;
+  var FAQS=[
+    ['¿Con qué frecuencia entrenar?',diasEnt+' días/semana según tu plan.'],
     ['¿Puedo cambiar ejercicios?','Habla con tu entrenador.'],
-    ['¿Qué pasa si me salto un entreno?','Retoma al día siguiente sin compensar.'],
-    ['¿Cómo sé si progreso?','Fíjate en el peso en la barra y en cómo te sientes.'],
+    ['¿Qué hago si me salto un entreno?','Retoma al día siguiente sin compensar.'],
+    ['¿Cómo sé si progreso?','Fíjate en el peso en la barra y cómo te sientes.'],
   ];
-  return`<div style="padding:4px">
-    <div class="card" style="margin-bottom:10px">
-      <div class="ch"><h2>👤 ${u.nom.split(' ')[0]}</h2>
-        <span style="font-size:12px;color:var(--t3)">S${u.semana}/${u.semTotal} · Bloque ${u.bloque||1}</span>
-      </div>
-      <div class="cb">
-        <div class="rs4" style="margin-bottom:12px">
-          <div class="rs-box"><div class="rs-v">${pesoAct}kg</div><div class="rs-l">Peso actual</div></div>
-          <div class="rs-box"><div class="rs-v" style="color:var(--vd)">${objPeso}kg</div><div class="rs-l">Objetivo</div></div>
-          <div class="rs-box"><div class="rs-v">${altura}cm</div><div class="rs-l">Altura</div></div>
-          <div class="rs-box"><div class="rs-v">${edad}</div><div class="rs-l">Años</div></div>
-        </div>
-        <div class="rs4">
-          <div class="rs-box"><div class="rs-v" style="font-size:16px">${macro.kcal}</div><div class="rs-l">kcal</div></div>
-          <div class="rs-box"><div class="rs-v" style="font-size:16px">${macro.p}g</div><div class="rs-l">Prot</div></div>
-          <div class="rs-box"><div class="rs-v" style="font-size:16px">${macro.c}g</div><div class="rs-l">Carbs</div></div>
-          <div class="rs-box"><div class="rs-v" style="font-size:16px">${macro.g}g</div><div class="rs-l">Grasa</div></div>
-        </div>
-        ${u.lesiones?`<div style="background:rgba(255,200,0,.1);border:1px solid rgba(255,200,0,.4);border-radius:8px;padding:8px;font-size:12px;margin-top:10px">⚠️ <b>Lesiones:</b> ${u.lesiones}</div>`:''}
-      </div>
-    </div>
-    <div class="card">
-      <div class="ch"><h2>❓ FAQ</h2></div>
-      <div class="cb" style="padding:0">
-        ${FAQS.map(q=>`<div style="padding:11px 16px;border-bottom:1px solid var(--bor2)" onclick="var a=this.querySelector('.fa');a.style.display=a.style.display==='none'?'block':'none'">
-          <div style="font-weight:600;font-size:13px;display:flex;justify-content:space-between">${q[0]}<span style="color:var(--t3)">▾</span></div>
-          <div class="fa" style="display:none;font-size:12px;color:var(--t2);margin-top:5px">${q[1]}</div>
-        </div>`).join('')}
-      </div>
-    </div>
-  </div>`;
+  return'<div style="padding:4px">'
+    +'<div class="card" style="margin-bottom:10px">'
+      +'<div class="ch"><h2>👤 '+u.nom.split(' ')[0]+'</h2>'
+        +'<span style="font-size:12px;color:var(--t3)">S'+u.semana+'/'+u.semTotal+' · Bloque '+(u.bloque||1)+'</span>'
+      +'</div>'
+      +'<div class="cb">'
+        +'<div class="rs4" style="margin-bottom:12px">'
+          +'<div class="rs-box"><div class="rs-v">'+pesoAct+'kg</div><div class="rs-l">Peso actual</div></div>'
+          +'<div class="rs-box"><div class="rs-v" style="color:var(--vd)">'+objPeso+'kg</div><div class="rs-l">Objetivo</div></div>'
+          +'<div class="rs-box"><div class="rs-v">'+altura+'cm</div><div class="rs-l">Altura</div></div>'
+          +'<div class="rs-box"><div class="rs-v">'+edad+'</div><div class="rs-l">Años</div></div>'
+        +'</div>'
+        +'<div class="rs4">'
+          +'<div class="rs-box"><div class="rs-v" style="font-size:16px">'+macro.kcal+'</div><div class="rs-l">kcal</div></div>'
+          +'<div class="rs-box"><div class="rs-v" style="font-size:16px">'+macro.p+'g</div><div class="rs-l">Prot</div></div>'
+          +'<div class="rs-box"><div class="rs-v" style="font-size:16px">'+macro.c+'g</div><div class="rs-l">Carbs</div></div>'
+          +'<div class="rs-box"><div class="rs-v" style="font-size:16px">'+macro.g+'g</div><div class="rs-l">Grasa</div></div>'
+        +'</div>'
+        +(u.lesiones?'<div style="background:rgba(255,200,0,.1);border:1px solid rgba(255,200,0,.4);border-radius:8px;padding:8px;font-size:12px;margin-top:10px">⚠️ <b>Lesiones:</b> '+u.lesiones+'</div>':'')
+      +'</div>'
+    +'</div>'
+    +'<div class="card">'
+      +'<div class="ch"><h2>❓ FAQ</h2></div>'
+      +'<div class="cb" style="padding:0">'
+        +FAQS.map(function(q){return'<div style="padding:11px 16px;border-bottom:1px solid var(--bor2);cursor:pointer" onclick="var a=this.querySelector(\'.fa\');a.style.display=a.style.display===\'none\'?\'block\':\'none\'">'
+          +'<div style="font-weight:600;font-size:13px;display:flex;justify-content:space-between">'+q[0]+'<span style="color:var(--t3)">▾</span></div>'
+          +'<div class="fa" style="display:none;font-size:12px;color:var(--t2);margin-top:5px">'+q[1]+'</div>'
+          +'</div>';}).join('')
+      +'</div>'
+    +'</div>'
+  +'</div>';
 }
 
 >
