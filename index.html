@@ -817,7 +817,7 @@ function calcAdh(){
 
 
 function enviarCI(){
-  ST.ci.done=true;ST.ci.open=false;save();render();toast('Check-in enviado ✓','vd');
+  ST.ci.adh=calcAdh();ST.ci.done=true;ST.ci.open=false;save();render();toast('Check-in enviado ✓ — Adherencia: '+ST.ci.adh+'%','vd');
   // Sync check-in to API
   if(_tk){
     const semIni=ST.u.inicioBloque||new Date().toISOString().split('T')[0];
@@ -1714,94 +1714,53 @@ function _mostrarRevModal(sem){
   const hist=ST.revHistorial&&ST.revHistorial[sem];
   if(!hist){toast('Sin datos para S'+sem,'');return;}
   const POSES=['Frente','Perfil der.','Perfil izq.','Espalda'];
-  const MEDS=[['peso','Peso','kg'],['pecho','Pecho','cm'],['cintura','Cintura','cm'],['cadera','Cadera','cm'],['bicepsd','Bíceps der.','cm'],['bicepsi','Bíceps izq.','cm'],['muslod','Muslo der.','cm'],['musloi','Muslo izq.','cm'],['gemelod','Gemelo der.','cm'],['gemeloi','Gemelo izq.','cm']];
-  const PP=[...Array(7).keys()].map(i=>hist.preguntas&&hist.preguntas[i]).filter(Boolean);
-  let html=`<div style="font-size:12px;color:var(--t3);margin-bottom:14px">${hist.fecha||''}</div>`;
-  html+=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px">`;
-  POSES.forEach((pos,pi)=>{const f=hist.fotos&&hist.fotos['rev_'+pi];html+=`<div style="aspect-ratio:3/5;border-radius:8px;overflow:hidden;background:var(--bg);border:1px solid var(--bor)">${f?`<img src="${f}" style="width:100%;height:100%;object-fit:cover">`:`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:10px;color:var(--t3);text-align:center;padding:4px">${pos}</div>`}</div>`;});
-  html+=`</div>`;
-  html+=`<div style="font-weight:700;font-size:13px;margin-bottom:8px">📏 Medidas</div>`;
-  MEDS.forEach(([k,l,u])=>{if(hist.medidas&&hist.medidas[k])html+=`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bor2);font-size:13px"><span style="color:var(--t2)">${l}</span><span style="font-weight:700">${hist.medidas[k]}${u}</span></div>`;});
-  if(PP.length){html+=`<div style="font-weight:700;font-size:13px;margin:12px 0 8px">💬 Respuestas</div>`;PP.forEach((a,i)=>html+=`<div style="margin-bottom:8px;font-size:13px;color:var(--t2);padding-left:8px;border-left:3px solid var(--az2)">${a}</div>`);}
-  html+=`<div style="display:flex;gap:8px;margin-top:12px">
-    <button class="btn btno" style="flex:1" onclick="closeModal()">Cerrar</button>
-    <button class="btn btnp" style="flex:1" onclick="closeModal();editarRevAnterior(${sem})">✏️ Editar</button>
-  </div>`;
-  openModal('Revisión Semana '+sem,html);
-}
-
-function logout(){
-  _tk=null;
-  localStorage.removeItem('ef_tk');
-  localStorage.removeItem('ef_role');
-  location.reload();
-}
-
-function renderPerfil(){
-  const u=ST.u;
-  const macro=ST.p.macro;
-  const edad=u.dob?Math.floor((new Date()-new Date(u.dob))/31557600000):'—';
-  const pesoAct=ST.pesos&&ST.pesos.length?ST.pesos[ST.pesos.length-1].v:(ST.pesoInicial||'—');
-  const objPeso=ST.objPeso||'—';
-  const altura=u.altura||'—';
-  const diasEnt=u.diasEnt||DIAS.filter(d=>!d.rest).length||4;
-  const FAQS=[
-    ['¿Con qué frecuencia debo entrenar?',diasEnt+' días a la semana según tu plan actual.'],
-    ['¿Puedo cambiar ejercicios?','Habla con tu entrenador. El plan está diseñado con progresión específica.'],
-    ['¿Qué pasa si me salto un entreno?','No pasa nada. Retoma al día siguiente sin intentar compensar.'],
-    ['¿Cómo sé si estoy progresando?','Revisa tus pesos semanales y el aumento de cargas en tus ejercicios.'],
-  ];
-  return`<div style="padding:16px">
-    <div class="card" style="margin-bottom:12px">
-      <div class="ch"><h2>👤 Mi perfil</h2></div>
-      <div class="cb">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-          <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
-            <div style="font-size:24px;font-weight:800;color:var(--az)">${pesoAct}kg</div>
-            <div style="font-size:10px;color:var(--t3)">Peso actual</div>
-          </div>
-          <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
-            <div style="font-size:24px;font-weight:800;color:var(--vd)">${objPeso}kg</div>
-            <div style="font-size:10px;color:var(--t3)">Objetivo</div>
-          </div>
-          <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
-            <div style="font-size:24px;font-weight:800;color:var(--az2)">${altura}cm</div>
-            <div style="font-size:10px;color:var(--t3)">Altura</div>
-          </div>
-          <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
-            <div style="font-size:24px;font-weight:800;color:var(--nr)">${edad}</div>
-            <div style="font-size:10px;color:var(--t3)">Edad</div>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px">
-          <div style="text-align:center;padding:8px;background:var(--az3);border-radius:6px">
-            <div style="font-size:16px;font-weight:800;color:var(--az)">${macro.kcal}</div>
-            <div style="font-size:9px;color:var(--t3)">kcal</div>
-          </div>
-          <div style="text-align:center;padding:8px;background:var(--az3);border-radius:6px">
-            <div style="font-size:16px;font-weight:800;color:var(--az)">${macro.p}g</div>
-            <div style="font-size:9px;color:var(--t3)">prot</div>
-          </div>
-          <div style="text-align:center;padding:8px;background:var(--az3);border-radius:6px">
-            <div style="font-size:16px;font-weight:800;color:var(--az)">${macro.c}g</div>
-            <div style="font-size:9px;color:var(--t3)">carbs</div>
-          </div>
-          <div style="text-align:center;padding:8px;background:var(--az3);border-radius:6px">
-            <div style="font-size:16px;font-weight:800;color:var(--az)">${macro.g}g</div>
-            <div style="font-size:9px;color:var(--t3)">grasa</div>
-          </div>
-        </div>
-        ${u.lesiones?'<div style="background:rgba(255,200,0,.1);border:1px solid rgba(255,200,0,.3);border-radius:8px;padding:8px;font-size:12px;margin-bottom:8px">⚠️ <b>Lesiones:</b> '+u.lesiones+'</div>':''}
-        <div style="font-size:11px;color:var(--t3);text-align:center">S${u.semana}/${u.semTotal} · ${diasEnt} días/sem · Bloque ${u.bloque||1}</div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="ch"><h2>❓ Preguntas frecuentes</h2></div>
-      <div class="cb" style="padding:0">
-        ${FAQS.map((q,i)=>'<div style="padding:12px 16px;border-bottom:1px solid var(--bor2);cursor:pointer" onclick="var a=this.querySelector(\'.faq-a\');a.style.display=a.style.display===\'none\'?\'block\':\'none\'"><div style="font-weight:600;font-size:13px">'+q[0]+'</div><div class="faq-a" style="display:none;font-size:12px;color:var(--t2);margin-top:6px">'+q[1]+'</div></div>').join('')}
-      </div>
-    </div>
-  </div>`;
+  let html='<div style="font-size:12px;color:var(--t3);margin-bottom:12px">'+(hist.fecha?new Date(hist.fecha).toLocaleDateString('es'):'')+'</div>';
+  
+  // Fotos
+  html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px">';
+  POSES.forEach(function(pos,pi){
+    const f=hist.fotos&&(hist.fotos['rev_'+pi]||hist.fotos['s'+sem+'_'+pi]);
+    html+='<div style="aspect-ratio:3/5;border-radius:8px;overflow:hidden;background:var(--bg);border:1px solid var(--bor)">'
+      +(f?'<img src="'+f+'" style="width:100%;height:100%;object-fit:cover">':'<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:10px;color:var(--t3);text-align:center;padding:4px">'+pos+'</div>')
+    +'</div>';
+  });
+  html+='</div>';
+  
+  // Medidas — show whatever keys exist (long names from DB or short from localStorage)
+  const meds=hist.medidas||{};
+  const medEntries=Object.entries(meds);
+  if(medEntries.length){
+    html+='<div style="font-weight:700;font-size:13px;margin-bottom:8px">Medidas</div>';
+    medEntries.forEach(function(entry){
+      const nom=entry[0];
+      const vals=entry[1];
+      // vals can be {S0: value} or just a number
+      let val='';
+      if(typeof vals==='object'&&vals!==null){
+        // Get the value for this semana or first available
+        val=vals['S'+sem]||vals['s'+sem]||Object.values(vals)[0]||'';
+      } else {
+        val=vals;
+      }
+      if(val)html+='<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bor2);font-size:13px"><span style="color:var(--t2)">'+nom+'</span><span style="font-weight:700">'+val+' cm</span></div>';
+    });
+  }
+  
+  // Preguntas
+  const pregs=hist.preguntas||{};
+  const pregEntries=Object.entries(pregs).filter(function(e){return e[1];});
+  if(pregEntries.length){
+    html+='<div style="font-weight:700;font-size:13px;margin:12px 0 8px">Respuestas</div>';
+    pregEntries.forEach(function(entry){
+      html+='<div style="margin-bottom:8px;font-size:13px;color:var(--t2);padding-left:8px;border-left:3px solid var(--az2)">'+entry[1]+'</div>';
+    });
+  }
+  
+  html+='<div style="display:flex;gap:8px;margin-top:12px">'
+    +'<button class="btn btno" style="flex:1" onclick="closeModal()">Cerrar</button>'
+    +'<button class="btn btnp" style="flex:1" onclick="closeModal();editarRevAnterior('+sem+')">Editar</button>'
+  +'</div>';
+  openModal('Revision S'+sem,html);
 }
 
 
