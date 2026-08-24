@@ -1591,7 +1591,8 @@ function renderRevision(){
 
   // Historial de revisiones arriba
   let histH='<div class="card" style="margin-bottom:12px"><div class="ch"><h2>📋 Revisiones del bloque</h2></div><div class="cb" style="padding:0">';
-  revSems.forEach(rs=>{
+  const allRevSems=[0,...revSems];
+  allRevSems.forEach(rs=>{
     const isPast=rs<nextRev;
     const isCur=rs===nextRev;
     const isFut=rs>nextRev;
