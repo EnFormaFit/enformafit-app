@@ -321,10 +321,6 @@ svg.cht{width:100%;overflow:visible}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 4v16M18 4v16M2 8h4M18 8h4M2 16h4M18 16h4M6 12h12"/></svg>
       <span>Entreno</span>
     </button>
-    <button class="bni" id="nci" onclick="S('checkin')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-      <span>Check-in</span>
-    </button>
     <button class="bni" id="np" onclick="S('progreso')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
       <span>Progreso</span>
@@ -427,15 +423,15 @@ const TITLES={inicio:'Inicio',nutricion:'Nutrición',entreno:'Entreno',progreso:
 function S(s){
   SEC=s;
   document.getElementById('st').textContent=TITLES[s]||s;
-  ['ni','nn','ne','nci','np','nr'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('on');});
-  const nm={inicio:'ni',nutricion:'nn',entreno:'ne',checkin:'nci',progreso:'np',revision:'nr'};
+  ['ni','nn','ne','np','nr'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('on');});
+  const nm={inicio:'ni',nutricion:'nn',entreno:'ne',progreso:'np',revision:'nr'};
   if(nm[s])document.getElementById(nm[s])?.classList.add('on');
   render();
 }
 function render(){
   const ct=document.getElementById('ct');
   if(!ct)return;
-  const fns={inicio:renderInicio,nutricion:renderNutricion,entreno:renderEntreno,checkin:renderCI,progreso:renderProgreso,revision:renderRevision,perfil:renderPerfil};
+  const fns={inicio:renderInicio,nutricion:renderNutricion,entreno:renderEntreno,progreso:renderProgreso,revision:renderRevision,perfil:renderPerfil};
   ct.innerHTML=(fns[SEC]||renderInicio)();
   ct.scrollTop=0;
 }
@@ -735,105 +731,72 @@ function renderInicio(){
   </div>
 </div>
 
-${ST.u.tipo==='uno'?renderCI():''}`;
+${renderCI()}`;
 }
 
 // ── CHECK-IN ──
 function renderCI(){
-  var ci=ST.ci;
-  var tipo=ST.u.tipo;
+  var ci=ST.ci;var tipo=ST.u.tipo;
   var diasProg=DIAS.filter(function(d){return!d.rest;}).length||4;
-  
-  if(ci.done){
-    var adh=calcAdh();
-    return'<div class="card"><div class="ch"><h2>✅ Check-in enviado</h2></div><div class="cb">'
-      +'<div style="text-align:center;padding:12px 0">'
-      +'<div style="font-size:36px;font-weight:900;color:var(--az)">'+adh+'%</div>'
-      +'<div style="font-size:12px;color:var(--t3);margin-bottom:16px">Adherencia esta semana</div>'
-      +'</div>'
-      +(tipo==='uno'?
-        '<div style="font-size:13px;color:var(--t2);margin-bottom:8px"><b>Cómo fue la semana:</b> '+ci.como+'</div>'
-        +'<div style="font-size:13px;color:var(--t2);margin-bottom:8px"><b>Orgullo:</b> '+ci.orgullo+'</div>'
-        +'<div style="font-size:13px;color:var(--t2);margin-bottom:8px"><b>Compromiso:</b> '+ci.compromiso+'</div>'
-        +'<div style="font-size:13px;color:var(--t2);margin-bottom:8px"><b>Sensaciones:</b> '+ci.sensaciones+'</div>'
-        :'')
-      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px">'
-        +'<div style="text-align:center;background:var(--bg);border-radius:8px;padding:10px">'
-          +'<div style="font-size:20px;font-weight:800;color:var(--az)">'+ci.diasEnt+'/'+diasProg+'</div>'
-          +'<div style="font-size:9px;color:var(--t3)">Entrenos</div>'
-        +'</div>'
-        +'<div style="text-align:center;background:var(--bg);border-radius:8px;padding:10px">'
-          +'<div style="font-size:20px;font-weight:800;color:var(--az)">'+ci.diasNut+'/7</div>'
-          +'<div style="font-size:9px;color:var(--t3)">Nutrición</div>'
-        +'</div>'
-        +'<div style="text-align:center;background:var(--bg);border-radius:8px;padding:10px">'
-          +'<div style="font-size:20px;font-weight:800;color:var(--az)">'+ci.diasPasos+'/7</div>'
-          +'<div style="font-size:9px;color:var(--t3)">Pasos</div>'
-        +'</div>'
-      +'</div>'
-      +'<button class="btn bo" style="width:100%;margin-top:14px" onclick="ST.ci.done=false;save();render()">Editar respuestas</button>'
-    +'</div></div>';
-  }
-  
-  var ent=ci.diasEnt||0;
-  var nut=ci.diasNut||0;
-  var pas=ci.diasPasos||0;
-  
-  var counterRow=function(label,val,max,key){
-    return'<div style="background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:10px">'
-      +'<div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:10px">'+label+'</div>'
-      +'<div style="display:flex;align-items:center;justify-content:center;gap:12px">'
-        +'<button onclick="var v=Math.max(0,ST.ci.'+key+'-1);ST.ci.'+key+'=v;save();render()" '
-          +'style="width:36px;height:36px;border-radius:50%;border:none;background:var(--bor);font-size:20px;cursor:pointer;font-weight:700">−</button>'
-        +'<div style="font-size:28px;font-weight:900;color:var(--az);min-width:60px;text-align:center">'+val+'/'+max+'</div>'
-        +'<button onclick="var v=Math.min('+max+',ST.ci.'+key+'+1);ST.ci.'+key+'=v;save();render()" '
-          +'style="width:36px;height:36px;border-radius:50%;border:none;background:var(--az);color:#fff;font-size:20px;cursor:pointer;font-weight:700">+</button>'
-      +'</div>'
-    +'</div>';
-  };
-  
-  var html='<div class="card"><div class="ch"><h2>📋 Check-in semanal</h2></div><div class="cb">';
-  
-  if(tipo==='uno'){
-    html+='<div style="margin-bottom:14px">'
-      +'<div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:6px">¿Cómo fue la semana anterior?</div>'
-      +'<textarea placeholder="Cuéntame cómo fue..." style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:none;min-height:70px;outline:none" '
-        +'onchange="ST.ci.como=this.value;save()">'+(ci.como||'')+'</textarea>'
-    +'</div>';
-  }
-  
-  html+=counterRow('👉 Días de entrenamiento cumplidos',ent,diasProg,'diasEnt');
-  html+=counterRow('👉 Días cumplidos del plan nutricional',nut,7,'diasNut');
-  html+=counterRow('👉 Días de cumplimiento de los pasos',pas,7,'diasPasos');
-  
-  if(tipo==='uno'){
-    html+='<div style="margin-bottom:10px">'
-      +'<div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:6px">💪 ¿De qué te enorgulleces esta semana?</div>'
-      +'<textarea placeholder="Al menos una cosa..." style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:none;min-height:60px;outline:none" '
-        +'onchange="ST.ci.orgullo=this.value;save()">'+(ci.orgullo||'')+'</textarea>'
-    +'</div>'
-    +'<div style="margin-bottom:10px">'
-      +'<div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:6px">🎯 ¿Qué acciones te comprometes a realizar esta semana?</div>'
-      +'<textarea placeholder="Tus compromisos..." style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:none;min-height:60px;outline:none" '
-        +'onchange="ST.ci.compromiso=this.value;save()">'+(ci.compromiso||'')+'</textarea>'
-    +'</div>'
-    +'<div style="margin-bottom:14px">'
-      +'<div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:6px">🌡️ Sensaciones generales (hambre, fatiga...)</div>'
-      +'<textarea placeholder="¿Cómo te has sentido?" style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:none;min-height:60px;outline:none" '
-        +'onchange="ST.ci.sensaciones=this.value;save()">'+(ci.sensaciones||'')+'</textarea>'
-    +'</div>';
-  }
-  
   var adh=calcAdh();
-  html+='<div style="background:var(--az3);border-radius:8px;padding:10px;text-align:center;margin-bottom:14px">'
-    +'<div style="font-size:11px;color:var(--t3);margin-bottom:2px">Adherencia estimada</div>'
-    +'<div style="font-size:28px;font-weight:900;color:var(--az)">'+adh+'%</div>'
-  +'</div>';
-  
-  html+='<button class="btn bp" style="width:100%;font-size:15px;padding:14px" onclick="enviarCI()">Enviar check-in ✓</button>';
-  html+='</div></div>';
-  return html;
+  if(ci.done){
+    return '<div class="card" style="margin-bottom:10px">'
+      +'<div class="ch" onclick="ST.ci.open=!ST.ci.open;render()" style="cursor:pointer">'
+        +'<h2>\u2705 Check-in enviado</h2>'
+        +'<div style="display:flex;align-items:center;gap:8px">'
+          +'<span style="font-size:18px;font-weight:900;color:'+(adh>=80?'var(--vd)':adh>=50?'var(--nr)':'var(--rj)')+'">'+adh+'%</span>'
+          +'<span style="color:var(--t3)">'+(ci.open?'\u25b2':'\u25bc')+'</span>'
+        +'</div></div>'
+      +(ci.open?'<div class="cb">'
+        +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">'
+          +'<div style="text-align:center;background:var(--bg);border-radius:8px;padding:10px"><div style="font-size:20px;font-weight:800;color:var(--az)">'+(ci.diasEnt||0)+'/'+diasProg+'</div><div style="font-size:9px;color:var(--t3)">Entrenos</div></div>'
+          +'<div style="text-align:center;background:var(--bg);border-radius:8px;padding:10px"><div style="font-size:20px;font-weight:800;color:var(--az)">'+(ci.diasNut||0)+'/7</div><div style="font-size:9px;color:var(--t3)">Nutrici\u00f3n</div></div>'
+          +'<div style="text-align:center;background:var(--bg);border-radius:8px;padding:10px"><div style="font-size:20px;font-weight:800;color:var(--az)">'+(ci.diasPasos||0)+'/7</div><div style="font-size:9px;color:var(--t3)">Pasos</div></div>'
+        +'</div>'
+        +'<button class="btn bo" style="width:100%" onclick="ST.ci.done=false;ST.ci.open=true;save();render()">Editar respuestas</button>'
+      +'</div>':'')
+    +'</div>';
+  }
+  var C=function(label,val,mx,key){
+    return '<div style="background:var(--bg);border-radius:10px;padding:12px;margin-bottom:10px">'
+      +'<div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:8px">'+label+'</div>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between">'
+        +'<button onclick="event.stopPropagation();ST.ci.'+key+'=Math.max(0,(ST.ci.'+key+'||0)-1);save();render()" style="width:40px;height:40px;border-radius:50%;border:none;background:var(--bor);font-size:22px;cursor:pointer">\u2212</button>'
+        +'<div style="font-size:30px;font-weight:900;color:var(--az)">'+val+'<span style="font-size:16px;color:var(--t3)">\/'+mx+'<\/span><\/div>'
+        +'<button onclick="event.stopPropagation();ST.ci.'+key+'=Math.min('+mx+',(ST.ci.'+key+'||0)+1);save();render()" style="width:40px;height:40px;border-radius:50%;border:none;background:var(--az);color:#fff;font-size:22px;cursor:pointer">+<\/button>'
+      +'<\/div><\/div>';
+  };
+  var h='<div class="card" style="margin-bottom:10px">'
+    +'<div class="ch" onclick="ST.ci.open=!ST.ci.open;render()" style="cursor:pointer">'
+      +'<h2>\ud83d\udccb Check-in semanal<\/h2>'
+      +'<span style="color:var(--t3)">'+(ci.open?'\u25b2':'\u25bc')+'<\/span>'
+    +'<\/div>';
+  if(!ci.open){return h+'<\/div>';}
+  h+='<div class="cb">';
+  if(tipo==='uno'){
+    h+='<div style="margin-bottom:12px"><div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:6px">\u00bfC\u00f3mo fue la semana anterior?<\/div>'
+      +'<textarea placeholder="Cu\u00e9ntame..." style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:none;min-height:65px;box-sizing:border-box;outline:none" onchange="ST.ci.como=this.value;save()">'+(ci.como||'')+'<\/textarea><\/div>';
+  }
+  h+=C('\ud83d\udc49 D\u00edas de entrenamiento cumplidos',ci.diasEnt||0,diasProg,'diasEnt');
+  h+=C('\ud83d\udc49 D\u00edas cumplidos del plan nutricional',ci.diasNut||0,7,'diasNut');
+  h+=C('\ud83d\udc49 D\u00edas de cumplimiento de los pasos',ci.diasPasos||0,7,'diasPasos');
+  if(tipo==='uno'){
+    h+='<div style="margin-bottom:10px"><div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:6px">\ud83d\udcaa \u00bfDe qu\u00e9 te enorgulleces esta semana?<\/div>'
+      +'<textarea placeholder="Al menos una cosa..." style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:none;min-height:55px;box-sizing:border-box;outline:none" onchange="ST.ci.orgullo=this.value;save()">'+(ci.orgullo||'')+'<\/textarea><\/div>'
+    +'<div style="margin-bottom:10px"><div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:6px">\ud83c\udfaf \u00bfQu\u00e9 te comprometes a hacer esta semana?<\/div>'
+      +'<textarea placeholder="Tus compromisos..." style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:none;min-height:55px;box-sizing:border-box;outline:none" onchange="ST.ci.compromiso=this.value;save()">'+(ci.compromiso||'')+'<\/textarea><\/div>'
+    +'<div style="margin-bottom:12px"><div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:6px">\ud83c\udf21\ufe0f Sensaciones generales (hambre, fatiga...)<\/div>'
+      +'<textarea placeholder="\u00bfC\u00f3mo te has sentido?" style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:none;min-height:55px;box-sizing:border-box;outline:none" onchange="ST.ci.sensaciones=this.value;save()">'+(ci.sensaciones||'')+'<\/textarea><\/div>';
+  }
+  h+='<div style="background:var(--az3);border-radius:8px;padding:10px;text-align:center;margin-bottom:12px">'
+    +'<div style="font-size:10px;color:var(--t3)">Adherencia estimada<\/div>'
+    +'<div style="font-size:30px;font-weight:900;color:var(--az)">'+adh+'%<\/div>'
+  +'<\/div>'
+  +'<button class="btn bp" style="width:100%;padding:14px;font-size:15px" onclick="enviarCI()">Enviar \u2713<\/button>'
+  +'<\/div><\/div>';
+  return h;
 }
+
 
 function calcAdh(){
   var ci=ST.ci;
