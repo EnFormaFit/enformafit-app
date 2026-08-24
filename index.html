@@ -913,7 +913,11 @@ function calcAdh(){
 
 
 function enviarCI(){
-  ST.ci.adh=calcAdh();ST.ci.done=true;ST.ci.open=false;save();render();toast('Check-in enviado ✓','vd');
+  ST.ci.adh=calcAdh();ST.ci.done=true;ST.ci.open=false;save();
+  var card=document.querySelector('[data-ci-card]');
+  if(card){var tmp=document.createElement('div');tmp.innerHTML=renderCI();card.replaceWith(tmp.firstChild);}
+  else{var ct=document.getElementById('ct');if(ct){var sp=ct.scrollTop;ct.innerHTML=renderInicio();ct.scrollTop=sp;}}
+  toast('Check-in enviado ✓ — '+ST.ci.adh+'%','vd');
   // Sync check-in to API
   if(_tk){
     const semIni=ST.u.inicioBloque||new Date().toISOString().split('T')[0];
