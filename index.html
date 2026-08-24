@@ -817,7 +817,7 @@ function calcAdh(){
 
 
 function enviarCI(){
-  ST.ci.done=true;save();refreshCI();toast('Check-in enviado ✓','vd');
+  ST.ci.adh=calcAdh();ST.ci.done=true;ST.ci.open=false;save();render();toast('Check-in enviado ✓','vd');
   // Sync check-in to API
   if(_tk){
     const semIni=ST.u.inicioBloque||new Date().toISOString().split('T')[0];
