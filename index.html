@@ -740,7 +740,7 @@ function renderCI(){
   var diasProg=DIAS.filter(function(d){return!d.rest;}).length||4;
   var adh=calcAdh();
   if(ci.done){
-    return '<div class="card" style="margin-bottom:10px">'
+    return '<div class="card" data-ci style="margin-bottom:10px">'
       +'<div class="ch" onclick="ST.ci.open=!ST.ci.open;render()" style="cursor:pointer">'
         +'<h2>\u2705 Check-in enviado</h2>'
         +'<div style="display:flex;align-items:center;gap:8px">'
@@ -766,7 +766,7 @@ function renderCI(){
         +'<button onclick="event.stopPropagation();ST.ci.'+key+'=Math.min('+mx+',(ST.ci.'+key+'||0)+1);save();render()" style="width:40px;height:40px;border-radius:50%;border:none;background:var(--az);color:#fff;font-size:22px;cursor:pointer">+<\/button>'
       +'<\/div><\/div>';
   };
-  var h='<div class="card" style="margin-bottom:10px">'
+  var h='<div class="card" data-ci style="margin-bottom:10px">'
     +'<div class="ch" onclick="ST.ci.open=!ST.ci.open;render()" style="cursor:pointer">'
       +'<h2>\ud83d\udccb Check-in semanal<\/h2>'
       +'<span style="color:var(--t3)">'+(ci.open?'\u25b2':'\u25bc')+'<\/span>'
@@ -798,6 +798,12 @@ function renderCI(){
 }
 
 
+function refreshCI(){
+  var el=document.querySelector('.card[data-ci]');
+  if(el){el.outerHTML='<div class="card" data-ci style="margin-bottom:10px">'+renderCIInner()+'</div>';}
+  else render();
+}
+function renderCIInner(){return renderCI().replace('<div class="card" data-ci style="margin-bottom:10px">','').replace(/<\/div>$/,'');}
 function calcAdh(){
   var ci=ST.ci;
   var diasProg=DIAS.filter(function(d){return!d.rest;}).length||4;
@@ -1574,7 +1580,12 @@ function renderRevision(){
   function revFecha(rs){
     if(!inicioBloque)return'';
     const d=new Date(inicioBloque);
-    d.setDate(d.getDate()+(rs-1)*7);
+    // Semana rs empieza en (rs-1)*7 dias desde inicio
+    // La revision es el sabado de esa semana
+    d.setDate(d.getDate()+(rs)*7-1); // sabado al final de la semana rs
+    // Ensure it's Saturday (6)
+    const dow=d.getDay();
+    if(dow!==6)d.setDate(d.getDate()+(6-dow+7)%7);
     return d.toLocaleDateString('es',{day:'numeric',month:'short'});
   }
 
@@ -1608,7 +1619,7 @@ function renderRevision(){
     ['¿Cómo te sientes esta semana?','¿Cuáles fueron tus mayores éxitos?','¿Cómo te sentiste con ellos?','¿Qué tal los entrenamientos?','¿Qué tal la nutrición?','¿Qué mejorarías?','¿Algo más que quieras compartir?'];
 
   const POSES=['Frente','Perfil der.','Perfil izq.','Espalda'];
-  const MEDS=[['peso','Peso (kg)'],['pecho','Pecho (cm)'],['cintura','Cintura (cm)'],['cadera','Cadera (cm)'],['bicepsd','Bíceps der. (cm)'],['bicepsi','Bíceps izq. (cm)'],['muslod','Muslo der. (cm)'],['musloi','Muslo izq. (cm)'],['gemelod','Gemelo der. (cm)'],['gemeloi','Gemelo izq. (cm)']];
+  const MEDS=[['hombros','Hombros','zona más amplia'],['pecho','Pecho','zona más amplia'],['brazoi','Brazo izq. contraído','zona más amplia, contraído'],['brazod','Brazo dcho. contraído','zona más amplia, contraído'],['cintura','Cintura ombligo','a la altura del ombligo'],['musloi','Muslo izq. relajado','zona más amplia, relajado'],['muslod','Muslo dcho. relajado','zona más amplia, relajado'],['gemeloi','Gemelo izq. contraído','zona más amplia, contraído'],['gemelod','Gemelo dcho. contraído','zona más amplia, contraído']];
 
   const stepLabels=['📸 Fotos','📏 Medidas','💬 Preguntas'];
   const stepsBar=stepLabels.map((l,i)=>`<div class="rev-step ${i<step?'rs-done':i===step?'rs-act':'rs-fut'}" onclick="ST.rev.step=${i};render()" title="${l}"></div>`).join('');
@@ -1631,7 +1642,8 @@ function renderRevision(){
     content=`<div style="display:flex;gap:12px;align-items:flex-start">
       <div style="flex:1">
         <div style="font-size:13px;color:var(--t2);margin-bottom:12px">Mídete en ayunas, sin ropa, con cinta métrica.</div>
-        ${MEDS.map(([k,l])=>`<div style="margin-bottom:8px"><label style="font-size:11.5px;font-weight:700;color:var(--t2);display:block;margin-bottom:3px">${l}</label><input class="medin" type="number" inputmode="decimal" placeholder="—" value="${medidas[k]||''}" onchange="ST.rev.medidas['${k}']=this.value;save()" step="0.1"></div>`).join('')}
+        <div style="background:rgba(0,122,255,.08);border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:11px;color:var(--az)">📏 Mide siempre en la zona más amplia. Los que indican "contraído" aprieta el músculo al medir.</div>
+        ${MEDS.map(([k,l,desc])=>`<div style="margin-bottom:10px"><label style="font-size:12px;font-weight:700;color:var(--t2);display:block;margin-bottom:1px">${l}</label><div style="font-size:10px;color:var(--t3);margin-bottom:3px">${desc}</div><input class="medin" type="number" inputmode="decimal" placeholder="—" value="${medidas[k]||''}" onchange="ST.rev.medidas['${k}']=this.value;save()" step="0.1"></div>`).join('')}
       </div>
       <img src="data:image/png;base64,${BODY_B64}" style="width:100px;flex-shrink:0;margin-top:32px;opacity:.85" alt="Guía de medidas">
     </div>`;
