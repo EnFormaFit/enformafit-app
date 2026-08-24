@@ -1582,7 +1582,7 @@ function renderRevision(){
 
   // Historial de revisiones arriba
   let histH='<div class="card" style="margin-bottom:12px"><div class="ch"><h2>📋 Revisiones del bloque</h2></div><div class="cb" style="padding:0">';
-  revSems.forEach(rs=>{
+  const allRevSems=[0,...revSems];allRevSems.forEach(rs=>{
     const isPast=rs<nextRev;
     const isCur=rs===nextRev;
     const isFut=rs>nextRev;
@@ -1746,16 +1746,7 @@ function OLD_verRevAnterior_disabled(sem){
   </div>`;
   openModal('Revisión Semana '+sem,html);
 }
-function editarRevAnterior(sem){
-  const hist=ST.revHistorial&&ST.revHistorial[sem];
-  if(hist){ST.rev.fotos={...hist.fotos};ST.rev.medidas={...hist.medidas};ST.rev.preguntas={...hist.preguntas};}
-  ST.rev.done=false;ST.rev.step=0;
-  // Temporarily change semana to edit that revision
-  ST._editingSem=sem;
-  render();toast('Editando revisión S'+sem,'');
-}
 
-// ── PERFIL ──
 function logout(){
   _tk=null;
   localStorage.removeItem('ef_tk');
