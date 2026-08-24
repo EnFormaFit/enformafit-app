@@ -817,7 +817,7 @@ function calcAdh(){
 
 
 function enviarCI(){
-  ST.ci.done=true;save();refreshCI();toast('Check-in enviado ✓','vd');
+  ST.ci.done=true;ST.ci.open=false;save();render();toast('Check-in enviado ✓','vd');
   // Sync check-in to API
   if(_tk){
     const semIni=ST.u.inicioBloque||new Date().toISOString().split('T')[0];
@@ -1689,8 +1689,30 @@ function editarRevAnterior(sem){
   closeModal();S('revision');
 }
 function verRevAnterior(sem){
+  // Try BD first
+  if(_tk){
+    api('GET','/api/entreno/revision/'+sem).then(function(data){
+      if(data){
+        if(!ST.revHistorial)ST.revHistorial={};
+        ST.revHistorial[sem]=data;
+        _mostrarRevModal(sem);
+      } else {
+        toast('Sin datos para S'+sem,'');
+      }
+    }).catch(function(){
+      // Fallback to localStorage
+      if(ST.revHistorial&&ST.revHistorial[sem])_mostrarRevModal(sem);
+      else toast('Sin datos para S'+sem,'');
+    });
+    return;
+  }
   const hist=ST.revHistorial&&ST.revHistorial[sem];
   if(!hist){toast('Sin datos guardados para S'+sem,'');return;}
+  _mostrarRevModal(sem);
+}
+function _mostrarRevModal(sem){
+  const hist=ST.revHistorial&&ST.revHistorial[sem];
+  if(!hist){toast('Sin datos para S'+sem,'');return;}
   const POSES=['Frente','Perfil der.','Perfil izq.','Espalda'];
   const MEDS=[['peso','Peso','kg'],['pecho','Pecho','cm'],['cintura','Cintura','cm'],['cadera','Cadera','cm'],['bicepsd','Bíceps der.','cm'],['bicepsi','Bíceps izq.','cm'],['muslod','Muslo der.','cm'],['musloi','Muslo izq.','cm'],['gemelod','Gemelo der.','cm'],['gemeloi','Gemelo izq.','cm']];
   const PP=[...Array(7).keys()].map(i=>hist.preguntas&&hist.preguntas[i]).filter(Boolean);
