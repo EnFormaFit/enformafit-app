@@ -758,25 +758,24 @@ function renderCI(){
     +'</div>';
   }
   var C=function(label,val,mx,key){
+    var dots='';
+    for(var i=1;i<=mx;i++){
+      var active=i<=(val||0);
+      dots+='<button type="button" '
+        +'onclick="event.preventDefault();event.stopPropagation();ST.ci.'+key+'='+i+';save();ciUpdateDots(\'ci-'+key+'\','+i+','+mx+')" '
+        +'style="width:30px;height:30px;border-radius:50%;border:2px solid var(--az);margin:2px;cursor:pointer;background:'+(active?'var(--az)':'transparent')+';transition:background .1s" '
+        +'id="ci-dot-'+key+'-'+i+'"></button>';
+    }
     return '<div style="background:var(--bg);border-radius:10px;padding:12px;margin-bottom:10px">'
-      +'<div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:8px">'+label+'</div>'
-      +'<div style="display:flex;align-items:center;justify-content:space-between">'
-        +'<button onclick="event.stopPropagation();ST.ci.'+key+'=Math.max(0,(ST.ci.'+key+'||0)-1);save();render()" style="width:40px;height:40px;border-radius:50%;border:none;background:var(--bor);font-size:22px;cursor:pointer">\u2212</button>'
-        +'<div style="font-size:30px;font-weight:900;color:var(--az)">'+val+'<span style="font-size:16px;color:var(--t3)">\/'+mx+'<\/span><\/div>'
-        +'<button onclick="event.stopPropagation();ST.ci.'+key+'=Math.min('+mx+',(ST.ci.'+key+'||0)+1);save();render()" style="width:40px;height:40px;border-radius:50%;border:none;background:var(--az);color:#fff;font-size:22px;cursor:pointer">+<\/button>'
-      +'<\/div><\/div>';
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+        +'<div style="font-size:12px;font-weight:600;color:var(--t2)">'+label+'</div>'
+        +'<div style="font-size:14px;font-weight:800;color:var(--az)" id="ci-'+key+'-count">'+(val||0)+'/'+mx+'</div>'
+      +'</div>'
+      +'<div style="display:flex;flex-wrap:wrap" id="ci-'+key+'-dots">'+dots+'</div>'
+    +'</div>';
   };
-  var h='<div class="card" data-ci style="margin-bottom:10px">'
-    +'<div class="ch" onclick="ST.ci.open=!ST.ci.open;render()" style="cursor:pointer">'
-      +'<h2>\ud83d\udccb Check-in semanal<\/h2>'
-      +'<span style="color:var(--t3)">'+(ci.open?'\u25b2':'\u25bc')+'<\/span>'
-    +'<\/div>';
-  if(!ci.open){return h+'<\/div>';}
-  h+='<div class="cb">';
-  if(tipo==='uno'){
-    h+='<div style="margin-bottom:12px"><div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:6px">\u00bfC\u00f3mo fue la semana anterior?<\/div>'
-      +'<textarea placeholder="Cu\u00e9ntame..." style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:none;min-height:65px;box-sizing:border-box;outline:none" onchange="ST.ci.como=this.value;save()">'+(ci.como||'')+'<\/textarea><\/div>';
-  }
+
+
   h+=C('\ud83d\udc49 D\u00edas de entrenamiento cumplidos',ci.diasEnt||0,diasProg,'diasEnt');
   h+=C('\ud83d\udc49 D\u00edas cumplidos del plan nutricional',ci.diasNut||0,7,'diasNut');
   h+=C('\ud83d\udc49 D\u00edas de cumplimiento de los pasos',ci.diasPasos||0,7,'diasPasos');
@@ -800,6 +799,22 @@ function renderCI(){
 
 
 function renderCIInner(){return renderCI().replace('<div class="card" data-ci style="margin-bottom:10px">','').replace(/<\/div>$/,'');}
+function ciUpdateDots(key,val,mx){
+  var container=document.getElementById('ci-'+key+'-dots');
+  var countEl=document.getElementById('ci-'+key+'-count');
+  if(!container)return;
+  var btns=container.querySelectorAll('button');
+  btns.forEach(function(btn,i){
+    btn.style.background=(i+1<=val)?'var(--az)':'transparent';
+  });
+  if(countEl)countEl.textContent=val+'/'+mx;
+  ciUpdateAdh();
+}
+function ciUpdateAdh(){
+  var adh=calcAdh();
+  var el=document.getElementById('ci-adh-preview');
+  if(el)el.textContent=adh+'%';
+}
 function calcAdh(){
   var ci=ST.ci;
   var diasProg=DIAS.filter(function(d){return!d.rest;}).length||4;
@@ -1464,7 +1479,7 @@ function renderProgreso(){
   fotosH+=`</div><input type="file" accept="image/*" id="pfin" onchange="loadPF(this)">`;
 
   // Medidas comparativa
-  const MEDS=[['peso','Peso','kg'],['pecho','Pecho','cm'],['cintura','Cintura','cm'],['cadera','Cadera','cm'],['bicepsd','Bíceps der.','cm'],['bicepsi','Bíceps izq.','cm'],['muslod','Muslo der.','cm'],['musloi','Muslo izq.','cm'],['gemelod','Gemelo der.','cm'],['gemeloi','Gemelo izq.','cm']];
+  const MEDS=[['hombros','Hombros','cm'],['pecho','Pecho','cm'],['brazod','Brazo dcho.','cm'],['brazoi','Brazo izq.','cm'],['cintura','Cintura ombligo','cm'],['muslod','Muslo dcho.','cm'],['musloi','Muslo izq.','cm'],['gemelod','Gemelo dcho.','cm'],['gemeloi','Gemelo izq.','cm']];
   const med=ST.rev.medidas||{};
   const medIni=ST.medidasIni||{};
   const hayMeds=Object.keys(med).length>0;
@@ -1616,7 +1631,7 @@ function renderRevision(){
     ['¿Cómo te sientes esta semana?','¿Cuáles fueron tus mayores éxitos?','¿Cómo te sentiste con ellos?','¿Qué tal los entrenamientos?','¿Qué tal la nutrición?','¿Qué mejorarías?','¿Algo más que quieras compartir?'];
 
   const POSES=['Frente','Perfil der.','Perfil izq.','Espalda'];
-  const MEDS=[['hombros','Hombros','zona más amplia'],['pecho','Pecho','zona más amplia'],['brazoi','Brazo izq. contraído','zona más amplia, contraído'],['brazod','Brazo dcho. contraído','zona más amplia, contraído'],['cintura','Cintura ombligo','a la altura del ombligo'],['musloi','Muslo izq. relajado','zona más amplia, relajado'],['muslod','Muslo dcho. relajado','zona más amplia, relajado'],['gemeloi','Gemelo izq. contraído','zona más amplia, contraído'],['gemelod','Gemelo dcho. contraído','zona más amplia, contraído']];
+  const MEDS=[['hombros','Hombros','zona más amplia'],['pecho','Pecho','zona más amplia'],['brazod','Brazo dcho. contraído','zona más amplia, contraído'],['brazoi','Brazo izq. contraído','zona más amplia, contraído'],['cintura','Cintura ombligo','a la altura del ombligo'],['muslod','Muslo dcho. relajado','zona más amplia, relajado'],['musloi','Muslo izq. relajado','zona más amplia, relajado'],['gemelod','Gemelo dcho. contraído','zona más amplia, contraído'],['gemeloi','Gemelo izq. contraído','zona más amplia, contraído']];
 
   const stepLabels=['📸 Fotos','📏 Medidas','💬 Preguntas'];
   const stepsBar=stepLabels.map((l,i)=>`<div class="rev-step ${i<step?'rs-done':i===step?'rs-act':'rs-fut'}" onclick="ST.rev.step=${i};render()" title="${l}"></div>`).join('');
@@ -1687,11 +1702,22 @@ function enviarRev(){
   if(!Object.keys(ST.medidasIni).length&&Object.keys(ST.rev.medidas).length)ST.medidasIni={...ST.rev.medidas};
   save();render();toast('Revisión S'+nextRev+' enviada ✓','vd');
 }
+function editarRevAnterior(sem){
+  // Load this revision into ST.rev and navigate to revision section
+  const hist=ST.revHistorial&&ST.revHistorial[sem];
+  if(!hist){toast('Sin datos para S'+sem,'');return;}
+  // Allow editing past revision
+  ST.rev=Object.assign({},hist,{step:0});
+  ST._editandoRevSem=sem;
+  closeModal();
+  S('revision');
+}
+
 function verRevAnterior(sem){
   const hist=ST.revHistorial&&ST.revHistorial[sem];
   if(!hist){toast('Sin datos guardados para S'+sem,'');return;}
   const POSES=['Frente','Perfil der.','Perfil izq.','Espalda'];
-  const MEDS=[['peso','Peso','kg'],['pecho','Pecho','cm'],['cintura','Cintura','cm'],['cadera','Cadera','cm'],['bicepsd','Bíceps der.','cm'],['bicepsi','Bíceps izq.','cm'],['muslod','Muslo der.','cm'],['musloi','Muslo izq.','cm'],['gemelod','Gemelo der.','cm'],['gemeloi','Gemelo izq.','cm']];
+  const MEDS=[['hombros','Hombros','cm'],['pecho','Pecho','cm'],['brazod','Brazo dcho.','cm'],['brazoi','Brazo izq.','cm'],['cintura','Cintura ombligo','cm'],['muslod','Muslo dcho.','cm'],['musloi','Muslo izq.','cm'],['gemelod','Gemelo dcho.','cm'],['gemeloi','Gemelo izq.','cm']];
   const PP=[...Array(7).keys()].map(i=>hist.preguntas&&hist.preguntas[i]).filter(Boolean);
   let html=`<div style="font-size:12px;color:var(--t3);margin-bottom:14px">${hist.fecha||''}</div>`;
   html+=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px">`;
