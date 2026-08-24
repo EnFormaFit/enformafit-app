@@ -803,10 +803,15 @@ function renderCI(){
 function ciToggle(){
   ST.ci.open=!ST.ci.open;save();
   var card=document.querySelector('[data-ci-card]');
-  if(!card){render();return;}
+  if(!card){
+    // card not found - render without scrolling to top
+    var ct=document.getElementById('ct');
+    if(ct){var scrollPos=ct.scrollTop;ct.innerHTML=(window.renderInicio||renderInicio)();ct.scrollTop=scrollPos;}
+    return;
+  }
   var body=card.querySelector('[data-ci-body]');
   var arr=card.querySelector('[data-ci-arr]');
-  if(body)body.style.display=ST.ci.open?'':'none';
+  if(body)body.style.display=ST.ci.open?'block':'none';
   if(arr)arr.textContent=ST.ci.open?'▲':'▼';
 }
 
@@ -819,6 +824,84 @@ function ciDot(btn){
   var ids={diasEnt:'ci-ent-n',diasNut:'ci-nut-n',diasPasos:'ci-pas-n'};
   var el=document.getElementById(ids[key]);if(el)el.textContent=val+'/'+mx;
   var ae=document.getElementById('ci-adh');if(ae)ae.textContent=calcAdh()+'%';
+}
+function descargarMenuSemanal(){
+  var dias=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  var MEALS=['desayuno','comida','cena','snack'];
+  var MEAL_NOM={desayuno:'Desayuno',comida:'Comida',cena:'Cena',snack:'Snack'};
+  var html='<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
+    +'<title>Plan Nutricional — '+ST.u.nom+'</title>'
+    +'<style>'
+      +'body{font-family:Arial,sans-serif;max-width:900px;margin:0 auto;padding:20px;color:#1a1a2e}'
+      +'.header{text-align:center;border-bottom:3px solid #0d7e4f;padding-bottom:16px;margin-bottom:24px}'
+      +'.logo{font-size:24px;font-weight:900;letter-spacing:-1px;color:#1a1a2e}' 
+      +'.logo span{color:#0d7e4f}'
+      +'.subtitle{font-size:13px;color:#666;margin-top:4px}'
+      +'.macros{display:flex;gap:12px;justify-content:center;margin:12px 0}'
+      +'.macro{background:#f0faf5;border-radius:8px;padding:8px 16px;text-align:center}'
+      +'.macro-v{font-size:18px;font-weight:800;color:#0d7e4f}'
+      +'.macro-l{font-size:10px;color:#666}'
+      +'.day{margin-bottom:20px;page-break-inside:avoid}'
+      +'.day-title{background:#0d7e4f;color:white;padding:8px 14px;border-radius:6px;font-weight:700;font-size:14px;margin-bottom:8px}'
+      +'.meal{margin-bottom:8px;border:1px solid #e0e0e0;border-radius:6px;overflow:hidden}'
+      +'.meal-title{background:#f5f5f5;padding:5px 10px;font-weight:700;font-size:12px;color:#0d7e4f}'
+      +'.meal-item{padding:4px 10px;font-size:12px;display:flex;justify-content:space-between;border-top:1px solid #f0f0f0}'
+      +'.meal-item:first-of-type{border-top:none}'
+      +'.qty{color:#666;font-size:11px}'
+      +'@media print{.no-print{display:none}}'
+    +'</style></head><body>'
+    +'<div class="header">'
+      +'<div class="logo">ENFORMA<span>FIT</span></div>'
+      +'<div class="subtitle">Plan Nutricional Semanal — '+ST.u.nom+' — S'+ST.u.semana+'/'+ST.u.semTotal+'</div>'
+      +'<div class="macros">'
+        +'<div class="macro"><div class="macro-v">'+ST.p.macro.kcal+'</div><div class="macro-l">kcal</div></div>'
+        +'<div class="macro"><div class="macro-v">'+ST.p.macro.p+'g</div><div class="macro-l">Proteína</div></div>'
+        +'<div class="macro"><div class="macro-v">'+ST.p.macro.c+'g</div><div class="macro-l">Carbs</div></div>'
+        +'<div class="macro"><div class="macro-v">'+ST.p.macro.g+'g</div><div class="macro-l">Grasa</div></div>'
+      +'</div>'
+    +'</div>';
+  dias.forEach(function(dia,di){
+    var isRest=DIAS[di]&&DIAS[di].rest;
+    html+='<div class="day"><div class="day-title">'+dia+(isRest?' — Día de descanso':'')+'</div>';
+    var saved=ST.menuGuardado[di];
+    MEALS.forEach(function(meal){
+      var items=saved&&saved[meal]?Object.entries(saved[meal]).filter(function(e){return e[1]&&e[1].nom;})
+        :[];
+      if(!items.length){
+        // Use default MENU
+        var mealData=MENU[meal];
+        if(!mealData)return;
+        var catItems=[];
+        ['proteinas_magras','hidratos','grasas','frutas','verduras'].forEach(function(cat){
+          if(mealData[cat]&&mealData[cat][0]){
+            var it=mealData[cat][0];
+            catItems.push({nom:it.nom,cantidad:it.cantidad,u:it.u||'g'});
+          }
+        });
+        if(!catItems.length)return;
+        html+='<div class="meal"><div class="meal-title">'+MEAL_NOM[meal]+'</div>';
+        catItems.forEach(function(it){
+          html+='<div class="meal-item"><span>'+it.nom+'</span><span class="qty">'+it.cantidad+' '+it.u+'</span></div>';
+        });
+        html+='</div>';
+      } else {
+        html+='<div class="meal"><div class="meal-title">'+MEAL_NOM[meal]+'</div>';
+        items.forEach(function(e){
+          var it=e[1];
+          html+='<div class="meal-item"><span>'+it.nom+'</span><span class="qty">'+(it.cantidad||'')+' '+(it.u||'')+'</span></div>';
+        });
+        html+='</div>';
+      }
+    });
+    html+='</div>';
+  });
+  html+='<div style="text-align:center;margin-top:30px;font-size:11px;color:#999">Generado por EnFormaFit · enformafit.com</div>'
+    +'</body></html>';
+  var blob=new Blob([html],{type:'text/html'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='Plan_Nutricional_'+ST.u.nom.replace(/ /g,'_')+'_S'+ST.u.semana+'.html';
+  a.click();
 }
 function calcAdh(){
   var ci=ST.ci,dp=DIAS.filter(function(d){return!d.rest;}).length||4;
@@ -1058,7 +1141,7 @@ function renderNutricion(){
 
   let body='';
   if(tab==='menu')body=renderMenuDia(di);
-  else if(tab==='semana')body=renderSemana();
+  else if(tab==='semana')body=renderSemana()+'<button class="btn bo" style="width:100%;margin-top:12px" onclick="descargarMenuSemanal()">⬇️ Descargar plan semanal</button>';
   else body=renderListaCompra();
 
   return`<div class="nut-sticky">
