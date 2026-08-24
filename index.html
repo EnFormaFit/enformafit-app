@@ -1707,16 +1707,7 @@ function verRevAnterior(sem){
   </div>`;
   openModal('Revisión Semana '+sem,html);
 }
-function editarRevAnterior(sem){
-  const hist=ST.revHistorial&&ST.revHistorial[sem];
-  if(hist){ST.rev.fotos={...hist.fotos};ST.rev.medidas={...hist.medidas};ST.rev.preguntas={...hist.preguntas};}
-  ST.rev.done=false;ST.rev.step=0;
-  // Temporarily change semana to edit that revision
-  ST._editingSem=sem;
-  render();toast('Editando revisión S'+sem,'');
-}
 
-// ── PERFIL ──
 function logout(){
   _tk=null;
   localStorage.removeItem('ef_tk');
