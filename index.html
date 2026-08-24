@@ -759,12 +759,12 @@ function renderCI(){
     }
     return s+'</div>';
   }
-  var h='<div class="card" style="margin-bottom:10px">'
-    +'<div class="ch" onclick="ST.ci.open=!ST.ci.open;render()" style="cursor:pointer">'
+  var h='<div class="card" data-ci-card style="margin-bottom:10px">'
+    +'<div class="ch" onclick="ST.ci.open=!ST.ci.open;save();var b=document.getElementById(\'ci-body-done\');if(b)b.style.display=ST.ci.open?\'block\':\'none\'" style="cursor:pointer">'
       +'<h2>Check-in semanal</h2><span style="color:var(--t3)">'+(ci.open?'▲':'▼')+'</span>'
     +'</div>';
   if(!ci.open)return h+'</div>';
-  h+='<div class="cb">';
+  h+='<div class="cb" data-ci-body style="display:'+(ci.open?'block':'none')+'">';
   if(tipo==='uno'){
     h+='<div style="margin-bottom:12px"><div style="font-size:13px;font-weight:600;margin-bottom:6px">Como fue la semana anterior?</div>'
       +'<textarea oninput="ST.ci.como=this.value;save()" style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:none;min-height:65px;box-sizing:border-box;outline:none">'+(ci.como||'')+'</textarea></div>';
@@ -799,6 +799,16 @@ function renderCI(){
   +'<button class="btn bp" style="width:100%;padding:14px;font-size:15px" onclick="enviarCI()">Enviar</button>'
   +'</div></div>';
   return h;
+}
+function ciToggle(){
+  ST.ci.open=!ST.ci.open;save();
+  var card=document.querySelector('[data-ci-card]');
+  if(card){
+    var body=card.querySelector('[data-ci-body]');
+    if(body)body.style.display=ST.ci.open?'block':'none';
+    var arr=card.querySelector('[data-ci-arr]');
+    if(arr)arr.textContent=ST.ci.open?'▲':'▼';
+  } else render();
 }
 function ciDot(btn){
   var key=btn.dataset.k,val=parseInt(btn.dataset.v),mx=parseInt(btn.dataset.m);
@@ -1710,15 +1720,20 @@ function verRevAnterior(sem){
     }
     html+='<div style="display:flex;gap:8px;margin-top:14px">'
       +'<button class="btn btno" style="flex:1" onclick="closeModal()">Cerrar</button>'
-      +'<button class="btn btnp" style="flex:1" onclick="closeModal();editarRevAnterior('+sem+')">Editar</button>'
+      +'<button class="btn btnp" style="flex:1" onclick="closeModal();editarRevAnterior('+sem+')">✏️ Editar</button>'
     +'</div>';
-    openModal('Revision S'+sem,html);
+    openModal('Revisión S'+sem,html);
   }
   if(_tk){
     api('GET','/api/entreno/revision/'+sem).then(function(d){
-      if(d){if(!ST.revHistorial)ST.revHistorial={};ST.revHistorial[sem]=d;}
+      if(!ST.revHistorial)ST.revHistorial={};
+      ST.revHistorial[sem]=d||{medidas:{},fotos:{},preguntas:{}};
       show();
-    }).catch(function(){show();});
+    }).catch(function(){
+      if(!ST.revHistorial)ST.revHistorial={};
+      if(!ST.revHistorial[sem])ST.revHistorial[sem]={medidas:{},fotos:{},preguntas:{}};
+      show();
+    });
     return;
   }
   show();
@@ -1831,11 +1846,28 @@ function guardarRevAnterior(sem){
 }
 
 function editarRevAnterior(sem){
-  const hist=ST.revHistorial&&ST.revHistorial[sem];
-  if(!hist){toast('Sin datos para S'+sem,'');return;}
-  ST.rev=JSON.parse(JSON.stringify(hist));
-  ST._editandoRevSem=sem;
-  S('revision');
+  function doEdit(){
+    const hist=ST.revHistorial&&ST.revHistorial[sem];
+    ST._editandoRevSem=sem;
+    S('revision');
+  }
+  // Always fetch fresh from BD first
+  if(_tk){
+    api('GET','/api/entreno/revision/'+sem).then(function(d){
+      if(!ST.revHistorial)ST.revHistorial={};
+      if(d)ST.revHistorial[sem]=d;
+      else if(!ST.revHistorial[sem])ST.revHistorial[sem]={medidas:{},fotos:{},preguntas:{}};
+      doEdit();
+    }).catch(function(){
+      if(!ST.revHistorial)ST.revHistorial={};
+      if(!ST.revHistorial[sem])ST.revHistorial[sem]={medidas:{},fotos:{},preguntas:{}};
+      doEdit();
+    });
+  } else {
+    if(!ST.revHistorial)ST.revHistorial={};
+    if(!ST.revHistorial[sem])ST.revHistorial[sem]={medidas:{},fotos:{},preguntas:{}};
+    doEdit();
+  }
 }
 function OLD_verRevAnterior_disabled(sem){
   const hist=ST.revHistorial&&ST.revHistorial[sem];
