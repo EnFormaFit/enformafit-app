@@ -798,11 +798,7 @@ function renderCI(){
 }
 
 
-function refreshCI(){
-  var el=document.querySelector('.card[data-ci]');
-  if(el){el.outerHTML='<div class="card" data-ci style="margin-bottom:10px">'+renderCIInner()+'</div>';}
-  else render();
-}
+
 function renderCIInner(){return renderCI().replace('<div class="card" data-ci style="margin-bottom:10px">','').replace(/<\/div>$/,'');}
 function calcAdh(){
   var ci=ST.ci;
