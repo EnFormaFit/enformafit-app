@@ -1526,7 +1526,7 @@ function renderProgreso(){
       <div class="maci"><div class="macv" style="color:var(--az);font-size:17px">${semsTotal}sem</div><div class="macl">Sem. totales</div></div>
     </div>
     ${chartHTML}
-    <div style="cursor:pointer;margin-top:10px;display:flex;justify-content:space-between" onclick="ST.pesosOpen=!ST.pesosOpen;document.getElementById('ct').innerHTML=renderProgreso()">
+    <div style="cursor:pointer;margin-top:10px;display:flex;justify-content:space-between" onclick="ST.pesosOpen=!ST.pesosOpen;save();var _ct=document.getElementById('ct');if(_ct){var _sp=_ct.scrollTop;_ct.innerHTML=renderProgreso();_ct.scrollTop=_sp;}">
       <span style="font-size:11.5px;font-weight:600;color:var(--t3)">HISTORIAL DE PESOS</span>
       <span style="color:var(--t3)">${ST.pesosOpen?'▲':'▼'}</span>
     </div>
@@ -1536,7 +1536,7 @@ function renderProgreso(){
 </div>
 
 <div class="card">
-  <div class="ch" style="cursor:pointer" onclick="ST.fotosOpen=!ST.fotosOpen;document.getElementById('ct').innerHTML=renderProgreso()">
+  <div class="ch" style="cursor:pointer" onclick="ST.fotosOpen=!ST.fotosOpen;save();var _ct=document.getElementById('ct');if(_ct){var _sp=_ct.scrollTop;_ct.innerHTML=renderProgreso();_ct.scrollTop=_sp;}">
     <h2>📸 Fotos de progreso</h2>
     <span style="color:var(--t3)">${ST.fotosOpen?'▲':'▼'}</span>
   </div>
@@ -1578,7 +1578,7 @@ ${(function(){
   var ent=Object.entries(m).filter(function(e){var v=e[1];return v&&(typeof v==='number'||(typeof v==='object'&&Object.values(v).length>0));});
   if(!ent.length)return'';
   var vals=ent.map(function(e){var nom=e[0].replace(/\s*\([^)]*\)/g,'').trim();var v=e[1];if(typeof v==='object')v=Object.values(v)[0];return'<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor2);font-size:13px"><span style="color:var(--t2)">'+nom+'</span><span style="font-weight:700">'+v+' cm</span></div>';}).join('');
-  return'<div class="card" style="margin-bottom:12px"><div class="ch" onclick="ST.medidasOpen=!ST.medidasOpen;render()" style="cursor:pointer"><h2>📏 Medidas corporales</h2><span style="color:var(--t3)">'+(ST.medidasOpen?'▲':'▼')+'</span></div>'+(ST.medidasOpen?'<div class="cb"><div style="font-size:11px;color:var(--t3);margin-bottom:8px">Medidas iniciales · S0</div>'+vals+'</div>':'')+'</div>';
+  return'<div class="card" style="margin-bottom:12px"><div class="ch" onclick="ST.medidasOpen=!ST.medidasOpen;save();var _ct=document.getElementById('ct');if(_ct){var _sp=_ct.scrollTop;_ct.innerHTML=renderProgreso();_ct.scrollTop=_sp;}" style="cursor:pointer"><h2>📏 Medidas corporales</h2><span style="color:var(--t3)">'+(ST.medidasOpen?'▲':'▼')+'</span></div>'+(ST.medidasOpen?'<div class="cb"><div style="font-size:11px;color:var(--t3);margin-bottom:8px">Medidas iniciales · S0</div>'+vals+'</div>':'')+'</div>';
 })()}`;
 }
 
