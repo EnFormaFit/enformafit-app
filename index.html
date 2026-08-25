@@ -1781,11 +1781,32 @@ function _doEnviarRev(){
   }
 }
 function editarRevAnterior(sem){
-  const hist=ST.revHistorial&&ST.revHistorial[sem];
-  if(!hist){toast('Sin datos para S'+sem,'');return;}
-  ST.rev=JSON.parse(JSON.stringify(hist));
-  ST._editandoRevSem=sem;
-  closeModal();S('revision');
+  function doEdit(){
+    ST._editandoRevSem=sem;
+    S('revision');
+  }
+  if(_tk){
+    api('GET','/api/entreno/revision/'+sem).then(function(d){
+      if(!ST.revHistorial)ST.revHistorial={};
+      var existing=ST.revHistorial[sem]||{};
+      var fromBD=d||{medidas:{},fotos:{},preguntas:{}};
+      // Preserve local fotos — BD doesn't have them yet (no Drive)
+      ST.revHistorial[sem]={
+        medidas:fromBD.medidas||existing.medidas||{},
+        preguntas:fromBD.preguntas||existing.preguntas||{},
+        fotos:Object.assign({},fromBD.fotos||{},existing.fotos||{})
+      };
+      doEdit();
+    }).catch(function(){
+      if(!ST.revHistorial)ST.revHistorial={};
+      if(!ST.revHistorial[sem])ST.revHistorial[sem]={medidas:{},fotos:{},preguntas:{}};
+      doEdit();
+    });
+  } else {
+    if(!ST.revHistorial)ST.revHistorial={};
+    if(!ST.revHistorial[sem])ST.revHistorial[sem]={medidas:{},fotos:{},preguntas:{}};
+    doEdit();
+  }
 }
 function verRevAnterior(sem){
   function show(){
