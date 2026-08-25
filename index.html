@@ -1542,7 +1542,7 @@ function renderProgreso(){
       <span style="font-size:11.5px;font-weight:600;color:var(--t3)">HISTORIAL DE PESOS</span>
       <span style="color:var(--t3)">${ST.pesosOpen?'▲':'▼'}</span>
     </div>
-    ${ST.pesosOpen?`<div style="margin-top:8px">${[...pesos].reverse().map((p,ri)=>{const d=p.f.split('-');const realIdx=pesos.length-1-ri;return`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--bor2);font-size:13px"><span style="color:var(--t2)">${d[2]}/${d[1]}/${d[0].slice(2)}</span><div style="display:flex;align-items:center;gap:8px"><span style="font-weight:700;color:var(--az)">${p.v}kg</span><button onclick="event.stopPropagation();if(confirm('¿Borrar este peso?')){ST.pesos.splice(${realIdx},1);save();var ct=document.getElementById('ct');if(ct){var sp=ct.scrollTop;ct.innerHTML=renderProgreso();ct.scrollTop=sp;}}" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:14px;padding:2px 4px">🗑</button></div></div>\`;}).join('')}</div>`:''}
+    ${ST.pesosOpen?`<div style="margin-top:8px">${[...pesos].reverse().map((p,ri)=>{const d=p.f.split('-');const realIdx=pesos.length-1-ri;return`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--bor2);font-size:13px"><span style="color:var(--t2)">${d[2]}/${d[1]}/${d[0].slice(2)}</span><div style="display:flex;align-items:center;gap:8px"><span style="font-weight:700;color:var(--az)">${p.v}kg</span><button onclick="delPeso(${realIdx})" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:14px;padding:2px 4px">🗑</button></div></div>\`;}).join('')}</div>`:''}
     `:'<div style="text-align:center;color:var(--t3);font-size:13px;padding:12px 0">Añade tu primer peso para ver la evolución</div>'}
   </div>
 </div>
@@ -1597,6 +1597,12 @@ ${(function(){
 let _pfGi=0,_pfPi=0;
 function triggerPF(gi,pi){_pfGi=gi;_pfPi=pi;document.getElementById('pfin').click();}
 function loadPF(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{ST.rev.fotos[`prog_${_pfGi}_${_pfPi}`]=e.target.result;save();render();};r.readAsDataURL(f);}
+function delPeso(idx){
+  if(!confirm('¿Borrar este peso?'))return;
+  ST.pesos.splice(idx,1);save();
+  var ct=document.getElementById('ct');
+  if(ct&&SEC==='progreso'){var sp=ct.scrollTop;ct.innerHTML=renderProgreso();ct.scrollTop=sp;}
+}
 function addPeso(){
   const v=document.getElementById('pesoVal').value;
   const f=document.getElementById('pesoFecha').value;
