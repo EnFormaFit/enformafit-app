@@ -1096,7 +1096,7 @@ function renderMenuPlegado(di,g){
   });
   out+=`<div style="display:flex;gap:8px;margin-bottom:12px">
     <button class="btn btnp" style="flex:1" onclick="ST.nutEditing=true;document.getElementById('ct').innerHTML=renderNutricion()">✏️ Editar menú</button>
-    <button class="btn btno" style="flex:1" onclick="copiarDia(${di})">📋 Copiar a...</button>
+    <button class="btn btno" style="flex:1" onclick="copiarDia(${di})">📋 Pegar en...</button>
   </div>`;
   out+=`<div class="alert aaz">💧 Bebe al menos 2L de agua hoy</div>`;
   return out;
@@ -1188,7 +1188,7 @@ function renderMenuEditor(di){
 
   out+=`<div id="missing-alert" class="missing-alert"></div>`;
   out+=`<div style="display:flex;gap:8px;margin-bottom:10px">
-    <button class="btn btno" style="flex:1" onclick="copiarDia(${di})">📋 Copiar a...</button>
+    <button class="btn btno" style="flex:1" onclick="copiarDia(${di})">📋 Pegar en...</button>
     <button class="btn btnp" style="flex:1" onclick="guardarMenu(${di})">Guardar ✓</button>
   </div>`;
   out+=`<div class="alert aaz">💧 Bebe al menos 2L de agua hoy</div>`;
@@ -1231,7 +1231,7 @@ function copiarDia(di){
       ${d}<span id="coptck${i}" style="color:var(--vd)">${_copyTargets.includes(i)?'✓':''}</span>
     </div>`
   ).join('');
-  openModal('Copiar menú de '+DNAMES[di]+' a...',opts+`<button class="btn btnp btnf" style="margin-top:8px" onclick="confirmCopy()">Copiar ✓</button>`);
+  openModal('Pegar menú de '+DNAMES[di]+' a...',opts+`<button class="btn btnp btnf" style="margin-top:8px" onclick="confirmCopy()">Copiar ✓</button>`);
 }
 function toggleCopy(i){
   const idx=_copyTargets.indexOf(i);
@@ -1540,7 +1540,14 @@ function renderProgreso(){
     {i:'🎯',n:'Semana perfecta',d:'Entrenos + nutrición + pasos al 100%',ok:false},
     {i:'💪',n:'Bloque completado',d:'12 semanas finalizadas',ok:ST.u.semana>=12},
   ].map(l=>`<div class="logro ${l.ok?'':'locked'}"><div class="logro-ico">${l.i}</div><div><div class="logro-nom">${l.n}</div><div class="logro-desc">${l.d}</div></div>${l.ok?'<span class="badge bvd">✓</span>':''}</div>`).join('')}
-</div></div>`;
+</div></div>
+${(function(){
+  var m=(ST.revHistorial&&ST.revHistorial[0]&&ST.revHistorial[0].medidas)||{};
+  var ent=Object.entries(m).filter(function(e){var v=e[1];return v&&(typeof v==='number'||(typeof v==='object'&&Object.values(v).length>0));});
+  if(!ent.length)return'';
+  var vals=ent.map(function(e){var nom=e[0].replace(/\s*\([^)]*\)/g,'').trim();var v=e[1];if(typeof v==='object')v=Object.values(v)[0];return'<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor2);font-size:13px"><span style="color:var(--t2)">'+nom+'</span><span style="font-weight:700">'+v+' cm</span></div>';}).join('');
+  return'<div class="card" style="margin-bottom:12px"><div class="ch" onclick="ST.medidasOpen=!ST.medidasOpen;render()" style="cursor:pointer"><h2>📏 Medidas corporales</h2><span style="color:var(--t3)">'+(ST.medidasOpen?'▲':'▼')+'</span></div>'+(ST.medidasOpen?'<div class="cb"><div style="font-size:11px;color:var(--t3);margin-bottom:8px">Medidas iniciales · S0</div>'+vals+'</div>':'')+'</div>';
+})()}`;
 }
 
 let _pfGi=0,_pfPi=0;
@@ -1785,7 +1792,7 @@ function renderPerfil(){
     <div class="card">
       <div class="ch"><h2>❓ Preguntas frecuentes</h2></div>
       <div class="cb" style="padding:0">
-        ${FAQS.map((q,i)=>'<div style="padding:12px 16px;border-bottom:1px solid var(--bor2);cursor:pointer" onclick="var a=this.querySelector(\'.faq-a\');a.style.display=a.style.display===\'none\'?\'block\':\'none\'"><div style="font-weight:600;font-size:13px">'+q[0]+'</div><div class="faq-a" style="display:none;font-size:12px;color:var(--t2);margin-top:6px">'+q[1]+'</div></div>').join('')}
+        ${FAQS.map(function(q){return'<div style="padding:12px 16px;border-bottom:1px solid var(--bor2);cursor:pointer" onclick="var a=this.querySelector(\'.faq-a\');a.style.display=a.style.display===\'none\'?\'block\':\'none\'"><div style="font-weight:600;font-size:13px">'+q.q+'</div><div class="faq-a" style="display:none;font-size:12px;color:var(--t2);margin-top:6px">'+q.a+'</div></div>';}).join('')}
       </div>
     </div>
   </div>`;
