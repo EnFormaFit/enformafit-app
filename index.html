@@ -887,9 +887,10 @@ function buildEntHTML(di){
     body+=`<button class="btn btnp btnf" onclick="guardarDia(${di})">Guardar entrenamiento ✓</button>`;
   }
   return`<div style="min-height:100%" ontouchstart="_entTX=event.touches?event.touches[0].clientX:0" ontouchend="swipeEnt(event,${di})">
+    ${semSel}
     <div class="day-sticky"><div class="day-sel">${dayBtns}</div></div>
     ${body}
-  </div>`${semSel};
+  </div>`;
 }
 
 function swipeEnt(e,di){
