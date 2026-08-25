@@ -1422,6 +1422,8 @@ function renderProgreso(){
   const today=new Date().toISOString().split('T')[0];
   const {semana,tipo}=ST.u;
   const revSems=tipo==='programa'?[0,4,8,12]:[0,3,7,11];
+  const _revSemsFull=tipo==='programa'?[4,8,12]:[3,7,11];
+  const nextRev=_revSemsFull.find(rs=>rs>=semana)||_revSemsFull[_revSemsFull.length-1];
   const POSES=['Frente','Perfil D.','Perfil I.','Espalda'];
 
   // Stats
@@ -1468,13 +1470,24 @@ function renderProgreso(){
   let fotosH=`<div class="fscroll">`;
   revSems.forEach((rs,gi)=>{
     const locked=rs>semana;
+    const isCur=(rs===nextRev&&!ST.rev.done===false)||rs===nextRev;
     const col=locked?'ft-gr':rs===0?'ft-vd':'ft-az';
     const gtit=rs===0?'Inicio':'S'+rs;
     fotosH+=`<div class="fgrp"><div class="fgrp-t ${col}">${gtit}</div>`;
     POSES.forEach((pos,pi)=>{
-      const stored=ST.rev.fotos[`prog_${gi}_${pi}`]||(gi===1&&ST.rev.done?ST.rev.fotos['rev_'+pi]:null);
+      // Look for foto in correct place based on semana
+      let stored=null;
+      if(isCur){
+        // Current revision: look in ST.rev.fotos
+        stored=ST.rev.fotos['rev_'+pi]||null;
+      } else {
+        // Past/future: look in ST.revHistorial
+        stored=(ST.revHistorial&&ST.revHistorial[rs]&&ST.revHistorial[rs].fotos&&ST.revHistorial[rs].fotos['rev_'+pi])||null;
+      }
       fotosH+=`<div class="fslot ${locked?'locked':stored?'has':''}" onclick="${locked?'':'triggerPF('+gi+','+pi+')'}">
-        ${stored?`<button onclick="event.stopPropagation();delete ST.rev.fotos['rev_'+${pi}];save();render()" style="position:absolute;top:4px;left:4px;background:rgba(220,30,30,.85);border:none;border-radius:50%;width:24px;height:24px;color:#fff;font-size:14px;cursor:pointer;z-index:2">🗑</button><img src="${stored}" alt="${pos}"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.4);color:#fff;font-size:9px;font-weight:600;text-align:center;padding:2px">${pos}</div>`:`<div class="fslot-lbl">${locked?'🔒':pos}</div>`}
+        ${stored
+          ?`<button data-gi="${gi}" data-pi="${pi}" data-rs="${rs}" data-cur="${isCur?1:0}" onclick="event.preventDefault();event.stopPropagation();confirmarBorrarFoto(this)" style="position:absolute;top:4px;left:4px;background:rgba(220,30,30,.85);border:none;border-radius:50%;width:26px;height:26px;color:#fff;font-size:13px;cursor:pointer;z-index:3">🗑</button><img src="${stored}" alt="${pos}"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.4);color:#fff;font-size:9px;font-weight:600;text-align:center;padding:2px">${pos}</div>`
+          :`<div class="fslot-lbl">${locked?'🔒':pos}</div>`}
       </div>`;
     });
     fotosH+=`</div>`;
@@ -1702,12 +1715,15 @@ function enviarRev(){
   var fotos=ST.rev.fotos||{};
   var medidas=ST.rev.medidas||{};
   var preguntas=ST.rev.preguntas||{};
+  var tipo=ST.u.tipo;
   var nFotos=Object.keys(fotos).filter(function(k){return k.startsWith('rev_');}).length;
   var nMeds=Object.keys(medidas).filter(function(k){return medidas[k];}).length;
+  var PP=tipo==='programa'?5:7;
   var nPregs=Object.values(preguntas).filter(function(v){return v&&v.trim();}).length;
-  if(nFotos<2){toast('Sube al menos 2 fotos','rj');ST.rev.step=0;render();return;}
-  if(nMeds<3){toast('Rellena al menos 3 medidas','rj');ST.rev.step=1;render();return;}
-  if(nPregs<2){toast('Responde al menos 2 preguntas','rj');ST.rev.step=2;render();return;}
+  // All required
+  if(nFotos<4){toast('Sube las 4 fotos (frente, perfiles y espalda)','rj');ST.rev.step=0;render();return;}
+  if(nMeds<9){toast('Rellena todas las medidas corporales','rj');ST.rev.step=1;render();return;}
+  if(nPregs<PP){toast('Responde todas las preguntas','rj');ST.rev.step=2;render();return;}
   _doEnviarRev();
 }
 function _doEnviarRev(){
@@ -1830,6 +1846,23 @@ function triggerRevHistFoto(sem,pi){
   inp.click();
 }
 
+function confirmarBorrarFoto(btn){
+  var gi=parseInt(btn.dataset.gi),pi=parseInt(btn.dataset.pi);
+  var rs=parseInt(btn.dataset.rs),isCur=btn.dataset.cur==='1';
+  if(!confirm('¿Borrar esta foto?'))return;
+  if(isCur){
+    delete ST.rev.fotos['rev_'+pi];
+    save();
+  } else {
+    if(ST.revHistorial&&ST.revHistorial[rs]&&ST.revHistorial[rs].fotos)
+      delete ST.revHistorial[rs].fotos['rev_'+pi];
+    save();
+  }
+  // Update progreso in-place without scroll
+  var ct=document.getElementById('ct');
+  if(ct&&SEC==='progreso'){var sp=ct.scrollTop;ct.innerHTML=renderProgreso();ct.scrollTop=sp;}
+  else render();
+}
 function revHistDelFoto(btn){
   var sem=parseInt(btn.dataset.sem),pi=parseInt(btn.dataset.pi);
   if(!ST.revHistorial||!ST.revHistorial[sem])return;
@@ -1880,10 +1913,18 @@ function renderPerfil(){
   const altura=u.altura||'—';
   const diasEnt=u.diasEnt||DIAS.filter(d=>!d.rest).length||4;
   const FAQS=[
-    ['¿Con qué frecuencia debo entrenar?',diasEnt+' días a la semana según tu plan actual.'],
-    ['¿Puedo cambiar ejercicios?','Habla con tu entrenador. El plan está diseñado con progresión específica.'],
-    ['¿Qué pasa si me salto un entreno?','No pasa nada. Retoma al día siguiente sin intentar compensar.'],
-    ['¿Cómo sé si estoy progresando?','Revisa tus pesos semanales y el aumento de cargas en tus ejercicios.'],
+    {q:'¿Cómo caliento?',a:'El calentamiento es imprescindible. Al final añade series de aproximación: series ascendentes de peso para acercarte al peso de trabajo. <a href="https://youtu.be/_iYj9gAxjx4" target="_blank" style="color:var(--az)">Ver vídeo →</a>'},
+    {q:'¿Qué es el RIR?',a:'Son las repeticiones que te dejas en recámara. RIR 2 con 12 reps significa que puedes hacer 14 pero paras en 12.'},
+    {q:'¿Cómo escojo el peso?',a:'Usa las reps y el RIR marcados. Pregúntate: ¿qué peso necesito para hacer X reps dejándome Y en recámara?'},
+    {q:'¿Cuánto descanso entre series?',a:'Ejercicios básicos: RIR 4 → 2-3 min · RIR 3 → 3 min · RIR 2 → 4 min · RIR 1 → 5 min. Multiarticulares máquina o menos demandantes: 2-3 min. Monoarticulares: 1-2 min.'},
+    {q:'¿Cómo progreso?',a:'Durante el bloque no cambian los ejercicios, series, reps ni RIR. Lo que progresa semana a semana son los kilos. En ejercicios con rango de reps, también puedes progresar en repeticiones dentro del rango. No fuerces el progreso a costa del protocolo.'},
+    {q:'¿Puedo entrenar con dolor?',a:'Máximo 4/10 en escala del 0 al 10. Si supera ese umbral, baja el peso hasta que el dolor baje.'},
+    {q:'¿Cuándo y cómo pesarme?',a:'Mínimo 3 días a la semana en ayunas para tener una media fiable.'},
+    {q:'¿Cómo funciona el plan nutricional?',a:'Escoge en cada comida un alimento de cada sección con sus respectivas cantidades.'},
+    {q:'¿Cómo peso los alimentos?',a:'Durante la primera semana pesa los alimentos. Así te haces el ojo y en semanas siguientes no necesitarás pesar casi nada.'},
+    {q:'Consejos nutricionales',a:'Prioriza comidas saciantes: patata, verduras, plancha o cocción. Bebe más agua entre comidas. La pasta o arroz de crudo a cocido multiplica x3 su peso.'},
+    {q:'¿Puedo hacer ayuno intermitente?',a:'Si te sienta bien no desayunar, puedes practicar el ayuno y hacer tu primera comida a media mañana.'},
+    {q:'¿Cuántas frutas y verduras?',a:'3-4 piezas al día sumando frutas y verduras.'},
   ];
   return`<div style="padding:16px">
     <div class="card" style="margin-bottom:12px">
