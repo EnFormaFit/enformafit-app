@@ -889,7 +889,7 @@ function buildEntHTML(di){
   return`<div style="min-height:100%" ontouchstart="_entTX=event.touches?event.touches[0].clientX:0" ontouchend="swipeEnt(event,${di})">
     <div class="day-sticky"><div class="day-sel">${dayBtns}</div></div>
     ${body}
-  </div>`;
+  </div>`${semSel};
 }
 
 function swipeEnt(e,di){
