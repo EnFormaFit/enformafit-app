@@ -1455,7 +1455,7 @@ function renderProgreso(){
     POSES.forEach((pos,pi)=>{
       const stored=ST.rev.fotos[`prog_${gi}_${pi}`]||(gi===1&&ST.rev.done?ST.rev.fotos['rev_'+pi]:null);
       fotosH+=`<div class="fslot ${locked?'locked':stored?'has':''}" onclick="${locked?'':'triggerPF('+gi+','+pi+')'}">
-        ${stored?`<img src="${stored}" alt="${pos}"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.4);color:#fff;font-size:9px;font-weight:600;text-align:center;padding:2px">${pos}</div>`:`<div class="fslot-lbl">${locked?'🔒':pos}</div>`}
+        ${stored?`<button onclick="event.stopPropagation();delete ST.rev.fotos['rev_'+${pi}];save();render()" style="position:absolute;top:4px;left:4px;background:rgba(220,30,30,.85);border:none;border-radius:50%;width:24px;height:24px;color:#fff;font-size:14px;cursor:pointer;z-index:2">🗑</button><img src="${stored}" alt="${pos}"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.4);color:#fff;font-size:9px;font-weight:600;text-align:center;padding:2px">${pos}</div>`:`<div class="fslot-lbl">${locked?'🔒':pos}</div>`}
       </div>`;
     });
     fotosH+=`</div>`;
@@ -1714,16 +1714,7 @@ function verRevAnterior(sem){
   </div>`;
   openModal('Revisión Semana '+sem,html);
 }
-function editarRevAnterior(sem){
-  const hist=ST.revHistorial&&ST.revHistorial[sem];
-  if(hist){ST.rev.fotos={...hist.fotos};ST.rev.medidas={...hist.medidas};ST.rev.preguntas={...hist.preguntas};}
-  ST.rev.done=false;ST.rev.step=0;
-  // Temporarily change semana to edit that revision
-  ST._editingSem=sem;
-  render();toast('Editando revisión S'+sem,'');
-}
 
-// ── PERFIL ──
 function logout(){
   _tk=null;
   localStorage.removeItem('ef_tk');
