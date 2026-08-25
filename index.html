@@ -644,7 +644,8 @@ window.addEventListener('DOMContentLoaded',async()=>{
   if(_tk){
     try{
       await loadClienteData();
-      showApp();
+      ST.semVer=ST.u.semana||1; // Reset to current week on load
+    showApp();
       return;
     }catch(e){
       _tk=null;
@@ -847,12 +848,29 @@ let curDay=null,_entTX=0;
 function renderEntreno(){
   if(!ST.ejStates)ST.ejStates={};
   if(curDay===null)curDay=[6,0,1,2,3,4,5][new Date().getDay()]||0;
+  // semVer: which week to VIEW (defaults to current)
+  if(!ST.semVer)ST.semVer=ST.u.semana||1;
   return buildEntHTML(curDay);
 }
 
 function buildEntHTML(di){
   const d=DIAS[di];
   const todayIdx=[6,0,1,2,3,4,5][new Date().getDay()]||0;
+  const semActual=ST.u.semana||1;
+  const semTotal=ST.u.semTotal||14;
+  // Week selector header
+  const semSel=`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--az3);border-radius:10px;margin-bottom:10px">
+    <button onclick="if(ST.semVer>1){ST.semVer--;ST.ejStates={};document.getElementById('ct').innerHTML=renderEntreno();}" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--az);padding:4px 8px" ${(ST.semVer||semActual)<=1?'disabled':''}>‹</button>
+    <div style="text-align:center">
+      <div style="font-size:13px;font-weight:700;color:var(--az)">Semana ${ST.semVer||semActual} de ${semTotal}</div>
+      ${(ST.semVer||semActual)!==semActual?`<div style="font-size:10px;color:var(--nr);font-weight:600">← Semana actual: ${semActual}</div>`:'<div style="font-size:10px;color:var(--t3)">Semana actual</div>'}
+    </div>
+    <button onclick="if((ST.semVer||1)<${semTotal}){ST.semVer++;ST.ejStates={};document.getElementById('ct').innerHTML=renderEntreno();}" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--az);padding:4px 8px" ${(ST.semVer||semActual)>=semTotal?'disabled':''}>›</button>
+  </div>
+  ${(ST.semVer||semActual)!==semActual?`<div style="background:rgba(255,160,0,.12);border:1px solid rgba(255,160,0,.4);border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:12px;color:var(--nr);display:flex;justify-content:space-between;align-items:center">
+    <span>Viendo S${ST.semVer} — solo lectura</span>
+    <button onclick="ST.semVer=${semActual};ST.ejStates={};document.getElementById('ct').innerHTML=renderEntreno()" style="background:var(--nr);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">Ir a actual</button>
+  </div>`:''}`;
   const dayBtns=DIAS.map((dd,i)=>`<button class="day-b${i===di?' on':''}${i===todayIdx?' today':''}${dd.rest?' rest':''}" onclick="curDay=${i};document.getElementById('ct').innerHTML=buildEntHTML(${i})">${dd.nom}<br><small style="font-size:9px;opacity:.6">${dd.tipo}</small></button>`).join('');
 
   let body='';
@@ -964,7 +982,29 @@ function renderEj(ej,ei,di,grabIdxs){
 
 function toggleSer(key,si,di){
   const s=ST.ejStates[key].series[si];s.done=!s.done;
-  if(s.done)startTimer(ST.ejStates[key].rest||120);
+  save();
+  if(s.done){
+    startTimer(ST.ejStates[key].rest||120);
+    // Sync to BD
+    if(_tk){
+      const parts=key.split('_');
+      const diaIdx=parseInt(parts[0]);
+      const ejIdx=parseInt(parts[1]);
+      const dia=DIAS[diaIdx];
+      const ej=dia&&dia.ejercicios&&dia.ejercicios[ejIdx];
+      if(ej){
+        api('POST','/api/entreno/registrar-serie',{
+          ejercicio:ej.nom||ej.nombre||key,
+          dia:dia.cod||dia.nom||'',
+          semana:ST.u.semana||1,
+          serie:si+1,
+          kg:parseFloat(s.kg)||0,
+          reps:parseInt(s.repsH)||0,
+          rir:ej.rir||2
+        }).catch(function(e){console.warn('[serie]',e);});
+      }
+    }
+  }
   document.getElementById('ct').innerHTML=buildEntHTML(di);
 }
 
@@ -1694,8 +1734,10 @@ function renderRevision(){
     content+=`<div class="rfg">`;
     POSES.forEach((pos,pi)=>{
       const f=fotos['rev_'+pi];
-      content+=`<div class="rfb ${f?'done':''}" onclick="triggerRF(${pi})">
-        ${f?`<img src="${f}"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:600;text-align:center;padding:3px">${pos}</div>`:`<div style="font-size:24px">📷</div><div class="rfb-lbl">${pos}</div>`}
+      content+=`<div class="rfb ${f?'done':''}" style="position:relative" onclick="${f?'':'triggerRF('+pi+')'}">
+        ${f
+          ?`<img src="${f}"><button onclick="event.stopPropagation();if(confirm('¿Borrar esta foto?')){delete ST.rev.fotos['rev_'+${pi}];save();render();}" style="position:absolute;top:4px;left:4px;background:rgba(220,30,30,.85);border:none;border-radius:50%;width:26px;height:26px;color:#fff;font-size:13px;cursor:pointer;z-index:3">🗑</button><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:600;text-align:center;padding:3px">${pos}</div>`
+          :`<div onclick="triggerRF(${pi})" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer"><div style="font-size:24px">📷</div><div class="rfb-lbl">${pos}</div></div>`}
       </div>`;
     });
     content+=`</div><input type="file" accept="image/*" id="rfin" onchange="loadRF(this)">`;
