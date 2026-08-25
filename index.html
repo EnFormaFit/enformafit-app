@@ -1294,6 +1294,21 @@ function renderListaCompra(){
   </div></div>`;
 }
 
+function checkMenuCompleto(){
+  var MEALS=['desayuno','comida','cena','snack'];
+  var DNOM=['Lunes','Martes','Miercoles','Jueves','Viernes','Sabado','Domingo'];
+  var inc=[];
+  for(var di=0;di<7;di++){
+    if(DIAS[di]&&DIAS[di].rest)continue;
+    var saved=ST.menuGuardado[di];
+    var ok=saved&&MEALS.every(function(m){
+      return saved[m]&&Object.values(saved[m]).some(function(v){return v&&v.nom;});
+    });
+    if(!ok)inc.push(DNOM[di]);
+  }
+  if(inc.length){toast('Completa primero: '+inc.join(', '),'rj');return;}
+  generateMenuPDF();
+}
 function generateMenuPDF(){
   const DNAMES=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
   const MEALS=['desayuno','comida','cena','snack'];
