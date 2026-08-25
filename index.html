@@ -1056,7 +1056,7 @@ function renderNutricion(){
 
   let body='';
   if(tab==='menu')body=renderMenuDia(di);
-  else if(tab==='semana')body=renderSemana();
+  else if(tab==='semana')body=renderSemana()+'<div style="padding:0 4px 12px"><button class="btn bo" style="width:100%;margin-top:8px" onclick="checkMenuCompleto()">⬇️ Descargar plan semanal</button></div>';
   else body=renderListaCompra();
 
   return`<div class="nut-sticky">
@@ -1766,6 +1766,19 @@ function _doEnviarRev(){
   ST.revHistorial[nextRev]={fotos:{...ST.rev.fotos},medidas:{...ST.rev.medidas},preguntas:{...ST.rev.preguntas},fecha:new Date().toISOString().split('T')[0]};
   if(!Object.keys(ST.medidasIni).length&&Object.keys(ST.rev.medidas).length)ST.medidasIni={...ST.rev.medidas};
   save();render();toast('Revisión S'+nextRev+' enviada ✓','vd');
+  // Sync to BD
+  if(_tk){
+    api('POST','/api/entreno/revision',{
+      semana:nextRev,
+      medidas:ST.rev.medidas||{},
+      preguntas:ST.rev.preguntas||{},
+      estado:'revisada'
+    }).then(function(){
+      console.log('[BD] Revision S'+nextRev+' saved');
+    }).catch(function(e){
+      console.warn('[BD] Revision save error:',e);
+    });
+  }
 }
 function editarRevAnterior(sem){
   const hist=ST.revHistorial&&ST.revHistorial[sem];
@@ -1811,7 +1824,13 @@ function verRevAnterior(sem){
   if(_tk){
     api('GET','/api/entreno/revision/'+sem).then(function(d){
       if(!ST.revHistorial)ST.revHistorial={};
-      ST.revHistorial[sem]=d||{medidas:{},fotos:{},preguntas:{}};
+      var existing=ST.revHistorial[sem]||{};
+      var fromBD=d||{medidas:{},fotos:{},preguntas:{}};
+      ST.revHistorial[sem]={
+        medidas:fromBD.medidas||existing.medidas||{},
+        preguntas:fromBD.preguntas||existing.preguntas||{},
+        fotos:Object.assign({},fromBD.fotos||{},existing.fotos||{})
+      };
       show();
     }).catch(function(){
       if(!ST.revHistorial)ST.revHistorial={};
