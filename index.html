@@ -1462,6 +1462,47 @@ function buildPesoGridApp(pesos,inicioBloque,semActual){
   h+='</tr></tbody></table></div>';return h;
 }
 
+function buildMedidasTable(revSems,hist){
+  var MEDS=[['hombros','Hombros'],['pecho','Pecho'],['brazod','Brazo D'],['brazoi','Brazo I'],['cintura','Cintura'],['muslod','Muslo D'],['musloi','Muslo I'],['gemelod','Gemelo D'],['gemeloi','Gemelo I']];
+  // Get medidas for each revision semana
+  var cols=revSems.map(function(rs){
+    var h=hist[rs];
+    var meds=h&&h.medidas?h.medidas:{};
+    return{rs:rs,meds:meds};
+  });
+  var hasAny=cols.some(function(c){return Object.keys(c.meds).length>0;});
+  if(!hasAny)return'<div class="card" style="margin-bottom:12px"><div class="ch"><h2>📏 Medidas corporales</h2></div><div style="padding:14px;text-align:center;color:var(--t3);font-size:13px">Aparecerán tras tu primera revisión</div></div>';
+  var html='<div class="card" style="margin-bottom:12px"><div class="ch"><h2>📏 Medidas corporales</h2></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
+  // Header row
+  html+='<tr><th style="text-align:left;padding:6px 8px;border-bottom:2px solid var(--bor);color:var(--t3)">Medida</th>';
+  cols.forEach(function(c){
+    html+='<th style="text-align:center;padding:6px 8px;border-bottom:2px solid var(--bor);color:var(--az);white-space:nowrap">'+(c.rs===0?'Inicio':'S'+c.rs)+'</th>';
+  });
+  html+='</tr>';
+  // Data rows
+  MEDS.forEach(function(m){
+    var k=m[0],l=m[1];
+    var hasRow=cols.some(function(c){
+      var v=c.meds[k];
+      return v&&(typeof v==='number'||(typeof v==='object'&&Object.values(v).some(function(x){return x;})));
+    });
+    if(!hasRow)return;
+    html+='<tr>';
+    html+='<td style="padding:6px 8px;border-bottom:1px solid var(--bor2);color:var(--t2);font-weight:600">'+l+'</td>';
+    cols.forEach(function(c){
+      var v=c.meds[k];
+      var val='';
+      if(v){
+        if(typeof v==='number')val=v;
+        else if(typeof v==='object'){var arr=Object.values(v).filter(function(x){return x;});val=arr[arr.length-1]||'';}
+      }
+      html+='<td style="text-align:center;padding:6px 8px;border-bottom:1px solid var(--bor2);font-weight:'+(val?'700':'400')+';color:'+(val?'var(--az)':'var(--t3)')+'">'+( val?val+' cm':'—')+'</td>';
+    });
+    html+='</tr>';
+  });
+  html+='</table></div></div>';
+  return html;
+}
 function toggleProgSection(sec){
   if(sec==='medidas'||sec===1)ST.medidasOpen=!ST.medidasOpen;
   else if(sec==='fotos'||sec===2)ST.fotosOpen=!ST.fotosOpen;
@@ -1596,25 +1637,7 @@ function renderProgreso(){
   ${ST.fotosOpen?`<div class="cb" style="padding-bottom:8px">${fotosH}</div>`:''}
 </div>
 
-<div class="card">
-  <div class="ch"><h2>📏 Evolución de medidas</h2></div>
-  <div class="cb" style="${hayMeds?'padding:0 14px':'padding:14px'}">
-    ${hayMeds?MEDS.map(([k,l,u])=>{
-      const v=med[k];const ini=medIni[k];
-      if(!v&&!ini)return'';
-      const diff=ini&&v?((parseFloat(v)-parseFloat(ini)).toFixed(1)):null;
-      const good=k==='peso'||k==='cintura'||k==='cadera'?diff<0:diff>0;
-      return`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--bor2);font-size:14px">
-        <span style="color:var(--t2)">${l}</span>
-        <div style="display:flex;align-items:center;gap:8px">
-          ${ini&&v?`<span style="font-size:12px;color:var(--t3)">${ini}${u}</span><span style="font-size:11px;color:var(--t3)">→</span>`:''}
-          <span style="font-weight:700;color:var(--az)">${v||ini}${u}</span>
-          ${diff!==null?`<span style="font-size:12px;font-weight:700;color:${good?'var(--vd)':'var(--rj)'}">${diff>0?'+':''}${diff}${u}</span>`:''}
-        </div>
-      </div>`;
-    }).join(''):'<div style="text-align:center;color:var(--t3);font-size:13px">Las medidas aparecerán tras tu primera revisión</div>'}
-  </div>
-</div>
+${buildMedidasTable(revSems,ST.revHistorial||{})}
 
 <div class="card"><div class="ch"><h2>🏆 Logros</h2></div><div class="cb">
   ${[
