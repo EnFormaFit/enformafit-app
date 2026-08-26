@@ -485,3 +485,10 @@ function enviarCI(){
   if(_tk){api('POST','/api/entreno/checkin',{semana_inicio:ST.u.inicioBloque||new Date().toISOString().split('T')[0],dias_entreno_real:ST.ci.diasEnt||0,dias_nutricion:ST.ci.diasNut||0,dias_pasos:ST.ci.diasPasos||0,orgullos:ST.ci.orgullo||'',compromisos:ST.ci.compromiso||'',sensaciones:ST.ci.sensaciones||'',como_semana:ST.ci.como||'',adherencia:ST.ci.adh||0}).catch(function(e){console.warn('[CI]',e);});}
 }
 
+
+function doLogout(){
+  _tk=null;
+  localStorage.removeItem('ef_tk');
+  localStorage.removeItem('ef8');
+  location.reload();
+}
