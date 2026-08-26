@@ -1230,6 +1230,7 @@ function renderPerfil(){
     {q:'¿Cuántas frutas y verduras?',a:'3-4 piezas al día sumando frutas y verduras.'},
   ];
   return`<div style="padding:16px">
+    <button onclick="doLogout()" style="width:100%;padding:12px;border-radius:10px;border:none;background:#E74C3C;color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;margin-bottom:12px">🚪 Cerrar sesión</button>
     <div class="card" style="margin-bottom:12px">
       <div class="ch"><h2>👤 Mi perfil</h2></div>
       <div class="cb">
