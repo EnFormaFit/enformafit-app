@@ -1279,6 +1279,9 @@ function renderPerfil(){
         ${FAQS.map(function(q){return'<div style="padding:12px 16px;border-bottom:1px solid var(--bor2);cursor:pointer" onclick="var a=this.querySelector(\'.faq-a\');a.style.display=a.style.display===\'none\'?\'block\':\'none\'"><div style="font-weight:600;font-size:13px">'+q.q+'</div><div class="faq-a" style="display:none;font-size:12px;color:var(--t2);margin-top:6px">'+q.a+'</div></div>';}).join('')}
       </div>
     </div>
+    <div style="padding:16px">
+      <button onclick="doLogout()" style="width:100%;padding:13px;border-radius:10px;border:1.5px solid #E74C3C;background:#fff;color:#E74C3C;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">Cerrar sesión</button>
+    </div>
   </div>`;
 }
 
