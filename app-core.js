@@ -284,11 +284,31 @@ function showApp(){
 
 // Auto-login si hay token guardado
 window.addEventListener('DOMContentLoaded',async()=>{
+  // Si viene con ?tk= en URL (desde panel "Ver app") usarlo directamente
+  const urlParams=new URLSearchParams(window.location.search);
+  const tkParam=urlParams.get('tk');
+  if(tkParam){
+    _tk=tkParam;
+    // NO guardarlo en localStorage — sesión temporal solo para esta pestaña
+    try{
+      await loadClienteData();
+      ST.semVer=ST.u.semana||1;
+      showApp();
+      // Limpiar el token de la URL sin recargar
+      if(window.history&&window.history.replaceState){
+        window.history.replaceState({},'',window.location.pathname);
+      }
+      return;
+    }catch(e){
+      _tk=null;
+    }
+  }
+  // Login normal con token guardado
   if(_tk){
     try{
       await loadClienteData();
-      ST.semVer=ST.u.semana||1; // Reset to current week on load
-    showApp();
+      ST.semVer=ST.u.semana||1;
+      showApp();
       return;
     }catch(e){
       _tk=null;
