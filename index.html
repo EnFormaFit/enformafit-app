@@ -388,6 +388,13 @@ const ST={
 };
 
 // ── PERSIST ──
+
+function fmtFechaApp(f){
+  if(!f)return'—';
+  if(f.includes('/'))return f;
+  const p=f.split('-');
+  return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:f;
+}
 function save(){try{localStorage.setItem('ef8',JSON.stringify({
   menu:ST.menu,menuGuardado:ST.menuGuardado,pesos:ST.pesos,
   rev:ST.rev,revHistorial:ST.revHistorial,medidasIni:ST.medidasIni,
@@ -1615,7 +1622,7 @@ function renderProgreso(){
       <div class="maci"><div class="macv" style="color:var(--t2);font-size:17px">${ST.pesoInicial}kg</div><div class="macl">Peso inicial</div></div>
       <div class="maci"><div class="macv" style="color:var(--az2);font-size:17px">${ST.objPeso}kg</div><div class="macl">Objetivo</div></div>
       <div class="maci"><div class="macv" style="color:${cambio<0?'var(--vd)':'var(--rj)'};font-size:17px">${cambio>0?'+':''}${cambio.toFixed(1)}kg</div><div class="macl">Cambio total</div></div>
-      <div class="maci"><div class="macv" style="color:var(--az);font-size:17px">${left>0?left.toFixed(1)+'kg':'✅'}</div><div class="macl">Para objetivo</div></div>
+      <div class="maci"><div class="macv" style="color:var(--az);font-size:17px">${left>0?left.toFixed(1).replace('.',',')+' kg':'✅'}</div><div class="macl">Para objetivo</div></div>
       <div class="maci"><div class="macv" style="color:var(--az2);font-size:17px">${ST.bajanSem}kg</div><div class="macl">Ritmo/sem</div></div>
       <div class="maci"><div class="macv" style="color:var(--az);font-size:17px">${semsTotal}sem</div><div class="macl">Sem. totales</div></div>
     </div>
@@ -1710,9 +1717,19 @@ function renderRevision(){
   function revFecha(rs){
     if(!inicioBloque)return'';
     const d=new Date(inicioBloque);
-    d.setDate(d.getDate()+(rs)*7-1);
-    const dow=d.getDay();if(dow!==6)d.setDate(d.getDate()+(6-dow+7)%7);
-    return d.toLocaleDateString('es',{day:'numeric',month:'short'});
+    if(rs===0){
+      // S0 = sábado de la semana ANTERIOR al inicio del bloque
+      // inicioBloque es lunes semana 1 → S0 es el sábado 2 días antes
+      d.setDate(d.getDate()-2);
+    } else {
+      // Sn = inicio + (n-1)*7 días → avanzar al próximo sábado de esa semana
+      d.setDate(d.getDate()+(rs-1)*7);
+      const dow=d.getDay();
+      const diasHastaSab=(6-dow+7)%7;
+      d.setDate(d.getDate()+diasHastaSab);
+    }
+    // Formato europeo: DD/MM
+    return ('0'+d.getDate()).slice(-2)+'/'+(('0'+(d.getMonth()+1)).slice(-2));
   }
 
   // Historial de revisiones arriba
