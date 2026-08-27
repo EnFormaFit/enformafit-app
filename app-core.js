@@ -190,8 +190,20 @@ async function loadClienteData(){
         }
       }
       
-      // Nutrition: only load macros — client selects their own foods
-      // Do NOT preload alimentos into menuGuardado
+      // Load nutrition: plan from entrenador (reference) + client's own saved menu
+      // Plan alimentos = what entrenador configured (shows as reference in panel)
+      // menuGuardado = what client has selected and saved themselves
+      
+      // Load client's own saved menu from BD
+      try {
+        const menuBD = await api('GET', '/api/entreno/menu-semanal');
+        if (menuBD && menuBD.menu_semanal) {
+          // Restore client's saved selections for all days
+          Object.entries(menuBD.menu_semanal).forEach(([day, meals]) => {
+            ST.menuGuardado[parseInt(day)] = meals;
+          });
+        }
+      } catch(e) { /* no saved menu yet */ }
     }
 
     // 3. Pesos desde BD
