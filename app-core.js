@@ -1,8 +1,8 @@
 // ── STATE ──
 const APP_VER='v8.4';
 const ST={
-  u:{nom:'Joel González',init:'JG',plan:'1:1',semana:7,semTotal:12,tipo:'uno',
-     altura:180,peso:90,dob:'1990-03-15',objetivo:80,lesiones:'',
+  u:{nom:'',init:'',plan:'',semana:1,semTotal:12,tipo:'programa',
+     altura:175,peso:80,dob:'',objetivo:75,lesiones:'',
      inicioBloque:'2026-06-13'},
   p:{macro:{kcal:2000,p:160,c:200,g:65},superavit:false,def:-500},
   pasos:{obj:10000},
@@ -133,8 +133,9 @@ async function doLogin(){
 
 async function loadClienteData(){
   try{
-    // 1. Mi plan completo (rutina + nutricion + semana)
-    const plan=await api('GET','/api/entreno/mi-plan');
+    // 1. Mi plan completo (rutina + nutricion + semana) — 404 = sin plan aún, no fatal
+    let plan=null;
+    try{ plan=await api('GET','/api/entreno/mi-plan'); }catch(e){ plan=null; }
     
     // 2. Perfil
     const perfil=await api('GET','/api/clientes/me/perfil');
