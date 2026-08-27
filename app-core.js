@@ -1,5 +1,5 @@
 // ── STATE ──
-const APP_VER='v8.5';
+const APP_VER='v8.4';
 const ST={
   u:{nom:'',init:'',plan:'',semana:1,semTotal:12,tipo:'programa',
      altura:175,peso:80,dob:'',objetivo:75,lesiones:'',
@@ -47,7 +47,7 @@ try{
   if(ver!==APP_VER){localStorage.removeItem('ef8');localStorage.setItem('ef8_ver',APP_VER);return;}
   const d=JSON.parse(localStorage.getItem('ef8')||'{}');
   // v2: menu structure changed — discard old cached menu to force fresh load
-  const CACHE_VER='v3';
+  const CACHE_VER='v2';
   if(d._v===CACHE_VER){
     if(d.menu)ST.menu=d.menu;
     if(d.menuGuardado)ST.menuGuardado=d.menuGuardado;
@@ -157,9 +157,7 @@ async function loadClienteData(){
     // Apply plan data
     if(plan){
       ST.u.semana=plan.semana_actual||ST.u.semana;
-      if(plan.comidas)ST.p.comidas=plan.comidas;
       ST.u.inicioBloque=plan.fecha_inicio?plan.fecha_inicio.split('T')[0]:ST.u.inicioBloque;
-      if(plan.comidas)ST.p.comidas=plan.comidas;
       ST.objPeso=plan.objetivo_kg||ST.objPeso;
       ST.u.obj=ST.objPeso;
       
@@ -190,20 +188,50 @@ async function loadClienteData(){
         }
       }
       
-      // Load nutrition: plan from entrenador (reference) + client's own saved menu
-      // Plan alimentos = what entrenador configured (shows as reference in panel)
-      // menuGuardado = what client has selected and saved themselves
-      
-      // Load client's own saved menu from BD
-      try {
-        const menuBD = await api('GET', '/api/entreno/menu-semanal');
-        if (menuBD && menuBD.menu_semanal) {
-          // Restore client's saved selections for all days
-          Object.entries(menuBD.menu_semanal).forEach(([day, meals]) => {
-            ST.menuGuardado[parseInt(day)] = meals;
+      // Load nutrition plan from alimentos
+      if(plan.alimentos&&Object.keys(plan.alimentos).length>0){
+        const FRUTA_KCAL=110; // kcal por pieza estándar
+        const MEAL_NAMES={desayuno:'Desayuno',comida:'Comida',cena:'Cena',snack:'Snack'};
+        // Build ST.menu from alimentos
+        const newMenu={};
+        Object.entries(plan.alimentos).forEach(([meal,items])=>{
+          if(!items||!items.length)return;
+          newMenu[meal]=items.map(it=>{
+            // Nutrition values per 100g
+            const r100=it.k100||((it.p100||0)*4+(it.c100||0)*4+(it.g100||0)*9);
+            return{
+              nom:it.nom,cantidad:it.cantidad,u:it.u||'g',cat:it.cat,
+              kcal:Math.round(r100*it.cantidad/100),
+              prot:+(it.p100||0)*it.cantidad/100,
+              carbs:+(it.c100||0)*it.cantidad/100,
+              grasa:+(it.g100||0)*it.cantidad/100,
+            };
+          });
+          // Add fruta to desayuno, comida, cena if not present
+          const hasFruta=items.some(it=>it.cat==='fruta');
+          const hasHidrat=items.find(it=>it.cat==='hidrat');
+          if(!hasFruta&&['desayuno','comida','cena'].includes(meal)&&hasHidrat){
+            // Reduce hidrat by 20g to compensate fruta kcal
+            hasHidrat.cantidad=Math.max(0,hasHidrat.cantidad-20);
+            newMenu[meal].push({nom:'Fruta (1 pieza)',cantidad:1,u:'pieza',cat:'fruta',
+              kcal:110,prot:0.5,carbs:25,grasa:0.3});
+          }
+        });
+        if(Object.keys(newMenu).length>0){
+          ST.menu=newMenu;
+          ['desayuno','comida','cena','snack'].forEach(function(meal){
+            if(!newMenu[meal]||!newMenu[meal].length)return;
+            var mealObj={};
+            var catMap={prot:'proteinas_magras',hidrat:'hidratos',fat:'grasas',fruta:'frutas',verd:'verduras'};
+            newMenu[meal].forEach(function(it){
+              var key=catMap[it.cat]||'proteinas_magras';
+              if(!mealObj[key])mealObj[key]=[];
+              mealObj[key].push({nom:it.nom,cantidad:it.cantidad,u:it.u||'g',p:it.prot||0,c:it.carbs||0,g:it.grasa||0,kcal:it.kcal||0});
+            });
+            MENU[meal]=mealObj;
           });
         }
-      } catch(e) { /* no saved menu yet */ }
+      }
     }
 
     // 3. Pesos desde BD
