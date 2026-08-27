@@ -41,7 +41,8 @@ function save(){try{localStorage.setItem('ef8',JSON.stringify({
   u_lesiones:ST.u.lesiones,u_dob:ST.u.dob,
 }))}catch(e){}}
 
-function load(){try{
+function load(){if(_isPreview)return; // skip localStorage for panel preview sessions
+try{
   const ver=localStorage.getItem('ef8_ver');
   if(ver!==APP_VER){localStorage.removeItem('ef8');localStorage.setItem('ef8_ver',APP_VER);return;}
   const d=JSON.parse(localStorage.getItem('ef8')||'{}');
@@ -98,6 +99,7 @@ function render(){
 // ── API LAYER ──
 const API='https://enformafit-backend-production.up.railway.app';
 let _tk=localStorage.getItem('ef_tk')||null;
+let _isPreview=false;
 
 async function api(method,path,body){
   const opts={method,headers:{'Content-Type':'application/json'}};
@@ -298,6 +300,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
   const tkParam=urlParams.get('tk');
   if(tkParam){
     _tk=tkParam;
+    _isPreview=true;
     // NO guardarlo en localStorage — sesión temporal solo para esta pestaña
     try{
       await loadClienteData();
