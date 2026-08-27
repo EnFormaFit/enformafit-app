@@ -912,7 +912,7 @@ function renderRevision(){
     ['¿Cómo te sientes esta semana?','¿Cuáles fueron tus mayores éxitos?','¿Cómo te sentiste con ellos?','¿Qué tal los entrenamientos?','¿Qué tal la nutrición?','¿Qué mejorarías?','¿Algo más que quieras compartir?'];
 
   const POSES=['Frente','Perfil der.','Perfil izq.','Espalda'];
-  const MEDS=[['hombros','Hombros','zona mas amplia'],['pecho','Pecho','zona mas amplia'],['brazod','Brazo dcho. contraido','contraido'],['brazoi','Brazo izq. contraido','contraido'],['cintura','Cintura ombligo','a la altura del ombligo'],['muslod','Muslo dcho. relajado','relajado'],['musloi','Muslo izq. relajado','relajado'],['gemelod','Gemelo dcho. contraido','contraido'],['gemeloi','Gemelo izq. contraido','contraido']];
+  const MEDS=[['hombros','Hombros','zona mas amplia'],['pecho','Pecho','zona mas amplia'],['brazoi','Brazo izq. contraído','contraído'],['brazod','Brazo dcho. contraído','contraído'],['cintura','Cintura ombligo','a la altura del ombligo'],['musloi','Muslo izq. relajado','relajado'],['muslod','Muslo dcho. relajado','relajado'],['gemeloi','Gemelo izq. contraído','contraído'],['gemelod','Gemelo dcho. contraído','contraído']];
 
   const stepLabels=['📸 Fotos','📏 Medidas','💬 Preguntas'];
   const stepsBar=stepLabels.map((l,i)=>`<div class="rev-step ${i<step?'rs-done':i===step?'rs-act':'rs-fut'}" onclick="ST.rev.step=${i};render()" title="${l}"></div>`).join('');
