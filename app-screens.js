@@ -619,7 +619,7 @@ function buildPesoGridApp(pesos,inicioBloque,semActual){
 }
 
 function buildMedidasTable(revSems,hist){
-  var MEDS=[['hombros','Hombros'],['pecho','Pecho'],['brazod','Brazo D'],['brazoi','Brazo I'],['cintura','Cintura'],['muslod','Muslo D'],['musloi','Muslo I'],['gemelod','Gemelo D'],['gemeloi','Gemelo I']];
+  var MEDS=[['hombros','Hombros'],['pecho','Pecho'],['brazoi','Brazo izq.'],['brazod','Brazo dcho.'],['cintura','Cintura'],['musloi','Muslo izq.'],['muslod','Muslo dcho.'],['gemeloi','Gemelo izq.'],['gemelod','Gemelo dcho.']];
   // Get medidas for each revision semana
   var cols=revSems.map(function(rs){
     var h=hist[rs];
@@ -1101,7 +1101,7 @@ function renderRevisionEdit(sem){
   if(!ST.revHistorial[sem])ST.revHistorial[sem]={medidas:{},fotos:{},preguntas:{}};
   var hist=ST.revHistorial[sem];
   var POSES=['Frente','Perfil der.','Perfil izq.','Espalda'];
-  var MEDS=[['hombros','Hombros'],['pecho','Pecho'],['brazod','Brazo dcho.'],['brazoi','Brazo izq.'],['cintura','Cintura ombligo'],['muslod','Muslo dcho.'],['musloi','Muslo izq.'],['gemelod','Gemelo dcho.'],['gemeloi','Gemelo izq.']];
+  var MEDS=[['hombros','Hombros'],['pecho','Pecho'],['brazoi','Brazo izq.'],['brazod','Brazo dcho.'],['cintura','Cintura ombligo'],['musloi','Muslo izq.'],['muslod','Muslo dcho.'],['gemeloi','Gemelo izq.'],['gemelod','Gemelo dcho.']];
   var h='<div style="padding:4px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><button class="btn bo bs" onclick="ST._editandoRevSem=null;render()">&#8592; Volver</button><div style="font-weight:700;font-size:15px">Revision S'+sem+'</div></div>';
   h+='<div class="card" style="margin-bottom:12px"><div class="ch"><h2>Fotos</h2></div><div class="cb"><div class="rfg">';
   POSES.forEach(function(pos,pi){
