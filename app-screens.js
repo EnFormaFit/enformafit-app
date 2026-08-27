@@ -644,7 +644,7 @@ function buildPesoGridApp(pesos,inicioBloque,semActual){
 }
 
 function buildMedidasTable(revSems,hist){
-  var MEDS=[['hombros','Hombros'],['pecho','Pecho'],['brazod','Brazo D'],['brazoi','Brazo I'],['cintura','Cintura'],['muslod','Muslo D'],['musloi','Muslo I'],['gemelod','Gemelo D'],['gemeloi','Gemelo I']];
+  var MEDS=[['hombros','Hombros (zona + amplia)'],['pecho','Pecho (zona + amplia)'],['brazo_i','Brazo izq. contraído'],['brazo_d','Brazo dcho. contraído'],['cintura','Cintura ombligo'],['muslo_i','Muslo izq. relajado'],['muslo_d','Muslo dcho. relajado'],['gemelo_i','Gemelo izq. contraído'],['gemelo_d','Gemelo dcho. contraído']];
   // Get medidas for each revision semana
   var cols=revSems.map(function(rs){
     var h=hist[rs];
@@ -937,7 +937,7 @@ function renderRevision(){
     ['¿Cómo te sientes esta semana?','¿Cuáles fueron tus mayores éxitos?','¿Cómo te sentiste con ellos?','¿Qué tal los entrenamientos?','¿Qué tal la nutrición?','¿Qué mejorarías?','¿Algo más que quieras compartir?'];
 
   const POSES=['Frente','Perfil der.','Perfil izq.','Espalda'];
-  const MEDS=[['hombros','Hombros','zona mas amplia'],['pecho','Pecho','zona mas amplia'],['brazod','Brazo dcho. contraido','contraido'],['brazoi','Brazo izq. contraido','contraido'],['cintura','Cintura ombligo','a la altura del ombligo'],['muslod','Muslo dcho. relajado','relajado'],['musloi','Muslo izq. relajado','relajado'],['gemelod','Gemelo dcho. contraido','contraido'],['gemeloi','Gemelo izq. contraido','contraido']];
+  const MEDS=[['hombros','Hombros','zona más amplia'],['pecho','Pecho','zona más amplia'],['brazo_i','Brazo izq. contraído','contraído'],['brazo_d','Brazo dcho. contraído','contraído'],['cintura','Cintura','ombligo'],['muslo_i','Muslo izq. relajado','relajado'],['muslo_d','Muslo dcho. relajado','relajado'],['gemelo_i','Gemelo izq. contraído','contraído'],['gemelo_d','Gemelo dcho. contraído','contraído']];
 
   const stepLabels=['📸 Fotos','📏 Medidas','💬 Preguntas'];
   const stepsBar=stepLabels.map((l,i)=>`<div class="rev-step ${i<step?'rs-done':i===step?'rs-act':'rs-fut'}" onclick="ST.rev.step=${i};render()" title="${l}"></div>`).join('');
