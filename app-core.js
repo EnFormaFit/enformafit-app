@@ -159,6 +159,7 @@ async function loadClienteData(){
       ST.u.semana=plan.semana_actual||ST.u.semana;
       if(plan.comidas)ST.p.comidas=plan.comidas;
       ST.u.inicioBloque=plan.fecha_inicio?plan.fecha_inicio.split('T')[0]:ST.u.inicioBloque;
+      if(plan.comidas)ST.p.comidas=plan.comidas;
       ST.objPeso=plan.objetivo_kg||ST.objPeso;
       ST.u.obj=ST.objPeso;
       
