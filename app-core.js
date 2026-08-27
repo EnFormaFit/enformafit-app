@@ -1,5 +1,5 @@
 // ── STATE ──
-const APP_VER='v8.5';
+const APP_VER='v8.4';
 const ST={
   u:{nom:'',init:'',plan:'',semana:1,semTotal:12,tipo:'programa',
      altura:175,peso:80,dob:'',objetivo:75,lesiones:'',
@@ -47,7 +47,7 @@ try{
   if(ver!==APP_VER){localStorage.removeItem('ef8');localStorage.setItem('ef8_ver',APP_VER);return;}
   const d=JSON.parse(localStorage.getItem('ef8')||'{}');
   // v2: menu structure changed — discard old cached menu to force fresh load
-  const CACHE_VER='v3';
+  const CACHE_VER='v2';
   if(d._v===CACHE_VER){
     if(d.menu)ST.menu=d.menu;
     if(d.menuGuardado)ST.menuGuardado=d.menuGuardado;
@@ -220,22 +220,38 @@ async function loadClienteData(){
         });
         if(Object.keys(newMenu).length>0){
           ST.menu=newMenu;
+          // Build ST.menuGuardado[day] for all 7 days from saved plan
+          // IMPORTANT: do NOT overwrite the global MENU — it contains all options
+          // ST.menuGuardado stores the client's current selections per day
+          const selByMeal={};
           ['desayuno','comida','cena','snack'].forEach(function(meal){
             if(!newMenu[meal]||!newMenu[meal].length)return;
-            var mealObj={};
-            var catMap={prot:'proteinas_magras',hidrat:'hidratos',fat:'grasas',fruta:'frutas',verd:'verduras'};
+            var sel={};
             newMenu[meal].forEach(function(it){
-              var key=catMap[it.cat]||'proteinas_magras';
-              if(!mealObj[key])mealObj[key]=[];
-              mealObj[key].push({nom:it.nom,cantidad:it.cantidad,u:it.u||'g',p:it.prot||0,c:it.carbs||0,g:it.grasa||0,kcal:it.kcal||0});
+              // Map cat to the selection key used by renderMenuPlegado
+              if(it.cat==='prot'||it.cat==='proteinas_magras')sel.prot={nom:it.nom,cantidad:it.cantidad,u:it.u||'g',protType:'magra'};
+              else if(it.cat==='proteinas_grasas')sel.prot={nom:it.nom,cantidad:it.cantidad,u:it.u||'g',protType:'grasa'};
+              else if(it.cat==='hidrat')sel.hidrat={nom:it.nom,cantidad:it.cantidad,u:it.u||'g'};
+              else if(it.cat==='fat'||it.cat==='grasas')sel.fat={nom:it.nom,cantidad:it.cantidad,u:it.u||'g'};
+              else if(it.cat==='fruta')sel.fruta={nom:it.nom,cantidad:it.cantidad,u:it.u||'g'};
+              else if(it.cat==='verd')sel.verd={nom:it.nom};
             });
-            MENU[meal]=mealObj;
+            selByMeal[meal]=sel;
           });
+          // Apply same selections to all 7 days
+          if(Object.keys(selByMeal).length>0){
+            for(var d=0;d<7;d++){
+              if(!ST.menuGuardado[d])ST.menuGuardado[d]={};
+              Object.entries(selByMeal).forEach(([meal,sel])=>{
+                ST.menuGuardado[d][meal]=sel;
+              });
+            }
+          }
         }
       }
     }
 
-    // 2b. Load client's saved weekly menu from BD
+    // 2b. Menú semanal guardado del cliente
     try{
       const menuBD=await api('GET','/api/entreno/menu-semanal');
       if(menuBD&&menuBD.menu_semanal){
