@@ -275,7 +275,10 @@ function renderMenuDia(di){
 
 function renderMenuPlegado(di,g){
   const DNAMES=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-  const MEALS=['desayuno','comida','cena','snack'];
+  // Only show meals configured for this client (from plan.comidas)
+  const ALL_MEALS=['desayuno','comida','cena','snack'];
+  const numComidas=ST.p.comidas||ST.u.comidas||3;
+  const MEALS=numComidas>=4?ALL_MEALS:ALL_MEALS.slice(0,numComidas);
   const ICONS={desayuno:'🌅',comida:'☀️',cena:'🌙',snack:'🍎'};
   let out='';
   MEALS.forEach((meal,mi)=>{
@@ -311,7 +314,10 @@ function renderMenuEditor(di){
   _NIT=[];
   const isSuperavit=ST.p.def>0;
   const m=ST.menu[di]||{};
-  const MEALS=['desayuno','comida','cena','snack'];
+  // Only show meals configured for this client (from plan.comidas)
+  const ALL_MEALS=['desayuno','comida','cena','snack'];
+  const numComidas=ST.p.comidas||ST.u.comidas||3;
+  const MEALS=numComidas>=4?ALL_MEALS:ALL_MEALS.slice(0,numComidas);
   let out='<div style="height:4px"></div>';
 
   MEALS.forEach(meal=>{
@@ -401,7 +407,10 @@ function renderMenuEditor(di){
 }
 
 function guardarMenu(di){
-  const MEALS=['desayuno','comida','cena','snack'];
+  // Only show meals configured for this client (from plan.comidas)
+  const ALL_MEALS=['desayuno','comida','cena','snack'];
+  const numComidas=ST.p.comidas||ST.u.comidas||3;
+  const MEALS=numComidas>=4?ALL_MEALS:ALL_MEALS.slice(0,numComidas);
   const m=ST.menu[di]||{};
   const NAMES={desayuno:'Desayuno',comida:'Comida',cena:'Cena',snack:'Snack'};
   const faltantes=[];
@@ -516,7 +525,10 @@ function checkMenuCompleto(){
 }
 function generateMenuPDF(){
   const DNAMES=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-  const MEALS=['desayuno','comida','cena','snack'];
+  // Only show meals configured for this client (from plan.comidas)
+  const ALL_MEALS=['desayuno','comida','cena','snack'];
+  const numComidas=ST.p.comidas||ST.u.comidas||3;
+  const MEALS=numComidas>=4?ALL_MEALS:ALL_MEALS.slice(0,numComidas);
   const MEAL_NOM={desayuno:'Desayuno',comida:'Comida',cena:'Cena',snack:'Snack'};
   const incomplete=[0,1,2,3,4,5,6].filter(i=>!ST.menuGuardado[i]||Object.keys(ST.menuGuardado[i]).length<4);
   if(incomplete.length){toast('Guarda el menú de los 7 días primero','rj');return;}
