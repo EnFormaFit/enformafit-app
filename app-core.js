@@ -190,66 +190,8 @@ async function loadClienteData(){
         }
       }
       
-      // Load nutrition plan from alimentos
-      if(plan.alimentos&&Object.keys(plan.alimentos).length>0){
-        const FRUTA_KCAL=110; // kcal por pieza estándar
-        const MEAL_NAMES={desayuno:'Desayuno',comida:'Comida',cena:'Cena',snack:'Snack'};
-        // Build ST.menu from alimentos
-        const newMenu={};
-        Object.entries(plan.alimentos).forEach(([meal,items])=>{
-          if(!items||!items.length)return;
-          newMenu[meal]=items.map(it=>{
-            // Nutrition values per 100g
-            const r100=it.k100||((it.p100||0)*4+(it.c100||0)*4+(it.g100||0)*9);
-            return{
-              nom:it.nom,cantidad:it.cantidad,u:it.u||'g',cat:it.cat,
-              kcal:Math.round(r100*it.cantidad/100),
-              prot:+(it.p100||0)*it.cantidad/100,
-              carbs:+(it.c100||0)*it.cantidad/100,
-              grasa:+(it.g100||0)*it.cantidad/100,
-            };
-          });
-          // Add fruta to desayuno, comida, cena if not present
-          const hasFruta=items.some(it=>it.cat==='fruta');
-          const hasHidrat=items.find(it=>it.cat==='hidrat');
-          if(!hasFruta&&['desayuno','comida','cena'].includes(meal)&&hasHidrat){
-            // Reduce hidrat by 20g to compensate fruta kcal
-            hasHidrat.cantidad=Math.max(0,hasHidrat.cantidad-20);
-            newMenu[meal].push({nom:'Fruta (1 pieza)',cantidad:1,u:'pieza',cat:'fruta',
-              kcal:110,prot:0.5,carbs:25,grasa:0.3});
-          }
-        });
-        if(Object.keys(newMenu).length>0){
-          ST.menu=newMenu;
-          // Build ST.menuGuardado[day] for all 7 days from saved plan
-          // IMPORTANT: do NOT overwrite the global MENU — it contains all options
-          // ST.menuGuardado stores the client's current selections per day
-          const selByMeal={};
-          ['desayuno','comida','cena','snack'].forEach(function(meal){
-            if(!newMenu[meal]||!newMenu[meal].length)return;
-            var sel={};
-            newMenu[meal].forEach(function(it){
-              // Map cat to the selection key used by renderMenuPlegado
-              if(it.cat==='prot'||it.cat==='proteinas_magras')sel.prot={nom:it.nom,cantidad:it.cantidad,u:it.u||'g',protType:'magra'};
-              else if(it.cat==='proteinas_grasas')sel.prot={nom:it.nom,cantidad:it.cantidad,u:it.u||'g',protType:'grasa'};
-              else if(it.cat==='hidrat')sel.hidrat={nom:it.nom,cantidad:it.cantidad,u:it.u||'g'};
-              else if(it.cat==='fat'||it.cat==='grasas')sel.fat={nom:it.nom,cantidad:it.cantidad,u:it.u||'g'};
-              else if(it.cat==='fruta')sel.fruta={nom:it.nom,cantidad:it.cantidad,u:it.u||'g'};
-              else if(it.cat==='verd')sel.verd={nom:it.nom};
-            });
-            selByMeal[meal]=sel;
-          });
-          // Apply same selections to all 7 days
-          if(Object.keys(selByMeal).length>0){
-            for(var d=0;d<7;d++){
-              if(!ST.menuGuardado[d])ST.menuGuardado[d]={};
-              Object.entries(selByMeal).forEach(([meal,sel])=>{
-                ST.menuGuardado[d][meal]=sel;
-              });
-            }
-          }
-        }
-      }
+      // Nutrition: only load macros — client selects their own foods
+      // Do NOT preload alimentos into menuGuardado
     }
 
     // 3. Pesos desde BD
