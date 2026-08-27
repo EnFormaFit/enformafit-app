@@ -32,6 +32,7 @@ function fmtFechaApp(f){
   return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:f;
 }
 function save(){try{localStorage.setItem('ef8',JSON.stringify({
+  _v:'v2',
   menu:ST.menu,menuGuardado:ST.menuGuardado,pesos:ST.pesos,
   rev:ST.rev,revHistorial:ST.revHistorial,medidasIni:ST.medidasIni,
   ci:ST.ci,ejStates:ST.ejStates,histEnt:ST.histEnt,
@@ -44,8 +45,15 @@ function load(){try{
   const ver=localStorage.getItem('ef8_ver');
   if(ver!==APP_VER){localStorage.removeItem('ef8');localStorage.setItem('ef8_ver',APP_VER);return;}
   const d=JSON.parse(localStorage.getItem('ef8')||'{}');
-  if(d.menu)ST.menu=d.menu;
-  if(d.menuGuardado)ST.menuGuardado=d.menuGuardado;
+  // v2: menu structure changed — discard old cached menu to force fresh load
+  const CACHE_VER='v2';
+  if(d._v===CACHE_VER){
+    if(d.menu)ST.menu=d.menu;
+    if(d.menuGuardado)ST.menuGuardado=d.menuGuardado;
+  } else {
+    // Clear stale cache — menu will reload from BD
+    delete d.menu; delete d.menuGuardado;
+  }
   if(d.pesos&&d.pesos.length)ST.pesos=d.pesos;
   if(d.rev)Object.assign(ST.rev,d.rev);
   if(d.revHistorial)ST.revHistorial=d.revHistorial;
