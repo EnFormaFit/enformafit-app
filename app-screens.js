@@ -313,7 +313,8 @@ function renderMenuPlegado(di,g){
 function renderMenuEditor(di){
   _NIT=[];
   const isSuperavit=ST.p.def>0;
-  const m=ST.menu[di]||{};
+  // Use menuGuardado for current selections (set by panel plan)
+  const m=ST.menuGuardado[di]||ST.menu[di]||{};
   // Only show meals configured for this client (from plan.comidas)
   const ALL_MEALS=['desayuno','comida','cena','snack'];
   const numComidas=ST.p.comidas||ST.u.comidas||3;
@@ -333,7 +334,8 @@ function renderMenuEditor(di){
     (md.proteinas_magras||[]).forEach(it=>{
       const on=ms.prot&&ms.prot.nom===it.nom&&protType==='magra';
       const idx=_NIT.push(it)-1;
-      out+=`<button class="opt ${on?'on':''}" onclick="nitP(${di},'${meal}','magra',${idx})">${it.nom}<small>${it.cantidad}${it.u}</small></button>`;
+      const showCant_pm=on&&ms.prot.cantidad?ms.prot.cantidad:it.cantidad;
+      out+=`<button class="opt ${on?'on':''}" onclick="nitP(${di},'${meal}','magra',${idx})">${it.nom}<small>${showCant_pm}${it.u}</small></button>`;
     });
     out+=`</div>`;
 
@@ -341,7 +343,8 @@ function renderMenuEditor(di){
     (md.proteinas_grasas||[]).forEach(it=>{
       const on=ms.prot&&ms.prot.nom===it.nom&&protType==='grasa';
       const idx=_NIT.push(it)-1;
-      out+=`<button class="opt ${on?'on':''}" onclick="nitP(${di},'${meal}','grasa',${idx})">${it.nom}<small>${it.cantidad}${it.u}</small></button>`;
+      const showCant_pg=on&&ms.prot.cantidad?ms.prot.cantidad:it.cantidad;
+      out+=`<button class="opt ${on?'on':''}" onclick="nitP(${di},'${meal}','grasa',${idx})">${it.nom}<small>${showCant_pg}${it.u}</small></button>`;
     });
     out+=`</div>`;
 
@@ -351,7 +354,8 @@ function renderMenuEditor(di){
     (md.hidratos||[]).forEach(it=>{
       const on=ms.hidrat&&ms.hidrat.nom===it.nom;
       const idx=_NIT.push(it)-1;
-      out+=`<button class="opt ${on?'on':''}" onclick="nitI(${di},'${meal}','hidrat',${idx})">${it.nom}<small>${it.cantidad}${it.u}</small></button>`;
+      const showCant_h=on&&ms.hidrat.cantidad?ms.hidrat.cantidad:it.cantidad;
+      out+=`<button class="opt ${on?'on':''}" onclick="nitI(${di},'${meal}','hidrat',${idx})">${it.nom}<small>${showCant_h}${it.u}</small></button>`;
     });
     out+=`</div>`;
 
@@ -411,7 +415,8 @@ function guardarMenu(di){
   const ALL_MEALS=['desayuno','comida','cena','snack'];
   const numComidas=ST.p.comidas||ST.u.comidas||3;
   const MEALS=numComidas>=4?ALL_MEALS:ALL_MEALS.slice(0,numComidas);
-  const m=ST.menu[di]||{};
+  // Use menuGuardado for current selections (set by panel plan)
+  const m=ST.menuGuardado[di]||ST.menu[di]||{};
   const NAMES={desayuno:'Desayuno',comida:'Comida',cena:'Cena',snack:'Snack'};
   const faltantes=[];
   MEALS.forEach(meal=>{
