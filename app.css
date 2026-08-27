@@ -134,7 +134,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sa
 .timer-n{font-size:28px;font-weight:800;min-width:52px;text-align:center;font-variant-numeric:tabular-nums}
 
 /* NUTRICIÓN */
-.nut-sticky{position:sticky;top:0;z-index:10;background:var(--bg);margin:-14px -14px 0;padding:0 14px;border-bottom:2px solid var(--bor);flex-shrink:0}
+.nut-sticky{position:relative;z-index:10;background:var(--bg);margin:-14px -14px 0;padding:0 14px;border-bottom:2px solid var(--bor)}
 @media(min-width:768px){.nut-sticky{margin:-20px -20px 0;padding:0 20px}}
 .nut-body{padding-top:8px;min-height:50vh}
 .tabs{display:flex;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap;white-space:nowrap}
