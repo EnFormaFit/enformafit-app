@@ -230,18 +230,23 @@ function nitP(di,meal,tipo,idx){const it=_NIT[idx];if(it)selProt(di,meal,it.nom,
 function nitI(di,meal,cat,idx){const it=_NIT[idx];if(it)selItem(di,meal,cat,it);}
 
 function selProt(di,meal,nom,tipo,item){
-  if(!ST.menu[di])ST.menu[di]={};
-  if(!ST.menu[di][meal])ST.menu[di][meal]={};
-  const cur=ST.menu[di][meal];
+  if(!ST.menuGuardado[di])ST.menuGuardado[di]={};
+  if(!ST.menuGuardado[di][meal])ST.menuGuardado[di][meal]={};
+  const cur=ST.menuGuardado[di][meal];
   if(cur.prot&&cur.prot.nom===nom&&cur.protType===tipo){delete cur.prot;delete cur.protType;}
-  else{cur.prot=item;cur.protType=tipo;if(tipo==='grasa')delete cur.fat;}
+  else{cur.prot={nom:item.nom,cantidad:item.cantidad,u:item.u||'g'};cur.protType=tipo;if(tipo==='grasa')delete cur.fat;}
+  if(!ST.menu[di])ST.menu[di]={};
+  ST.menu[di][meal]=ST.menuGuardado[di][meal];
   save();document.getElementById('ct').innerHTML=renderNutricion();
 }
 function selItem(di,meal,cat,item){
+  if(!ST.menuGuardado[di])ST.menuGuardado[di]={};
+  if(!ST.menuGuardado[di][meal])ST.menuGuardado[di][meal]={};
+  const cur=ST.menuGuardado[di][meal];
+  if(cur[cat]&&cur[cat].nom===item.nom)delete cur[cat];
+  else cur[cat]={nom:item.nom,cantidad:item.cantidad,u:item.u||'g'};
   if(!ST.menu[di])ST.menu[di]={};
-  if(!ST.menu[di][meal])ST.menu[di][meal]={};
-  const cur=ST.menu[di][meal];
-  if(cur[cat]&&cur[cat].nom===item.nom)delete cur[cat];else cur[cat]=item;
+  ST.menu[di][meal]=ST.menuGuardado[di][meal];
   save();document.getElementById('ct').innerHTML=renderNutricion();
 }
 
@@ -314,7 +319,8 @@ function renderMenuEditor(di){
   _NIT=[];
   const isSuperavit=ST.p.def>0;
   // Use menuGuardado for current selections (set by panel plan)
-  const m=ST.menuGuardado[di]||ST.menu[di]||{};
+  if(!ST.menuGuardado[di])ST.menuGuardado[di]={};
+  const m=ST.menuGuardado[di];
   // Only show meals configured for this client (from plan.comidas)
   const ALL_MEALS=['desayuno','comida','cena','snack'];
   const numComidas=ST.p.comidas||ST.u.comidas||3;
@@ -427,7 +433,7 @@ function guardarMenu(di){
     if(!ms.hidrat)faltantes.push(n+': falta hidrato');
     if(ms.prot&&ms.protType==='magra'&&md.grasas&&md.grasas.length&&!ms.fat)faltantes.push(n+': falta grasa');
     if((meal==='comida'||meal==='cena')&&md.verduras&&md.verduras.length&&!ms.verd)faltantes.push(n+': falta verdura');
-    if(meal==='desayuno'&&md.frutas&&md.frutas.length&&!ms.fruta)faltantes.push(n+': falta fruta');
+    // fruta optional — not required to save menu
   });
   if(faltantes.length){
     const al=document.getElementById('missing-alert');
@@ -435,7 +441,9 @@ function guardarMenu(di){
     toast('Revisa lo que falta','rj');return;
   }
   ST.menuGuardado[di]=JSON.parse(JSON.stringify(m));
-  ST.nutEditing=false;save();
+  ST.nutEditing=false;
+  api('POST','/api/entreno/menu-semanal',{menu_semanal:ST.menuGuardado}).catch(()=>{});
+  save();
   document.getElementById('ct').innerHTML=renderNutricion();
   document.getElementById('ct').scrollTop=0;
   toast('Menú guardado ✓','vd');
