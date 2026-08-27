@@ -230,23 +230,18 @@ function nitP(di,meal,tipo,idx){const it=_NIT[idx];if(it)selProt(di,meal,it.nom,
 function nitI(di,meal,cat,idx){const it=_NIT[idx];if(it)selItem(di,meal,cat,it);}
 
 function selProt(di,meal,nom,tipo,item){
-  if(!ST.menuGuardado[di])ST.menuGuardado[di]={};
-  if(!ST.menuGuardado[di][meal])ST.menuGuardado[di][meal]={};
-  const cur=ST.menuGuardado[di][meal];
-  if(cur.prot&&cur.prot.nom===nom&&cur.protType===tipo){delete cur.prot;delete cur.protType;}
-  else{cur.prot={nom:item.nom,cantidad:item.cantidad,u:item.u||'g'};cur.protType=tipo;if(tipo==='grasa')delete cur.fat;}
   if(!ST.menu[di])ST.menu[di]={};
-  ST.menu[di][meal]=ST.menuGuardado[di][meal];
+  if(!ST.menu[di][meal])ST.menu[di][meal]={};
+  const cur=ST.menu[di][meal];
+  if(cur.prot&&cur.prot.nom===nom&&cur.protType===tipo){delete cur.prot;delete cur.protType;}
+  else{cur.prot=item;cur.protType=tipo;if(tipo==='grasa')delete cur.fat;}
   save();document.getElementById('ct').innerHTML=renderNutricion();
 }
 function selItem(di,meal,cat,item){
-  if(!ST.menuGuardado[di])ST.menuGuardado[di]={};
-  if(!ST.menuGuardado[di][meal])ST.menuGuardado[di][meal]={};
-  const cur=ST.menuGuardado[di][meal];
-  if(cur[cat]&&cur[cat].nom===item.nom)delete cur[cat];
-  else cur[cat]={nom:item.nom,cantidad:item.cantidad,u:item.u||'g'};
   if(!ST.menu[di])ST.menu[di]={};
-  ST.menu[di][meal]=ST.menuGuardado[di][meal];
+  if(!ST.menu[di][meal])ST.menu[di][meal]={};
+  const cur=ST.menu[di][meal];
+  if(cur[cat]&&cur[cat].nom===item.nom)delete cur[cat];else cur[cat]=item;
   save();document.getElementById('ct').innerHTML=renderNutricion();
 }
 
@@ -280,10 +275,7 @@ function renderMenuDia(di){
 
 function renderMenuPlegado(di,g){
   const DNAMES=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-  // Only show meals configured for this client (from plan.comidas)
-  const ALL_MEALS=['desayuno','comida','cena','snack'];
-  const numComidas=ST.p.comidas||ST.u.comidas||3;
-  const MEALS=numComidas>=4?ALL_MEALS:ALL_MEALS.slice(0,numComidas);
+  const MEALS=['desayuno','comida','cena','snack'];
   const ICONS={desayuno:'🌅',comida:'☀️',cena:'🌙',snack:'🍎'};
   let out='';
   MEALS.forEach((meal,mi)=>{
@@ -318,13 +310,8 @@ function renderMenuPlegado(di,g){
 function renderMenuEditor(di){
   _NIT=[];
   const isSuperavit=ST.p.def>0;
-  // Use menuGuardado for current selections (set by panel plan)
-  if(!ST.menuGuardado[di])ST.menuGuardado[di]={};
-  const m=ST.menuGuardado[di];
-  // Only show meals configured for this client (from plan.comidas)
-  const ALL_MEALS=['desayuno','comida','cena','snack'];
-  const numComidas=ST.p.comidas||ST.u.comidas||3;
-  const MEALS=numComidas>=4?ALL_MEALS:ALL_MEALS.slice(0,numComidas);
+  const m=ST.menu[di]||{};
+  const MEALS=['desayuno','comida','cena','snack'];
   let out='<div style="height:4px"></div>';
 
   MEALS.forEach(meal=>{
@@ -340,8 +327,7 @@ function renderMenuEditor(di){
     (md.proteinas_magras||[]).forEach(it=>{
       const on=ms.prot&&ms.prot.nom===it.nom&&protType==='magra';
       const idx=_NIT.push(it)-1;
-      const showCant_pm=on&&ms.prot.cantidad?ms.prot.cantidad:it.cantidad;
-      out+=`<button class="opt ${on?'on':''}" onclick="nitP(${di},'${meal}','magra',${idx})">${it.nom}<small>${showCant_pm}${it.u}</small></button>`;
+      out+=`<button class="opt ${on?'on':''}" onclick="nitP(${di},'${meal}','magra',${idx})">${it.nom}<small>${it.cantidad}${it.u}</small></button>`;
     });
     out+=`</div>`;
 
@@ -349,8 +335,7 @@ function renderMenuEditor(di){
     (md.proteinas_grasas||[]).forEach(it=>{
       const on=ms.prot&&ms.prot.nom===it.nom&&protType==='grasa';
       const idx=_NIT.push(it)-1;
-      const showCant_pg=on&&ms.prot.cantidad?ms.prot.cantidad:it.cantidad;
-      out+=`<button class="opt ${on?'on':''}" onclick="nitP(${di},'${meal}','grasa',${idx})">${it.nom}<small>${showCant_pg}${it.u}</small></button>`;
+      out+=`<button class="opt ${on?'on':''}" onclick="nitP(${di},'${meal}','grasa',${idx})">${it.nom}<small>${it.cantidad}${it.u}</small></button>`;
     });
     out+=`</div>`;
 
@@ -360,8 +345,7 @@ function renderMenuEditor(di){
     (md.hidratos||[]).forEach(it=>{
       const on=ms.hidrat&&ms.hidrat.nom===it.nom;
       const idx=_NIT.push(it)-1;
-      const showCant_h=on&&ms.hidrat.cantidad?ms.hidrat.cantidad:it.cantidad;
-      out+=`<button class="opt ${on?'on':''}" onclick="nitI(${di},'${meal}','hidrat',${idx})">${it.nom}<small>${showCant_h}${it.u}</small></button>`;
+      out+=`<button class="opt ${on?'on':''}" onclick="nitI(${di},'${meal}','hidrat',${idx})">${it.nom}<small>${it.cantidad}${it.u}</small></button>`;
     });
     out+=`</div>`;
 
@@ -417,12 +401,8 @@ function renderMenuEditor(di){
 }
 
 function guardarMenu(di){
-  // Only show meals configured for this client (from plan.comidas)
-  const ALL_MEALS=['desayuno','comida','cena','snack'];
-  const numComidas=ST.p.comidas||ST.u.comidas||3;
-  const MEALS=numComidas>=4?ALL_MEALS:ALL_MEALS.slice(0,numComidas);
-  // Use menuGuardado for current selections (set by panel plan)
-  const m=ST.menuGuardado[di]||ST.menu[di]||{};
+  const MEALS=['desayuno','comida','cena','snack'];
+  const m=ST.menu[di]||{};
   const NAMES={desayuno:'Desayuno',comida:'Comida',cena:'Cena',snack:'Snack'};
   const faltantes=[];
   MEALS.forEach(meal=>{
@@ -433,7 +413,7 @@ function guardarMenu(di){
     if(!ms.hidrat)faltantes.push(n+': falta hidrato');
     if(ms.prot&&ms.protType==='magra'&&md.grasas&&md.grasas.length&&!ms.fat)faltantes.push(n+': falta grasa');
     if((meal==='comida'||meal==='cena')&&md.verduras&&md.verduras.length&&!ms.verd)faltantes.push(n+': falta verdura');
-    // fruta optional — not required to save menu
+    if(meal==='desayuno'&&md.frutas&&md.frutas.length&&!ms.fruta)faltantes.push(n+': falta fruta');
   });
   if(faltantes.length){
     const al=document.getElementById('missing-alert');
@@ -441,9 +421,7 @@ function guardarMenu(di){
     toast('Revisa lo que falta','rj');return;
   }
   ST.menuGuardado[di]=JSON.parse(JSON.stringify(m));
-  ST.nutEditing=false;
-  api('POST','/api/entreno/menu-semanal',{menu_semanal:ST.menuGuardado}).catch(()=>{});
-  save();
+  ST.nutEditing=false;save();
   document.getElementById('ct').innerHTML=renderNutricion();
   document.getElementById('ct').scrollTop=0;
   toast('Menú guardado ✓','vd');
@@ -538,10 +516,7 @@ function checkMenuCompleto(){
 }
 function generateMenuPDF(){
   const DNAMES=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-  // Only show meals configured for this client (from plan.comidas)
-  const ALL_MEALS=['desayuno','comida','cena','snack'];
-  const numComidas=ST.p.comidas||ST.u.comidas||3;
-  const MEALS=numComidas>=4?ALL_MEALS:ALL_MEALS.slice(0,numComidas);
+  const MEALS=['desayuno','comida','cena','snack'];
   const MEAL_NOM={desayuno:'Desayuno',comida:'Comida',cena:'Cena',snack:'Snack'};
   const incomplete=[0,1,2,3,4,5,6].filter(i=>!ST.menuGuardado[i]||Object.keys(ST.menuGuardado[i]).length<4);
   if(incomplete.length){toast('Guarda el menú de los 7 días primero','rj');return;}
@@ -644,7 +619,7 @@ function buildPesoGridApp(pesos,inicioBloque,semActual){
 }
 
 function buildMedidasTable(revSems,hist){
-  var MEDS=[['hombros','Hombros (zona + amplia)'],['pecho','Pecho (zona + amplia)'],['brazo_i','Brazo izq. contraído'],['brazo_d','Brazo dcho. contraído'],['cintura','Cintura ombligo'],['muslo_i','Muslo izq. relajado'],['muslo_d','Muslo dcho. relajado'],['gemelo_i','Gemelo izq. contraído'],['gemelo_d','Gemelo dcho. contraído']];
+  var MEDS=[['hombros','Hombros'],['pecho','Pecho'],['brazod','Brazo D'],['brazoi','Brazo I'],['cintura','Cintura'],['muslod','Muslo D'],['musloi','Muslo I'],['gemelod','Gemelo D'],['gemeloi','Gemelo I']];
   // Get medidas for each revision semana
   var cols=revSems.map(function(rs){
     var h=hist[rs];
@@ -937,7 +912,7 @@ function renderRevision(){
     ['¿Cómo te sientes esta semana?','¿Cuáles fueron tus mayores éxitos?','¿Cómo te sentiste con ellos?','¿Qué tal los entrenamientos?','¿Qué tal la nutrición?','¿Qué mejorarías?','¿Algo más que quieras compartir?'];
 
   const POSES=['Frente','Perfil der.','Perfil izq.','Espalda'];
-  const MEDS=[['hombros','Hombros','zona más amplia'],['pecho','Pecho','zona más amplia'],['brazo_i','Brazo izq. contraído','contraído'],['brazo_d','Brazo dcho. contraído','contraído'],['cintura','Cintura','ombligo'],['muslo_i','Muslo izq. relajado','relajado'],['muslo_d','Muslo dcho. relajado','relajado'],['gemelo_i','Gemelo izq. contraído','contraído'],['gemelo_d','Gemelo dcho. contraído','contraído']];
+  const MEDS=[['hombros','Hombros','zona mas amplia'],['pecho','Pecho','zona mas amplia'],['brazod','Brazo dcho. contraido','contraido'],['brazoi','Brazo izq. contraido','contraido'],['cintura','Cintura ombligo','a la altura del ombligo'],['muslod','Muslo dcho. relajado','relajado'],['musloi','Muslo izq. relajado','relajado'],['gemelod','Gemelo dcho. contraido','contraido'],['gemeloi','Gemelo izq. contraido','contraido']];
 
   const stepLabels=['📸 Fotos','📏 Medidas','💬 Preguntas'];
   const stepsBar=stepLabels.map((l,i)=>`<div class="rev-step ${i<step?'rs-done':i===step?'rs-act':'rs-fut'}" onclick="ST.rev.step=${i};render()" title="${l}"></div>`).join('');
