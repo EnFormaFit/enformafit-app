@@ -158,7 +158,6 @@ async function loadClienteData(){
     if(plan){
       ST.u.semana=plan.semana_actual||ST.u.semana;
       ST.u.inicioBloque=plan.fecha_inicio?plan.fecha_inicio.split('T')[0]:ST.u.inicioBloque;
-      if(plan.comidas)ST.p.comidas=plan.comidas;
       ST.objPeso=plan.objetivo_kg||ST.objPeso;
       ST.u.obj=ST.objPeso;
       
@@ -250,16 +249,6 @@ async function loadClienteData(){
         }
       }
     }
-
-    // 2b. Menú semanal guardado del cliente
-    try{
-      const menuBD=await api('GET','/api/entreno/menu-semanal');
-      if(menuBD&&menuBD.menu_semanal){
-        Object.entries(menuBD.menu_semanal).forEach(([day,meals])=>{
-          ST.menuGuardado[parseInt(day)]=meals;
-        });
-      }
-    }catch(e){}
 
     // 3. Pesos desde BD
     try{
