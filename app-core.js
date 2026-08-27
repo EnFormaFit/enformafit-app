@@ -1,5 +1,5 @@
 // ── STATE ──
-const APP_VER='v8.4';
+const APP_VER='v8.5';
 const ST={
   u:{nom:'',init:'',plan:'',semana:1,semTotal:12,tipo:'programa',
      altura:175,peso:80,dob:'',objetivo:75,lesiones:'',
@@ -47,7 +47,7 @@ try{
   if(ver!==APP_VER){localStorage.removeItem('ef8');localStorage.setItem('ef8_ver',APP_VER);return;}
   const d=JSON.parse(localStorage.getItem('ef8')||'{}');
   // v2: menu structure changed — discard old cached menu to force fresh load
-  const CACHE_VER='v2';
+  const CACHE_VER='v3';
   if(d._v===CACHE_VER){
     if(d.menu)ST.menu=d.menu;
     if(d.menuGuardado)ST.menuGuardado=d.menuGuardado;
@@ -158,6 +158,7 @@ async function loadClienteData(){
     if(plan){
       ST.u.semana=plan.semana_actual||ST.u.semana;
       ST.u.inicioBloque=plan.fecha_inicio?plan.fecha_inicio.split('T')[0]:ST.u.inicioBloque;
+      if(plan.comidas)ST.p.comidas=plan.comidas;
       ST.objPeso=plan.objetivo_kg||ST.objPeso;
       ST.u.obj=ST.objPeso;
       
