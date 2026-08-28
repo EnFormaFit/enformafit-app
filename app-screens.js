@@ -970,9 +970,27 @@ let _rfIdx=0;
 function triggerRF(i){_rfIdx=i;document.getElementById('rfin').click();}
 function loadRF(inp){
   const f=inp.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=e=>{ST.rev.fotos['rev_'+_rfIdx]=e.target.result;save();render();};
-  r.readAsDataURL(f);
+  // Compress to max 1200px and <8MB before storing
+  const img=new Image();
+  const reader=new FileReader();
+  reader.onload=e=>{
+    img.onload=function(){
+      const MAX=1200;
+      let w=img.width,h=img.height;
+      if(w>MAX||h>MAX){
+        if(w>h){h=Math.round(h*MAX/w);w=MAX;}
+        else{w=Math.round(w*MAX/h);h=MAX;}
+      }
+      const canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const compressed=canvas.toDataURL('image/jpeg',0.82);
+      ST.rev.fotos['rev_'+_rfIdx]=compressed;
+      save();render();
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(f);
 }
 function enviarRev(){
   var fotos=ST.rev.fotos||{};
@@ -989,7 +1007,7 @@ function enviarRev(){
   if(nPregs<PP){toast('Responde todas las preguntas','rj');ST.rev.step=2;render();return;}
   _doEnviarRev();
 }
-function _doEnviarRev(){
+async function _doEnviarRev(){
   ST.rev.done=true;
   const {semana,tipo}=ST.u;
   const revSems=tipo==='programa'?[4,8,12]:[3,7,11];
@@ -997,19 +1015,44 @@ function _doEnviarRev(){
   if(!ST.revHistorial)ST.revHistorial={};
   ST.revHistorial[nextRev]={fotos:{...ST.rev.fotos},medidas:{...ST.rev.medidas},preguntas:{...ST.rev.preguntas},fecha:new Date().toISOString().split('T')[0]};
   if(!Object.keys(ST.medidasIni).length&&Object.keys(ST.rev.medidas).length)ST.medidasIni={...ST.rev.medidas};
-  save();render();toast('Revisión S'+nextRev+' enviada ✓','vd');
-  // Sync to BD
+  save();render();toast('Subiendo fotos y guardando revisión...','');
+
   if(_tk){
+    // Upload photos to Cloudinary
+    const POSES=['frente','perfil_d','perfil_i','espalda'];
+    const fotoUrls={};
+    const fotosB64=ST.rev.fotos||{};
+    for(let i=0;i<4;i++){
+      const b64=fotosB64['rev_'+i];
+      if(b64){
+        try{
+          const res=await api('POST','/api/entreno/upload-foto',{
+            foto_b64:b64,
+            pose:POSES[i],
+            semana:nextRev
+          });
+          if(res.url)fotoUrls['rev_'+i]=res.url;
+        }catch(e){
+          console.warn('[Cloudinary] Error subiendo foto',i,e);
+          fotoUrls['rev_'+i]=b64; // fallback to base64
+        }
+      }
+    }
+    // Save revision with photo URLs
     api('POST','/api/entreno/revision',{
       semana:nextRev,
       medidas:ST.rev.medidas||{},
       preguntas:ST.rev.preguntas||{},
+      fotos:fotoUrls,
       estado:'revisada'
     }).then(function(){
-      console.log('[BD] Revision S'+nextRev+' saved');
+      toast('Revisión S'+nextRev+' enviada ✓','vd');
+      console.log('[BD] Revision S'+nextRev+' saved with photos');
     }).catch(function(e){
       console.warn('[BD] Revision save error:',e);
     });
+  } else {
+    toast('Revisión S'+nextRev+' guardada ✓','vd');
   }
 }
 function editarRevAnterior(sem){
