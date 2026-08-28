@@ -153,6 +153,8 @@ async function loadClienteData(){
     ST.u.diasEnt=perfil.dias_entreno||ST.u.diasEnt||4;
     if(perfil.fecha_nacimiento)ST.u.dob=perfil.fecha_nacimiento.split('T')[0];
     if(perfil.peso_inicial)ST.pesoInicial=parseFloat(perfil.peso_inicial);
+    if(perfil.fase)ST.p.fase=perfil.fase;
+    if(perfil.obj_sem_kg!=null)ST.p.objSemKg=parseFloat(perfil.obj_sem_kg);
 
     // Apply plan data
     if(plan){
