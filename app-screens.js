@@ -1275,7 +1275,10 @@ function renderPerfil(){
   return`<div style="padding:16px">
     <button onclick="doLogout()" style="width:100%;padding:12px;border-radius:10px;border:none;background:#E74C3C;color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;margin-bottom:12px">🚪 Cerrar sesión</button>
     <div class="card" style="margin-bottom:12px">
-      <div class="ch"><h2>👤 Mi perfil</h2></div>
+      <div class="ch" style="display:flex;align-items:center;justify-content:space-between">
+        <h2>👤 Mi perfil</h2>
+        <span style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;background:${{deficit:'rgba(29,158,117,.15)',reconstruccion:'rgba(26,43,90,.12)',superavit:'rgba(255,107,0,.12)'}[ST.p.fase||'deficit']};color:${{deficit:'var(--vd)',reconstruccion:'var(--az)',superavit:'#FF6B00'}[ST.p.fase||'deficit']}">${{deficit:'📉 Déficit',reconstruccion:'🔄 Reconstrucción',superavit:'📈 Superávit'}[ST.p.fase||'deficit']}</span>
+      </div>
       <div class="cb">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
           <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
