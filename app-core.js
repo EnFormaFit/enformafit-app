@@ -147,7 +147,7 @@ async function loadClienteData(){
     ST.u.nom=nom;
     ST.u.init=init.toUpperCase()||'CL';
     ST.u.tipo=perfil.tipo==='1a1'?'uno':'programa';
-    ST.u.semTotal=perfil.tipo==='1a1'?13:14;
+    ST.u.semTotal=13; // 12 semanas + 1 de margen para todos los tipos
     ST.u.lesiones=perfil.lesiones||'';
     ST.u.altura=perfil.altura||ST.u.altura||175;
     ST.u.diasEnt=perfil.dias_entreno||ST.u.diasEnt||4;
