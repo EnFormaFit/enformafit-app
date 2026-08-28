@@ -772,7 +772,7 @@ function renderProgreso(){
       <div class="maci"><div class="macv" style="color:var(--az2);font-size:17px">${ST.objPeso}kg</div><div class="macl">Objetivo</div></div>
       <div class="maci"><div class="macv" style="color:${cambio<0?'var(--vd)':'var(--rj)'};font-size:17px">${cambio>0?'+':''}${cambio.toFixed(1)}kg</div><div class="macl">Cambio total</div></div>
       <div class="maci"><div class="macv" style="color:var(--az);font-size:17px">${left>0?left.toFixed(1).replace('.',',')+' kg':'✅'}</div><div class="macl">Para objetivo</div></div>
-      <div class="maci"><div class="macv" style="color:var(--az2);font-size:17px">${ST.bajanSem}kg</div><div class="macl">Ritmo/sem</div></div>
+      <div class="maci"><div class="macv" style="color:var(--az2);font-size:17px">${ST.p.objSemKg!=null?Math.abs(ST.p.objSemKg).toString().replace('.',',')+'kg':ST.bajanSem+'kg'}</div><div class="macl">Ritmo/sem</div></div>
       <div class="maci"><div class="macv" style="color:var(--az);font-size:17px">${semsTotal}sem</div><div class="macl">Sem. totales</div></div>
     </div>
     ${chartHTML}
