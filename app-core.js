@@ -252,6 +252,16 @@ async function loadClienteData(){
       }
     }
 
+    // 2b. Menú semanal guardado
+    try{
+      const menuBD=await api('GET','/api/entreno/menu-semanal');
+      if(menuBD&&menuBD.menu_semanal){
+        Object.entries(menuBD.menu_semanal).forEach(([day,meals])=>{
+          ST.menuGuardado[parseInt(day)]=meals;
+        });
+      }
+    }catch(e){}
+
     // 3. Pesos desde BD
     try{
       const pesosAPI=await api('GET','/api/entreno/peso');
