@@ -421,7 +421,9 @@ function guardarMenu(di){
     toast('Revisa lo que falta','rj');return;
   }
   ST.menuGuardado[di]=JSON.parse(JSON.stringify(m));
-  ST.nutEditing=false;save();
+  ST.nutEditing=false;
+  api('POST','/api/entreno/menu-semanal',{menu_semanal:ST.menuGuardado}).catch(function(e){console.warn('guardarMenu BD:',e);});
+  save();
   document.getElementById('ct').innerHTML=renderNutricion();
   document.getElementById('ct').scrollTop=0;
   toast('Menú guardado ✓','vd');
