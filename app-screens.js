@@ -836,7 +836,7 @@ function delPeso(idx){
   ST.pesos.splice(idx,1);save();
   // Delete from BD
   if(p&&p.f){
-    api('DELETE','/api/entreno/peso',{fecha:p.f}).catch(function(e){console.warn('delPeso BD:',e);});
+    api('DELETE','/api/entreno/peso?fecha='+encodeURIComponent(p.f)).catch(function(e){console.warn('delPeso BD:',e);});
   }
   var ct=document.getElementById('ct');
   if(ct&&SEC==='progreso'){var sp=ct.scrollTop;ct.innerHTML=renderProgreso();ct.scrollTop=sp;}
