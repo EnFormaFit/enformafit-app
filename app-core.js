@@ -192,31 +192,7 @@ async function loadClienteData(){
       
       // Load nutrition plan from alimentos
       if(plan.alimentos&&Object.keys(plan.alimentos).length>0){
-        const dist=plan.alimentos;
-        ['desayuno','comida','cena','snack'].forEach(function(meal){
-          const mealDist=dist[meal];
-          if(!mealDist||!MENU[meal])return;
-          ['proteinas_magras','proteinas_grasas','hidratos','grasas','frutas','verduras'].forEach(function(cat){
-            if(!mealDist[cat]||!MENU[meal][cat])return;
-            var cantMap={};
-            mealDist[cat].forEach(function(ali){
-              if(ali.nom&&ali.cantidad!=null)cantMap[ali.nom]=ali;
-            });
-            MENU[meal][cat]=MENU[meal][cat].map(function(item){
-              var ali=cantMap[item.nom];
-              if(ali&&ali.cantidad){
-                return {
-                  nom:item.nom, cantidad:ali.cantidad, u:item.u,
-                  p:ali.p!=null?ali.p:item.p,
-                  c:ali.c!=null?ali.c:item.c,
-                  g:ali.g!=null?ali.g:item.g,
-                  kcal:ali.kcal!=null?ali.kcal:item.kcal
-                };
-              }
-              return item;
-            });
-          });
-        });
+        aplicarCantidadesPersonalizadas(plan.alimentos);
       }    }
 
     // 2b. Menú semanal guardado
@@ -518,4 +494,34 @@ function doLogout(){
   localStorage.removeItem('ef_tk');
   localStorage.removeItem('ef8');
   location.reload();
+}
+
+// ── Aplicar cantidades personalizadas del plan al MENU ───────────────────────
+function aplicarCantidadesPersonalizadas(alimentos) {
+  if (!alimentos || !Object.keys(alimentos).length) return;
+  ['desayuno','comida','cena','snack'].forEach(function(meal) {
+    var mealDist = alimentos[meal];
+    if (!mealDist || !MENU[meal]) return;
+    ['proteinas_magras','proteinas_grasas','hidratos','grasas','frutas','verduras'].forEach(function(cat) {
+      if (!mealDist[cat] || !MENU[meal][cat]) return;
+      var cantMap = {};
+      mealDist[cat].forEach(function(ali) {
+        if (ali.nom && ali.cantidad != null) cantMap[ali.nom] = ali;
+      });
+      MENU[meal][cat] = MENU[meal][cat].map(function(item) {
+        var ali = cantMap[item.nom];
+        if (ali && ali.cantidad) {
+          return {
+            nom: item.nom, cantidad: ali.cantidad, u: item.u,
+            p: ali.p != null ? ali.p : item.p,
+            c: ali.c != null ? ali.c : item.c,
+            g: ali.g != null ? ali.g : item.g,
+            kcal: ali.kcal != null ? ali.kcal : item.kcal
+          };
+        }
+        return item;
+      });
+    });
+  });
+  ST.menuPersonalizado = true;
 }
