@@ -184,9 +184,24 @@ async function loadClienteData() {
       aplicarCantidadesPersonalizadas(plan.alimentos);
     }
 
-    // Medidas S0
+    // Medidas y fotos S0 — cargar en revHistorial[0] para que aparezcan en Progreso y Revisión
     ST.medidasS0 = plan.medidas_s0 || {};
-    ST.fotosS0 = plan.fotos_s0 || {};
+    const fotosS0 = plan.fotos_s0 || {};
+    if (Object.keys(fotosS0).length > 0) {
+      if (!ST.revHistorial) ST.revHistorial = {};
+      if (!ST.revHistorial[0]) ST.revHistorial[0] = { fotos: {}, medidas: {} };
+      // fotosS0 format from BD: { frente: url, perfil_d: url, perfil_i: url, espalda: url }
+      // App expects: { rev_0: url, rev_1: url, rev_2: url, rev_3: url }
+      const POSE_MAP = { frente: 0, perfil_d: 1, perfil_i: 2, espalda: 3 };
+      Object.entries(fotosS0).forEach(function([pose, url]) {
+        const idx = POSE_MAP[pose];
+        if (idx !== undefined && url) ST.revHistorial[0].fotos['rev_' + idx] = url;
+      });
+      // Also load medidas S0
+      if (Object.keys(ST.medidasS0).length > 0) {
+        ST.revHistorial[0].medidas = ST.medidasS0;
+      }
+    }
 
     // ── 3. Pesos desde BD ────────────────────────────────────────────────────
     try {
