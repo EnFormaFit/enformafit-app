@@ -180,6 +180,7 @@ async function loadClienteData() {
 
     // Menú personalizado — aplicar cantidades del plan al MENU global
     if (plan.alimentos && Object.keys(plan.alimentos).length > 0) {
+      ST.p.planAlimentos = plan.alimentos;
       aplicarCantidadesPersonalizadas(plan.alimentos);
     }
 
