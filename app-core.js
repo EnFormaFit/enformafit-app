@@ -133,126 +133,84 @@ async function doLogin(){
   }
 }
 
-async function loadClienteData(){
-  try{
-    // 1. Mi plan completo (rutina + nutricion + semana) — 404 = sin plan aún, no fatal
-    let plan=null;
-    try{ plan=await api('GET','/api/entreno/mi-plan'); }catch(e){ plan=null; }
-    
-    // 2. Perfil
-    const perfil=await api('GET','/api/clientes/me/perfil');
-    const nom=perfil.nombre||ST.u.nom;
-    const partes=nom.trim().split(' ');
-    const init=(partes[0]?.[0]||'')+(partes[1]?.[0]||'');
-    ST.u.nom=nom;
-    ST.u.init=init.toUpperCase()||'CL';
-    ST.u.tipo=perfil.tipo==='1a1'?'uno':'programa';
-    ST.u.semTotal=13; // 12 semanas + 1 de margen para todos los tipos
-    ST.u.lesiones=perfil.lesiones||'';
-    ST.u.altura=perfil.altura||ST.u.altura||175;
-    ST.u.diasEnt=perfil.dias_entreno||ST.u.diasEnt||4;
-    if(perfil.fecha_nacimiento)ST.u.dob=perfil.fecha_nacimiento.split('T')[0];
-    if(perfil.peso_inicial)ST.pesoInicial=parseFloat(perfil.peso_inicial);
-    if(perfil.fase)ST.p.fase=perfil.fase;
-    if(perfil.obj_sem_kg!=null)ST.p.objSemKg=parseFloat(perfil.obj_sem_kg);
+async function loadClienteData() {
+  try {
+    // ── 1. Perfil básico del usuario ────────────────────────────────────────
+    const perfil = await api('GET', '/api/clientes/me/perfil');
+    const nom = (perfil.nombre || '').split(' ')[0];
+    const init = nom[0] || 'C';
+    ST.u.nom = nom;
+    ST.u.init = init.toUpperCase();
+    ST.u.tipo = perfil.tipo === '1a1' ? 'uno' : 'programa';
+    ST.u.dob = perfil.fecha_nacimiento ? perfil.fecha_nacimiento.split('T')[0] : '';
+    ST.u.lesiones = perfil.lesiones || '';
+    ST.u.altura = parseFloat(perfil.altura) || 175;
+    ST.pesoInicial = parseFloat(perfil.peso_inicial) || 0;
 
-    // Apply plan data
-    if(plan){
-      ST.u.semana=plan.semana_actual||ST.u.semana;
-      ST.u.inicioBloque=plan.fecha_inicio?plan.fecha_inicio.split('T')[0]:ST.u.inicioBloque;
-      ST.objPeso=plan.objetivo_kg||ST.objPeso;
-      ST.u.obj=ST.objPeso;
-      
-      // Macros from plan
-      if(plan.macros){
-        ST.p.macro.kcal=plan.macros.kcal||ST.p.macro.kcal;
-        ST.p.macro.p=plan.macros.p||ST.p.macro.p;
-        ST.p.macro.c=plan.macros.c||ST.p.macro.c;
-        ST.p.macro.g=plan.macros.g||ST.p.macro.g;
-      }
-      
-      // Load real rutina days into DIAS
-      if(plan.rutina_dias&&Object.keys(plan.rutina_dias).length>0){
-        const DIA_NAMES=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-        const DIA_TIPOS=['Pierna','Torso','Descanso','Empuje','Tracción','Descanso','Descanso'];
-        // Reset DIAS
-        for(let di=0;di<7;di++){
-          const ejes=plan.rutina_dias[String(di)];
-          if(ejes&&ejes.length>0){
-            DIAS[di]={cod:DIA_NAMES[di].toUpperCase(),nom:DIA_NAMES[di],
-              tipo:ejes.length+' ejercicios',rest:false,
-              ejercicios:ejes.map(e=>({nom:e.nom,sets:e.sets,reps:e.reps,
-                rir:String(e.rir||1),acl:e.acl||'',url:e.url||''}))};
-          } else {
-            DIAS[di]={cod:DIA_NAMES[di].toUpperCase(),nom:DIA_NAMES[di],
-              tipo:'Descanso',rest:true,ejercicios:[]};
-          }
-        }
-      }
-      
-      // Load nutrition plan from alimentos
-      if(plan.alimentos&&Object.keys(plan.alimentos).length>0){
-        aplicarCantidadesPersonalizadas(plan.alimentos);
-      }    }
+    // ── 2. Todo el plan en UNA sola llamada ──────────────────────────────────
+    const plan = await api('GET', '/api/entreno/mi-plan');
 
-    // 2b. Menú semanal guardado
-    try{
-      const menuBD=await api('GET','/api/entreno/menu-semanal');
-      if(menuBD&&menuBD.menu_semanal){
-        Object.entries(menuBD.menu_semanal).forEach(([day,meals])=>{
-          ST.menuGuardado[parseInt(day)]=meals;
+    // Semana y bloque
+    ST.u.semana = plan.semana_actual || 1;
+    ST.u.semTotal = plan.semanas_bloque || 13;
+    ST.u.inicioBloque = plan.fecha_inicio ? plan.fecha_inicio.split('T')[0] : '';
+    ST.u.diasEnt = plan.dias_entreno || 3;
+
+    // Fase y objetivos
+    ST.p.fase = plan.fase || 'deficit';
+    ST.p.objSemKg = plan.obj_sem_kg != null ? plan.obj_sem_kg : null;
+    ST.objPeso = plan.objetivo_kg ? parseFloat(plan.objetivo_kg) : 0;
+
+    // Macros
+    ST.p.macro = {
+      kcal: plan.macros.kcal || 0,
+      p: plan.macros.p || 0,
+      c: plan.macros.c || 0,
+      g: plan.macros.g || 0
+    };
+    ST.p.comidas = plan.comidas || 3;
+
+    // Rutina
+    ST.p.rutinaCod = plan.rutina_cod || '';
+    ST.p.rutinaDias = plan.rutina_dias || {};
+    ST.p.rutinaSemanas = plan.rutina_semanas || {};
+
+    // Pasos
+    ST.u.pasosObj = plan.pasos_obj || 8000;
+
+    // Menú personalizado — aplicar cantidades del plan al MENU global
+    if (plan.alimentos && Object.keys(plan.alimentos).length > 0) {
+      aplicarCantidadesPersonalizadas(plan.alimentos);
+    }
+
+    // Medidas S0
+    ST.medidasS0 = plan.medidas_s0 || {};
+    ST.fotosS0 = plan.fotos_s0 || {};
+
+    // ── 3. Pesos desde BD ────────────────────────────────────────────────────
+    try {
+      const pesos = await api('GET', '/api/entreno/pesos');
+      ST.pesos = (pesos || []).map(p => ({ f: p.fecha ? p.fecha.split('T')[0] : p.f, v: parseFloat(p.peso || p.v) }));
+    } catch(e) { ST.pesos = []; }
+
+    // ── 4. Menú semanal guardado ─────────────────────────────────────────────
+    try {
+      const menuBD = await api('GET', '/api/entreno/menu-semanal');
+      if (menuBD && menuBD.menu_semanal) {
+        Object.entries(menuBD.menu_semanal).forEach(([day, meals]) => {
+          ST.menuGuardado[parseInt(day)] = meals;
         });
       }
-    }catch(e){}
+    } catch(e) {}
 
-    // 3. Pesos desde BD
-    try{
-      const pesosAPI=await api('GET','/api/entreno/peso');
-      if(pesosAPI&&pesosAPI.length){
-        ST.pesos=pesosAPI.map(p=>({f:p.fecha.split('T')[0],v:parseFloat(p.peso)})).sort((a,b)=>a.f.localeCompare(b.f))
-          .sort((a,b)=>a.f.localeCompare(b.f));
-        ST.pesoInicial=ST.pesos[0]?.v||ST.pesoInicial;
-      }
-    }catch(e){}
-
-    // 4. Historial entreno desde BD
-    try{
-      const histAPI=await api('GET','/api/entreno/mi-historial');
-      if(histAPI&&histAPI.length){
-        const newHist={};
-        histAPI.forEach(r=>{
-          if(!newHist[r.ejercicio])newHist[r.ejercicio]={semanas:{}};
-          const sem=String(r.semana);
-          if(!newHist[r.ejercicio].semanas[sem])newHist[r.ejercicio].semanas[sem]={series:[]};
-          newHist[r.ejercicio].semanas[sem].series[r.serie-1]={
-            kg:String(r.kg),reps:String(r.reps_reales),done:r.completada};
-        });
-        if(Object.keys(newHist).length>0)ST.histEnt=newHist;
-      }
-    }catch(e){}
-
-    // 5. Merge localStorage para datos offline
-    try{
-      const cached=localStorage.getItem('ef8');
-      if(cached){
-        const c=JSON.parse(cached);
-        if(c.ejStates)ST.ejStates=c.ejStates;
-        if(c.rev&&!ST.rev?.done)ST.rev=c.rev;
-        if(c.ci&&!ST.ci?.done)ST.ci=c.ci;
-        if(c.listaCheck)ST.listaCheck=c.listaCheck;
-      }
-    }catch(e){}
-
-    localStorage.setItem('ef_nom',nom);
-    console.log('[APP] Datos cargados: S'+ST.u.semana+' | '+Object.keys(ST.menu||{}).length+' comidas | '+ST.pesos.length+' pesos');
-  }catch(err){
-    console.warn('[APP] Error cargando datos:',err.message);
-    try{
-      const cached=localStorage.getItem('ef8');
-      if(cached)Object.assign(ST,JSON.parse(cached));
-    }catch(e){}
+    save();
+    render();
+  } catch(e) {
+    console.error('loadClienteData error:', e);
+    render();
   }
 }
+
 
 function showApp(){
   document.getElementById('lw').style.display='none';
