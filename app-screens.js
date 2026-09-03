@@ -324,7 +324,7 @@ function renderMenuEditor(di){
   const m=ST.menu[di]||{};
   // using global _MEAL_ORDER
   const planMeals=ST.p.planAlimentos?Object.keys(ST.p.planAlimentos):['desayuno','comida','cena'];
-  const MEALS=__MEAL_ORDER.filter(function(m){return planMeals.includes(m);});
+  const MEALS=_MEAL_ORDER.filter(function(m){return planMeals.includes(m);});
   if(!MEALS.length){MEALS.push('desayuno');MEALS.push('comida');MEALS.push('cena');}
   let out='<div style="height:4px"></div>';
 
