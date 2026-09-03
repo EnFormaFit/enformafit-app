@@ -316,7 +316,10 @@ function renderMenuEditor(di){
   _NIT=[];
   const isSuperavit=ST.p.def>0;
   const m=ST.menu[di]||{};
-  const MEALS=['desayuno','comida','cena','snack'];
+  const MEAL_ORDER=['desayuno','comida','cena','snack','desayuno_extra','snack_am','snack_pm','comida_extra','cena_extra','post_entreno'];
+  const planMeals=ST.p.planAlimentos?Object.keys(ST.p.planAlimentos):['desayuno','comida','cena'];
+  const MEALS=MEAL_ORDER.filter(function(m){return planMeals.includes(m);});
+  if(!MEALS.length){MEALS.push('desayuno');MEALS.push('comida');MEALS.push('cena');}
   let out='<div style="height:4px"></div>';
 
   MEALS.forEach(meal=>{
