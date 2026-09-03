@@ -1,3 +1,8 @@
+// ── MEAL CONSTANTS ──────────────────────────────────────────────────────────
+var _MEAL_BASE_MAP={desayuno_extra:'desayuno',snack_am:'snack',snack_pm:'snack',post_entreno:'snack',comida_extra:'comida',cena_extra:'cena'};
+var _MEAL_ORDER=['desayuno','comida','cena','snack','desayuno_extra','snack_am','snack_pm','comida_extra','cena_extra','post_entreno'];
+var _MEAL_NAMES={desayuno:'🌅 Desayuno',comida:'☀️ Comida',cena:'🌙 Cena',snack:'🍎 Snack',snack_am:'🍎 Snack mañana',snack_pm:'🍎 Snack tarde',post_entreno:'💪 Post-entreno',desayuno_extra:'🌅 Desayuno extra',comida_extra:'☀️ Comida extra',cena_extra:'🌙 Cena extra'};
+
 // ── ENTRENO ──
 let curDay=null,_entTX=0;
 
@@ -276,17 +281,17 @@ function renderMenuDia(di){
 function renderMenuPlegado(di,g){
   const DNAMES=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
   // Use meals from plan (set by entrenador) — not hardcoded list
-  const MEAL_ORDER=['desayuno','comida','cena','snack','desayuno_extra','snack_am','snack_pm','comida_extra','cena_extra','post_entreno'];
+  // using global _MEAL_ORDER
   const ICONS={desayuno:'🌅',comida:'☀️',cena:'🌙',snack:'🍎',desayuno_extra:'🌅',snack_am:'🍎',snack_pm:'🍎',comida_extra:'☀️',cena_extra:'🌙',post_entreno:'💪'};
   // Only show meals that exist in the plan
   const planMeals=ST.p.planAlimentos?Object.keys(ST.p.planAlimentos):['desayuno','comida','cena'];
-  const MEALS=MEAL_ORDER.filter(m=>planMeals.includes(m));
+  const MEALS=_MEAL_ORDER.filter(m=>planMeals.includes(m));
   if(!MEALS.length)MEALS.push('desayuno','comida','cena');
   let out='';
   MEALS.forEach((meal,mi)=>{
     const ms=g[meal]||{};
-    var _mealBase={desayuno_extra:'desayuno',snack_am:'snack',snack_pm:'snack',post_entreno:'snack',comida_extra:'comida',cena_extra:'cena'};
-    const md=MENU[meal]||MENU[_mealBase[meal]]||MENU['comida']||{};
+    // using global _MEAL_BASE_MAP
+    const md=MENU[meal]||MENU[_MEAL_BASE_MAP[meal]]||MENU['comida']||{};
     const alims=[];
     ['prot','hidrat','fat','fruta','verd'].forEach(cat=>{
       if(ms[cat]){const it=ms[cat];alims.push({nom:it.nom,cant:cat==='verd'?null:it.cantidad,u:it.u||''});}
@@ -317,21 +322,21 @@ function renderMenuEditor(di){
   _NIT=[];
   const isSuperavit=ST.p.def>0;
   const m=ST.menu[di]||{};
-  const MEAL_ORDER=['desayuno','comida','cena','snack','desayuno_extra','snack_am','snack_pm','comida_extra','cena_extra','post_entreno'];
+  // using global _MEAL_ORDER
   const planMeals=ST.p.planAlimentos?Object.keys(ST.p.planAlimentos):['desayuno','comida','cena'];
-  const MEALS=MEAL_ORDER.filter(function(m){return planMeals.includes(m);});
+  const MEALS=__MEAL_ORDER.filter(function(m){return planMeals.includes(m);});
   if(!MEALS.length){MEALS.push('desayuno');MEALS.push('comida');MEALS.push('cena');}
   let out='<div style="height:4px"></div>';
 
   MEALS.forEach(meal=>{
-    var _mealBase={desayuno_extra:'desayuno',snack_am:'snack',snack_pm:'snack',post_entreno:'snack',comida_extra:'comida',cena_extra:'cena'};
-    const md=MENU[meal]||MENU[_mealBase[meal]]||MENU['comida']||{};
+    // using global _MEAL_BASE_MAP
+    const md=MENU[meal]||MENU[_MEAL_BASE_MAP[meal]]||MENU['comida']||{};
     const ms=m[meal]||{};
     const protType=ms.protType||null;
     const showFat=protType==='magra';
     const isFat=protType==='grasa';
 
-    out+=`<div class="meal-sec"><div class="meal-title">${({desayuno:'🌅 Desayuno',comida:'☀️ Comida',cena:'🌙 Cena',snack:'🍎 Snack',snack_am:'🍎 Snack mañana',snack_pm:'🍎 Snack tarde',post_entreno:'💪 Post-entreno',desayuno_extra:'☀️ Desayuno extra',comida_extra:'☀️ Comida extra',cena_extra:'🌙 Cena extra'})[meal]||meal}</div>`;
+    out+=`<div class="meal-sec"><div class="meal-title">${_MEAL_NAMES[meal]||meal}</div>`;
 
     out+=`<div class="cat-lbl">Proteína magra</div><div class="opts">`;
     (md.proteinas_magras||[]).forEach(it=>{
@@ -417,8 +422,8 @@ function guardarMenu(di){
   const faltantes=[];
   MEALS.forEach(meal=>{
     const ms=m[meal]||{};
-    var _mealBase={desayuno_extra:'desayuno',snack_am:'snack',snack_pm:'snack',post_entreno:'snack',comida_extra:'comida',cena_extra:'cena'};
-    const md=MENU[meal]||MENU[_mealBase[meal]]||MENU['comida']||{};
+    // using global _MEAL_BASE_MAP
+    const md=MENU[meal]||MENU[_MEAL_BASE_MAP[meal]]||MENU['comida']||{};
     const n=NAMES[meal];
     if(!ms.prot)faltantes.push(n+': falta proteína');
     if(!ms.hidrat)faltantes.push(n+': falta hidrato');
