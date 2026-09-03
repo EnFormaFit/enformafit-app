@@ -454,32 +454,132 @@ function doLogout(){
   location.reload();
 }
 
-// ── Aplicar cantidades personalizadas del plan al MENU ───────────────────────
-function aplicarCantidadesPersonalizadas(alimentos) {
-  if (!alimentos || !Object.keys(alimentos).length) return;
-  ['desayuno','comida','cena','snack'].forEach(function(meal) {
-    var mealDist = alimentos[meal];
-    if (!mealDist || !MENU[meal]) return;
-    ['proteinas_magras','proteinas_grasas','hidratos','grasas','frutas','verduras'].forEach(function(cat) {
-      if (!mealDist[cat] || !MENU[meal][cat]) return;
-      var cantMap = {};
-      mealDist[cat].forEach(function(ali) {
-        if (ali.nom && ali.cantidad != null) cantMap[ali.nom] = ali;
-      });
-      MENU[meal][cat] = MENU[meal][cat].map(function(item) {
-        var ali = cantMap[item.nom];
-        if (ali && ali.cantidad) {
-          return {
-            nom: item.nom, cantidad: ali.cantidad, u: item.u,
-            p: ali.p != null ? ali.p : item.p,
-            c: ali.c != null ? ali.c : item.c,
-            g: ali.g != null ? ali.g : item.g,
-            kcal: ali.kcal != null ? ali.kcal : item.kcal
-          };
+// ── Generar equivalencias del plan del entrenador ───────────────────────────
+// El entrenador define UN alimento base por categoría/comida con una cantidad.
+// La app calcula los macros de ese alimento base y genera equivalencias
+// de todos los alimentos de esa categoría con la misma carga de macros.
+
+function calcularEquivalencias(planAlimentos) {
+  // planAlimentos: { desayuno: [{nom, cat, cantidad, p100, c100, g100, k100, u}...], ... }
+  // Retorna MENU con cantidades ajustadas por equivalencia
+  var resultado = {};
+
+  // Map cat codes to MENU category keys
+  var CAT_MAP = {
+    'prot': 'proteinas_magras',
+    'prot_g': 'proteinas_grasas',
+    'hidrat': 'hidratos',
+    'fat': 'grasas',
+    'verd': 'verduras',
+    'fruta': 'frutas',
+    'grasas_superavit': 'grasas_superavit'
+  };
+
+  // Meal key mapping (plan uses flat keys, MENU uses same)
+  var MEAL_KEYS = ['desayuno','comida','cena','snack'];
+
+  MEAL_KEYS.forEach(function(meal) {
+    var planItems = planAlimentos[meal];
+    if (!planItems || !MENU[meal]) return;
+
+    resultado[meal] = { nom: MENU[meal].nom };
+
+    // Group plan items by category
+    var planByCat = {};
+    planItems.forEach(function(item) {
+      if (!planByCat[item.cat]) planByCat[item.cat] = item;
+    });
+
+    // For each category in MENU, calculate equivalences
+    Object.keys(MENU[meal]).forEach(function(menuCat) {
+      if (menuCat === 'nom') return;
+      var menuItems = MENU[meal][menuCat];
+      if (!Array.isArray(menuItems)) return;
+
+      // Find the plan item for this category
+      // cat code in plan vs MENU key
+      var planItem = null;
+      Object.keys(CAT_MAP).forEach(function(catCode) {
+        if (CAT_MAP[catCode] === menuCat && planByCat[catCode]) {
+          planItem = planByCat[catCode];
         }
-        return item;
       });
+
+      if (!planItem) {
+        // No base item from trainer — use MENU defaults
+        resultado[meal][menuCat] = menuItems;
+        return;
+      }
+
+      // Calculate target macros from the trainer's base item
+      var baseCant = planItem.cantidad || 100;
+      var baseP100 = planItem.p100 || 0;
+      var baseC100 = planItem.c100 || 0;
+      var baseG100 = planItem.g100 || 0;
+
+      // Target macros = (base_cantidad / 100) * per100g_value
+      var targetP = (baseCant / 100) * baseP100;
+      var targetC = (baseCant / 100) * baseC100;
+      var targetG = (baseCant / 100) * baseG100;
+
+      // Determine which macro to use for equivalence
+      // prot -> use protein, hidrat -> use carbs, fat/grasas -> use fat
+      var useMacro = 'p';
+      var targetMacro = targetP;
+      if (menuCat === 'hidratos') { useMacro = 'c'; targetMacro = targetC; }
+      else if (menuCat === 'grasas' || menuCat === 'grasas_superavit') { useMacro = 'g'; targetMacro = targetG; }
+      else if (menuCat === 'verduras' || menuCat === 'frutas') {
+        // Use kcal for verduras/frutas
+        resultado[meal][menuCat] = menuItems;
+        return;
+      }
+
+      if (!targetMacro || targetMacro === 0) {
+        resultado[meal][menuCat] = menuItems;
+        return;
+      }
+
+      // Calculate equivalent quantity for each MENU item
+      resultado[meal][menuCat] = menuItems.map(function(mi) {
+        var per100 = useMacro === 'p' ? (mi.p||0) : useMacro === 'c' ? (mi.c||0) : (mi.g||0);
+        // per100 is already the value FOR the base quantity (not per 100g)
+        // Need to get per-100g value
+        var miCant = mi.cantidad || 100;
+        var per100g = miCant > 0 ? (per100 / miCant) * 100 : 0;
+
+        if (!per100g || per100g === 0) return mi;
+
+        var newCant = Math.max(5, Math.round((targetMacro / per100g) * 100 / 5) * 5);
+        var factor = newCant / miCant;
+
+        return {
+          nom: mi.nom,
+          cantidad: newCant,
+          u: mi.u,
+          p: Math.round(mi.p * factor * 10) / 10,
+          c: Math.round(mi.c * factor * 10) / 10,
+          g: Math.round(mi.g * factor * 10) / 10,
+          kcal: Math.round(mi.kcal * factor)
+        };
+      });
+    });
+  });
+
+  return resultado;
+}
+
+function aplicarCantidadesPersonalizadas(planAlimentos) {
+  if (!planAlimentos || !Object.keys(planAlimentos).length) return;
+  var equivalencias = calcularEquivalencias(planAlimentos);
+  // Apply to MENU
+  Object.keys(equivalencias).forEach(function(meal) {
+    if (!MENU[meal]) return;
+    Object.keys(equivalencias[meal]).forEach(function(cat) {
+      if (cat === 'nom') return;
+      MENU[meal][cat] = equivalencias[meal][cat];
     });
   });
   ST.menuPersonalizado = true;
 }
+
+
