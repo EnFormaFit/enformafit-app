@@ -285,7 +285,8 @@ function renderMenuPlegado(di,g){
   let out='';
   MEALS.forEach((meal,mi)=>{
     const ms=g[meal]||{};
-    const md=MENU[meal];
+    var _mealBase={desayuno_extra:'desayuno',snack_am:'snack',snack_pm:'snack',post_entreno:'snack',comida_extra:'comida',cena_extra:'cena'};
+    const md=MENU[meal]||MENU[_mealBase[meal]]||MENU['comida']||{};
     const alims=[];
     ['prot','hidrat','fat','fruta','verd'].forEach(cat=>{
       if(ms[cat]){const it=ms[cat];alims.push({nom:it.nom,cant:cat==='verd'?null:it.cantidad,u:it.u||''});}
@@ -323,7 +324,8 @@ function renderMenuEditor(di){
   let out='<div style="height:4px"></div>';
 
   MEALS.forEach(meal=>{
-    const md=MENU[meal];
+    var _mealBase={desayuno_extra:'desayuno',snack_am:'snack',snack_pm:'snack',post_entreno:'snack',comida_extra:'comida',cena_extra:'cena'};
+    const md=MENU[meal]||MENU[_mealBase[meal]]||MENU['comida']||{};
     const ms=m[meal]||{};
     const protType=ms.protType||null;
     const showFat=protType==='magra';
@@ -415,7 +417,8 @@ function guardarMenu(di){
   const faltantes=[];
   MEALS.forEach(meal=>{
     const ms=m[meal]||{};
-    const md=MENU[meal];
+    var _mealBase={desayuno_extra:'desayuno',snack_am:'snack',snack_pm:'snack',post_entreno:'snack',comida_extra:'comida',cena_extra:'cena'};
+    const md=MENU[meal]||MENU[_mealBase[meal]]||MENU['comida']||{};
     const n=NAMES[meal];
     if(!ms.prot)faltantes.push(n+': falta proteína');
     if(!ms.hidrat)faltantes.push(n+': falta hidrato');
