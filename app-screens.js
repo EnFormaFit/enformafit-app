@@ -331,7 +331,7 @@ function renderMenuEditor(di){
     const showFat=protType==='magra';
     const isFat=protType==='grasa';
 
-    out+=`<div class="meal-sec"><div class="meal-title">${{desayuno:'🌅 Desayuno',comida:'☀️ Comida',cena:'🌙 Cena',snack:'🍎 Snack'}[meal]}</div>`;
+    out+=`<div class="meal-sec"><div class="meal-title">${({desayuno:'🌅 Desayuno',comida:'☀️ Comida',cena:'🌙 Cena',snack:'🍎 Snack',snack_am:'🍎 Snack mañana',snack_pm:'🍎 Snack tarde',post_entreno:'💪 Post-entreno',desayuno_extra:'☀️ Desayuno extra',comida_extra:'☀️ Comida extra',cena_extra:'🌙 Cena extra'})[meal]||meal}</div>`;
 
     out+=`<div class="cat-lbl">Proteína magra</div><div class="opts">`;
     (md.proteinas_magras||[]).forEach(it=>{
