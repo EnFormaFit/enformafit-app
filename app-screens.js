@@ -275,8 +275,13 @@ function renderMenuDia(di){
 
 function renderMenuPlegado(di,g){
   const DNAMES=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-  const MEALS=['desayuno','comida','cena','snack'];
-  const ICONS={desayuno:'🌅',comida:'☀️',cena:'🌙',snack:'🍎'};
+  // Use meals from plan (set by entrenador) — not hardcoded list
+  const MEAL_ORDER=['desayuno','comida','cena','snack','desayuno_extra','snack_am','snack_pm','comida_extra','cena_extra','post_entreno'];
+  const ICONS={desayuno:'🌅',comida:'☀️',cena:'🌙',snack:'🍎',desayuno_extra:'🌅',snack_am:'🍎',snack_pm:'🍎',comida_extra:'☀️',cena_extra:'🌙',post_entreno:'💪'};
+  // Only show meals that exist in the plan
+  const planMeals=ST.p.planAlimentos?Object.keys(ST.p.planAlimentos):['desayuno','comida','cena'];
+  const MEALS=MEAL_ORDER.filter(m=>planMeals.includes(m));
+  if(!MEALS.length)MEALS.push('desayuno','comida','cena');
   let out='';
   MEALS.forEach((meal,mi)=>{
     const ms=g[meal]||{};
