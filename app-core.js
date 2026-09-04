@@ -174,6 +174,60 @@ function buildDIAS(semana) {
   }
 }
 
+
+// ── Auto-guardar serie al cambiar un campo ────────────────────────────────────
+function autoGuardarSerie(di, ei, si) {
+  var ej = DIAS[di] && DIAS[di].ejercicios ? DIAS[di].ejercicios[ei] : null;
+  if (!ej) return;
+  var key = di + '_' + ei;
+  var st = ST.ejStates && ST.ejStates[key];
+  if (!st || !st.series || !st.series[si]) return;
+  var s = st.series[si];
+  var bloque_id = ST.p.bloqueId || '';
+  var semana = ST.semVer || ST.u.semana || 1;
+
+  // Save to backend
+  clearTimeout(window['_serSave_' + key + '_' + si]);
+  window['_serSave_' + key + '_' + si] = setTimeout(function() {
+    api('POST', '/api/entreno/registrar-serie', {
+      bloque_id: bloque_id,
+      semana: semana,
+      dia: di,
+      ejercicio: ej.nom,
+      serie: si + 1,
+      kg: parseFloat(s.kg) || 0,
+      reps_reales: parseInt(s.repsH) || 0,
+      rir_real: s.rir !== undefined ? s.rir : (ej.rir || 2)
+    }).catch(function(e) { console.warn('[Serie]', e.message); });
+  }, 800);
+}
+
+// ── Cargar historial desde BD ─────────────────────────────────────────────────
+function cargarHistorial() {
+  api('GET', '/api/entreno/mi-historial').then(function(rows) {
+    if (!rows || !rows.length) return;
+    if (!ST.histEnt) ST.histEnt = {};
+    var semActual = ST.u.semana || 1;
+    var semAnt = semActual - 1;
+    rows.forEach(function(r) {
+      var nom = r.ejercicio;
+      if (!ST.histEnt[nom]) ST.histEnt[nom] = { semanas: {} };
+      var semKey = String(r.semana);
+      if (!ST.histEnt[nom].semanas[semKey]) ST.histEnt[nom].semanas[semKey] = { series: [] };
+      // series indexed by serie number (1-based)
+      while (ST.histEnt[nom].semanas[semKey].series.length < r.serie) {
+        ST.histEnt[nom].semanas[semKey].series.push({ kg: '', reps: '', done: false });
+      }
+      ST.histEnt[nom].semanas[semKey].series[r.serie - 1] = {
+        kg: r.kg || '',
+        reps: r.reps_reales || '',
+        done: r.completada || false
+      };
+    });
+    save();
+  }).catch(function() {});
+}
+
 async function loadClienteData() {
   try {
     // ── 1. Perfil básico del usuario ────────────────────────────────────────
@@ -251,6 +305,9 @@ async function loadClienteData() {
       const pesos = await api('GET', '/api/entreno/pesos');
       ST.pesos = (pesos || []).map(p => ({ f: p.fecha ? p.fecha.split('T')[0] : p.f, v: parseFloat(p.peso || p.v) }));
     } catch(e) { ST.pesos = []; }
+
+    // Cargar historial de entreno desde BD
+    cargarHistorial();
 
     // ── 4. Menú semanal guardado ─────────────────────────────────────────────
     try {
