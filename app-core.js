@@ -133,6 +133,47 @@ async function doLogin(){
   }
 }
 
+
+// ── Construir DIAS desde el plan del entrenador ─────────────────────────────
+// DIAS[0..6] donde 0=lunes, 1=martes, ..., 6=domingo
+// Usa rutina_semanas[semana] si hay override, si no rutina_base
+function buildDIAS(semana) {
+  const NOMBRES = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  const base = ST.p.rutinaDias || {};  // rutina_base (claves "0".."6" o "LUNES" etc.)
+  const semanas = ST.p.rutinaSemanas || {};
+  const semData = semanas[semana] || semanas[String(semana)] || base;
+
+  var trainCount = 0;
+  for (var i = 0; i < 7; i++) {
+    var ejes = semData[i] || semData[String(i)] || [];
+    var isRest = !ejes || ejes.length === 0;
+    if (!isRest) trainCount++;
+    DIAS[i] = {
+      cod: NOMBRES[i].toUpperCase().replace('É','E').replace('Í','I').replace('Á','A'),
+      nom: NOMBRES[i],
+      tipo: isRest ? 'Descanso' : 'Entreno',
+      rest: isRest,
+      ejercicios: isRest ? [] : ejes.map(function(e) {
+        return {
+          nom: e.nom || '',
+          sets: e.sets || 3,
+          reps: String(e.reps || '8-10'),
+          rir: e.rir !== undefined ? e.rir : 2,
+          rest: e.rest || 120,
+          url: e.url || '',
+          acl: e.acl || '',
+          bw: e.bw || false
+        };
+      })
+    };
+  }
+  // Assign training numbers
+  var n = 0;
+  for (var j = 0; j < 7; j++) {
+    if (!DIAS[j].rest) { n++; DIAS[j].tipo = 'Entreno ' + n; }
+  }
+}
+
 async function loadClienteData() {
   try {
     // ── 1. Perfil básico del usuario ────────────────────────────────────────
@@ -172,8 +213,10 @@ async function loadClienteData() {
 
     // Rutina
     ST.p.rutinaCod = plan.rutina_cod || '';
-    ST.p.rutinaDias = plan.rutina_dias || {};
+    ST.p.rutinaDias = plan.rutina_base || plan.rutina_dias || {};
     ST.p.rutinaSemanas = plan.rutina_semanas || {};
+    // Build DIAS array from plan data
+    buildDIAS(ST.u.semana || 1);
 
     // Pasos
     ST.u.pasosObj = plan.pasos_obj || 8000;
