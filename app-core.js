@@ -267,7 +267,7 @@ async function loadClienteData() {
 
     // Rutina
     ST.p.rutinaCod = plan.rutina_cod || '';
-    ST.p.rutinaDias = plan.rutina_base || plan.rutina_dias || {};
+    ST.p.rutinaDias = (plan.rutina_base && Object.keys(plan.rutina_base).length > 0) ? plan.rutina_base : (plan.rutina_dias || {});
     ST.p.rutinaSemanas = plan.rutina_semanas || {};
     // Build DIAS array from plan data
     buildDIAS(ST.u.semana || 1);
