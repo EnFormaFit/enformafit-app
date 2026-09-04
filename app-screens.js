@@ -107,9 +107,10 @@ function renderEj(ej,ei,di,grabIdxs){
   sers+=`<div class="serhd"><span>#</span><span>Anterior</span><span>Kg</span><span>Reps</span><span>RIR</span><span>✓</span></div>`;
   st.series.forEach((s,si)=>{
     let antKg='—',antReps='';
-    if(s.done&&s.kg){antKg=s.kg+'kg';antReps=s.repsH?'×'+s.repsH:'';}
-    else if(histSem6&&histSem6.series[si]){
-      const hs=histSem6.series[si];
+    const _semVer=ST.semVer||ST.u.semana||1;
+    const _histAnt=hist&&hist.semanas?hist.semanas[String(_semVer-1)]:null;
+    if(_histAnt&&_histAnt.series&&_histAnt.series[si]){
+      const hs=_histAnt.series[si];
       antKg=hs.kg?hs.kg+'kg':'—';antReps=hs.reps?'×'+hs.reps:'';
     }
     sers+=`<div class="serrow">
