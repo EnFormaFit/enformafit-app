@@ -83,7 +83,6 @@ function renderEj(ej,ei,di,grabIdxs){
   const st=ST.ejStates[key];
   const esGrabar=(grabIdxs||[]).includes(ei);
   const hist=ST.histEnt&&ST.histEnt[ej.nom]?ST.histEnt[ej.nom]:null;
-  const histSem6=hist&&hist.semanas&&hist.semanas['6']?hist.semanas['6']:null;
 
   if(st.collapsed){
     const done=st.series.filter(s=>s.done).length;
@@ -118,7 +117,7 @@ function renderEj(ej,ei,di,grabIdxs){
       <div class="serant">${antKg}${antReps}</div>
       <input class="sinp" type="number" inputmode="decimal" placeholder="kg" value="${s.kg}" onchange="ST.ejStates['${key}'].series[${si}].kg=this.value">
       <input class="sinp" type="number" inputmode="numeric" placeholder="${ej.reps}" value="${s.repsH}" onchange="ST.ejStates['${key}'].series[${si}].repsH=this.value">
-      <input class="sinp" type="number" inputmode="numeric" placeholder="RIR" min="0" max="5" value="${s.rir||''}" onchange="ST.ejStates['${key}'].series[${si}].rir=this.value" style="color:var(--nr)">
+      <input class="sinp" type="number" inputmode="numeric" placeholder="RIR" min="0" max="5" value="${s.rir||''}" onchange="ST.ejStates['${key}'].series[${si}].rir=this.value;autoGuardarSerie(${di},${ei},${si})" style="color:var(--nr)">
       <button class="ck ${s.done?'on':''}" onclick="toggleSer('${key}',${si},${di})">${s.done?'✓':''}</button>
     </div>`;
   });
