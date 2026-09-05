@@ -103,7 +103,14 @@ function getGrabarIdxs(di){
 
 function renderEj(ej,ei,di,grabIdxs){
   const key=`${di}_${ei}`;
-  if(!ST.ejStates[key])ST.ejStates[key]={collapsed:false,series:Array.from({length:ej.sets||3},()=>({kg:'',repsH:'',done:false})),rest:ej.rest||120};
+  if(!ST.ejStates[key]){
+    var _semK=String(ST.semVer||ST.u.semana||1);
+    var _histCur=ST.histEnt&&ST.histEnt[ej.nom]&&ST.histEnt[ej.nom].semanas?ST.histEnt[ej.nom].semanas[_semK]:null;
+    ST.ejStates[key]={collapsed:false,rest:ej.rest||120,series:Array.from({length:ej.sets||3},function(_,_si){
+      var _hd=_histCur&&_histCur.series?_histCur.series[_si]:null;
+      return {kg:_hd&&_hd.kg?String(_hd.kg):'',repsH:_hd&&_hd.reps?String(_hd.reps):'',done:!!(_hd&&_hd.done),rir:_hd&&_hd.rir_real!==undefined?_hd.rir_real:''};
+    })};
+  }
   const st=ST.ejStates[key];
   const esGrabar=(grabIdxs||[]).includes(ei);
   const hist=ST.histEnt&&ST.histEnt[ej.nom]?ST.histEnt[ej.nom]:null;
