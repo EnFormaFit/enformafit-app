@@ -12,23 +12,23 @@ function renderEntreno(){
   if(!ST.semVer)ST.semVer=ST.u.semana||1;
   var sem=ST.semVer;
   var di=curDay;
-  // Reset ejStates for this sem+dia to force reload from cache
-  DIAS[di]&&DIAS[di].ejercicios&&DIAS[di].ejercicios.forEach(function(ej,ei){
-    var key=di+'_'+ei;
-    if(ST.ejStates[key]&&ST.ejStates[key]._sem!==sem) delete ST.ejStates[key];
-  });
-  // Load from BD then fill DOM
   var cacheKey=sem+'_'+di;
   if(!ENT_CACHE[cacheKey]){
-    cargarRegistrosSemDia(sem,di,function(data){
-      cargarRegistrosAnt(sem,di,function(){
-        _fillEjStatesFromCache(di,sem);
-        var ct=document.getElementById('ct');
-        if(ct)ct.innerHTML=buildEntHTML(di);
+    // Load from BD — capture sem and di in closure
+    (function(capturedSem, capturedDi){
+      cargarRegistrosSemDia(capturedSem, capturedDi, function(){
+        cargarRegistrosAnt(capturedSem, capturedDi, function(){
+          _fillEjStatesFromCache(capturedDi, capturedSem);
+          // Only re-render if still on same sem+dia
+          if(ST.semVer===capturedSem && curDay===capturedDi){
+            var ct=document.getElementById('ct');
+            if(ct)ct.innerHTML=buildEntHTML(capturedDi);
+          }
+        });
       });
-    });
+    })(sem, di);
   } else {
-    _fillEjStatesFromCache(di,sem);
+    _fillEjStatesFromCache(di, sem);
   }
   return buildEntHTML(di);
 }
