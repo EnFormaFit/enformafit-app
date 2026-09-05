@@ -175,7 +175,14 @@ function guardarDia(di){
   if(!ST.histEnt)ST.histEnt={};
   DIAS[di].ejercicios.forEach((ej,ei)=>{
     const key=`${di}_${ei}`;
-    if(!ST.ejStates[key])ST.ejStates[key]={collapsed:true,series:Array.from({length:ej.sets||3},()=>({kg:'',repsH:'',done:false})),rest:ej.rest||120};
+    if(!ST.ejStates[key]){
+      var semK=String(ST.semVer||ST.u.semana||1);
+      var histCur=ST.histEnt&&ST.histEnt[ej.nom]&&ST.histEnt[ej.nom].semanas?ST.histEnt[ej.nom].semanas[semK]:null;
+      ST.ejStates[key]={collapsed:true,rest:ej.rest||120,series:Array.from({length:ej.sets||3},function(_,si){
+        var hd=histCur&&histCur.series?histCur.series[si]:null;
+        return {kg:hd&&hd.kg?String(hd.kg):'',repsH:hd&&hd.reps?String(hd.reps):'',done:!!(hd&&hd.done),rir:hd&&hd.rir_real!==undefined?hd.rir_real:''};
+      })};
+    }
     const st=ST.ejStates[key];
     const doneSeries=st.series.filter(s=>s.done&&s.kg);
     if(doneSeries.length){
