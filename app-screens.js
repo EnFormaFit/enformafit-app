@@ -523,7 +523,8 @@ function renderMenuEditor(di){
 }
 
 function guardarMenu(di){
-  const MEALS=['desayuno','comida','cena','snack'];
+  // Only validate meals assigned to this client by the trainer
+  const MEALS=ST.p&&ST.p.alimentos?Object.keys(ST.p.alimentos):['desayuno','comida','cena'];
   const m=ST.menu[di]||{};
   const NAMES={desayuno:'Desayuno',comida:'Comida',cena:'Cena',snack:'Snack'};
   const faltantes=[];
@@ -641,7 +642,8 @@ function checkMenuCompleto(){
 }
 function generateMenuPDF(){
   const DNAMES=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-  const MEALS=['desayuno','comida','cena','snack'];
+  // Only validate meals assigned to this client by the trainer
+  const MEALS=ST.p&&ST.p.alimentos?Object.keys(ST.p.alimentos):['desayuno','comida','cena'];
   const MEAL_NOM={desayuno:'Desayuno',comida:'Comida',cena:'Cena',snack:'Snack'};
   const incomplete=[0,1,2,3,4,5,6].filter(i=>!ST.menuGuardado[i]||Object.keys(ST.menuGuardado[i]).length<4);
   if(incomplete.length){toast('Guarda el menú de los 7 días primero','rj');return;}
