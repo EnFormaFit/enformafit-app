@@ -189,7 +189,7 @@ function cargarRegistrosSemDia(semana, dia, callback) {
       var data = {};
       (rows || []).forEach(function(r) {
         var k = r.ejercicio + '_' + r.serie;
-        data[k] = { kg: r.kg || '', reps: r.reps_reales || '', rir: r.rir_real !== undefined ? r.rir_real : '', done: !!(r.completada) };
+        data[k] = { kg: r.kg ? String(parseFloat(r.kg)) : '', reps: r.reps_reales ? String(r.reps_reales) : '', rir: r.rir_real !== undefined ? r.rir_real : '', done: !!(r.completada) };
       });
       ENT_CACHE[cacheKey] = data;
       if(callback)callback(data);
