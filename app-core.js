@@ -590,7 +590,7 @@ function calcAdh(){
 
 
 function enviarCI(){
-  ST.ci.adh=calcAdh();ST.ci.done=true;ST.ci.open=false;save();
+  ST.ci.adh=calcAdh();ST.ci.done=true;ST.ci.open=false;ST.ci.semana=ST.u.semana;save();
   var _c=document.querySelector('[data-ci-card]');
   if(_c){var _t=document.createElement('div');_t.innerHTML=renderCI();_c.replaceWith(_t.firstChild);}
   else{var _ct=document.getElementById('ct');if(_ct){var _sp=_ct.scrollTop;_ct.innerHTML=renderInicio();_ct.scrollTop=_sp;}}
