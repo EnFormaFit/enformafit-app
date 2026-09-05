@@ -10,32 +10,28 @@ function renderEntreno(){
   if(!ST.ejStates)ST.ejStates={};
   if(curDay===null)curDay=[6,0,1,2,3,4,5][new Date().getDay()]||0;
   if(!ST.semVer)ST.semVer=ST.u.semana||1;
-  // If histEnt not loaded yet, load it then re-render
-  if(!ST._histLoaded){
-    ST._histLoaded=true;
-    api('GET','/api/entreno/mi-historial').then(function(rows){
-      if(!rows||!rows.length)return;
-      if(!ST.histEnt)ST.histEnt={};
-      var semActual=ST.u.semana||1;
-      rows.forEach(function(r){
-        var nom=r.ejercicio;
-        if(!ST.histEnt[nom])ST.histEnt[nom]={semanas:{}};
-        var semKey=String(r.semana);
-        if(!ST.histEnt[nom].semanas[semKey])ST.histEnt[nom].semanas[semKey]={series:[]};
-        while(ST.histEnt[nom].semanas[semKey].series.length<r.serie){
-          ST.histEnt[nom].semanas[semKey].series.push({kg:'',reps:'',done:false});
+  var sem=ST.semVer;
+  var di=curDay;
+  // Load current semana+dia from BD, then re-render with real values
+  cargarRegistrosSemDia(sem,di,function(data){
+    // Also pre-load previous semana for "Anterior"
+    cargarRegistrosAnt(sem,di,function(){
+      // Reset ejStates for this sem/dia so values are pre-filled
+      DIAS[di]&&DIAS[di].ejercicios&&DIAS[di].ejercicios.forEach(function(ej,ei){
+        var key=di+'_'+ei;
+        if(!ST.ejStates[key]||ST.ejStates[key]._sem!==sem){
+          var series=Array.from({length:ej.sets||3},function(_,si){
+            var rec=data[ej.nom+'_'+(si+1)];
+            return {kg:rec&&rec.kg?String(rec.kg):'',repsH:rec&&rec.reps?String(rec.reps):'',done:!!(rec&&rec.done),rir:rec&&rec.rir!==undefined?rec.rir:''};
+          });
+          ST.ejStates[key]={collapsed:false,rest:ej.rest||120,series:series,_sem:sem};
         }
-        ST.histEnt[nom].semanas[semKey].series[r.serie-1]={
-          kg:r.kg||'',reps:r.reps_reales||'',done:!!(r.completada),rir_real:r.rir_real
-        };
       });
-      // Reset ejStates so values are pre-filled from histEnt
-      ST.ejStates={};
       var ct=document.getElementById('ct');
-      if(ct)ct.innerHTML=buildEntHTML(curDay);
-    }).catch(function(){});
-  }
-  return buildEntHTML(curDay);
+      if(ct&&ct.querySelector&&ct.querySelector('.ent-wrap'))ct.innerHTML=buildEntHTML(di);
+    });
+  });
+  return buildEntHTML(di);
 }
 
 function buildEntHTML(di){
@@ -103,14 +99,7 @@ function getGrabarIdxs(di){
 
 function renderEj(ej,ei,di,grabIdxs){
   const key=`${di}_${ei}`;
-  if(!ST.ejStates[key]){
-    var _semK=String(ST.semVer||ST.u.semana||1);
-    var _histCur=ST.histEnt&&ST.histEnt[ej.nom]&&ST.histEnt[ej.nom].semanas?ST.histEnt[ej.nom].semanas[_semK]:null;
-    ST.ejStates[key]={collapsed:false,rest:ej.rest||120,series:Array.from({length:ej.sets||3},function(_,_si){
-      var _hd=_histCur&&_histCur.series?_histCur.series[_si]:null;
-      return {kg:_hd&&_hd.kg?String(_hd.kg):'',repsH:_hd&&_hd.reps?String(_hd.reps):'',done:!!(_hd&&_hd.done),rir:_hd&&_hd.rir_real!==undefined?_hd.rir_real:''};
-    })};
-  }
+  if(!ST.ejStates[key])ST.ejStates[key]={collapsed:false,rest:ej.rest||120,series:Array.from({length:ej.sets||3},()=>({kg:'',repsH:'',done:false,rir:''})),_sem:ST.semVer||1};
   const st=ST.ejStates[key];
   const esGrabar=(grabIdxs||[]).includes(ei);
   const hist=ST.histEnt&&ST.histEnt[ej.nom]?ST.histEnt[ej.nom]:null;
@@ -139,11 +128,10 @@ function renderEj(ej,ei,di,grabIdxs){
   st.series.forEach((s,si)=>{
     let antKg='—',antReps='';
     const _semVer=ST.semVer||ST.u.semana||1;
-    const _histAnt=hist&&hist.semanas?hist.semanas[String(_semVer-1)]:null;
-    if(_histAnt&&_histAnt.series&&_histAnt.series[si]){
-      const hs=_histAnt.series[si];
-      antKg=hs.kg?hs.kg+'kg':'—';antReps=hs.reps?'×'+hs.reps:'';
-    }
+    const _antCacheKey=(_semVer-1)+'_'+di;
+    const _antData=ENT_CACHE&&ENT_CACHE[_antCacheKey]?ENT_CACHE[_antCacheKey]:{};
+    const _antRec=_antData[ej.nom+'_'+(si+1)];
+    if(_antRec&&_antRec.kg){antKg=_antRec.kg+'kg';antReps=_antRec.reps?'×'+_antRec.reps:'';}
     sers+=`<div class="serrow">
       <div class="sern">${si+1}</div>
       <div class="serant">${antKg}${antReps}</div>
