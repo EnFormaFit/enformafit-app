@@ -478,6 +478,7 @@ function renderInicio(){
 <div class="card">
   <div class="ch"><h2>📅 Progreso del bloque</h2><span class="badge baz">S${s}/${st}</span></div>
   <div class="cb">
+    <div style="font-size:11px;color:var(--t3);margin-bottom:4px">${getSemanaFechas(s)}</div>
     <div style="font-size:12px;color:var(--t3);margin-bottom:6px">🟢 Completada · 🟠 Actual · 🔵 Revisión · ⬜ Pendiente</div>
     <div class="semp">${semBloq}</div>
     <div style="font-size:12px;color:var(--t3);margin-top:6px">${Math.round(s/st*100)}% del bloque completado</div>
