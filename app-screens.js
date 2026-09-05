@@ -55,12 +55,12 @@ function buildEntHTML(di){
   const semTotal=ST.u.semTotal||14;
   // Week selector header
   const semSel=`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--az3);border-radius:10px;margin-bottom:10px">
-    <button onclick="if(ST.semVer>1){ST.semVer--;ST.ejStates={};ST._histLoaded=false;buildDIAS(ST.semVer);document.getElementById('ct').innerHTML=renderEntreno();}" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--az);padding:4px 8px" ${(ST.semVer||semActual)<=1?'disabled':''}>‹</button>
+    <button onclick="if(ST.semVer>1){ST.semVer--;ST.ejStates={};buildDIAS(ST.semVer);document.getElementById('ct').innerHTML=renderEntreno();}" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--az);padding:4px 8px" ${(ST.semVer||semActual)<=1?'disabled':''}>‹</button>
     <div style="text-align:center">
       <div style="font-size:13px;font-weight:700;color:var(--az)">Semana ${ST.semVer||semActual} de ${semTotal}</div>
       ${(ST.semVer||semActual)!==semActual?`<div style="font-size:10px;color:var(--nr);font-weight:600">← Semana actual: ${semActual}</div>`:'<div style="font-size:10px;color:var(--t3)">Semana actual</div>'}
     </div>
-    <button onclick="if((ST.semVer||1)<${semTotal}){ST.semVer++;ST.ejStates={};ST._histLoaded=false;buildDIAS(ST.semVer);document.getElementById('ct').innerHTML=renderEntreno();}" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--az);padding:4px 8px" ${(ST.semVer||semActual)>=semTotal?'disabled':''}>›</button>
+    <button onclick="if((ST.semVer||1)<${semTotal}){ST.semVer++;ST.ejStates={};buildDIAS(ST.semVer);document.getElementById('ct').innerHTML=renderEntreno();}" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--az);padding:4px 8px" ${(ST.semVer||semActual)>=semTotal?'disabled':''}>›</button>
   </div>
   ${(ST.semVer||semActual)!==semActual?`<div style="background:rgba(255,160,0,.12);border:1px solid rgba(255,160,0,.4);border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:12px;color:var(--nr);display:flex;justify-content:space-between;align-items:center">
     <span>Viendo S${ST.semVer} — solo lectura</span>
