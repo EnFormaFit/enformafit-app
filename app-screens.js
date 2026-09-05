@@ -254,39 +254,42 @@ function guardarDia(di){
 }
 
 // Historial por ejercicio
+// Cache for exercise historial
+var _histEjCache={};
+
 function openHistEj(nom,di,ei){
-  // Load historial for this exercise from BD
   document.getElementById('histTitle').textContent=nom;
   document.getElementById('histWeeks').innerHTML='<div style="color:var(--t3);font-size:13px">Cargando...</div>';
   document.getElementById('histContent').innerHTML='';
   document.getElementById('histModal').classList.add('show');
-
   api('GET','/api/entreno/mi-historial').then(function(rows){
-    // Filter rows for this exercise
     var ejRows=(rows||[]).filter(function(r){return r.ejercicio===nom;});
     if(!ejRows.length){
       document.getElementById('histWeeks').innerHTML='';
-      document.getElementById('histContent').innerHTML='<div style="color:var(--t3);font-size:13px;padding:20px 0">Sin historial aún para este ejercicio</div>';
+      document.getElementById('histContent').innerHTML='<div style="color:var(--t3);font-size:13px;padding:20px 0">Sin historial aún</div>';
       return;
     }
-    // Group by semana
     var semanas={};
     ejRows.forEach(function(r){
       var s=String(r.semana);
       if(!semanas[s])semanas[s]=[];
       semanas[s].push(r);
     });
+    _histEjCache={nom:nom,semanas:semanas};
     var sems=Object.keys(semanas).sort(function(a,b){return Number(a)-Number(b);});
-    showHistSemBD(nom,sems[sems.length-1],sems,semanas);
+    _showHistSem(sems[sems.length-1],sems);
   }).catch(function(){
-    document.getElementById('histContent').innerHTML='<div style="color:var(--rj)">Error cargando historial</div>';
+    document.getElementById('histContent').innerHTML='<div style="color:var(--rj)">Error</div>';
   });
 }
 
-function showHistSemBD(nom,sem,sems,semanas){
+function _showHistSem(sem,sems){
+  var semanas=_histEjCache.semanas||{};
   var rows=semanas[sem]||[];
   var weeksHtml=sems.map(function(s){
-    return '<button class="hw '+(s===sem?'on':'')+'" onclick="showHistSemBD(''+nom.replace(/'/g,"\'")+'',''+s+'',['+sems.map(function(x){return"'"+x+"'"}).join(',')+'],JSON.parse(decodeURIComponent(''+encodeURIComponent(JSON.stringify(semanas))+''))">S'+s+'</button>';
+    var sc="'"+s+"'";
+    var semsArr='['+sems.map(function(x){return"'"+x+"'"}).join(',')+']';
+    return '<button class="hw '+(s===sem?'on':'')+'" onclick="_showHistSem('+sc+','+semsArr+')">S'+s+'</button>';
   }).join('');
   document.getElementById('histWeeks').innerHTML=weeksHtml;
   var content='<div style="font-size:13px;color:var(--t3);margin-bottom:10px">Semana '+sem+'</div>';
@@ -301,6 +304,8 @@ function showHistSemBD(nom,sem,sems,semanas){
   });
   document.getElementById('histContent').innerHTML=content;
 }
+
+
 function showHistSem(nom,sem,sems){
   const hist=ST.histEnt[nom];
   const data=hist.semanas[sem];
