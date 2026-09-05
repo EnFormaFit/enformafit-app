@@ -210,7 +210,8 @@ function autoGuardarSerie(di, ei, si) {
   var st = ST.ejStates && ST.ejStates[key];
   if (!st || !st.series || !st.series[si]) return;
   var s = st.series[si];
-  var bloque_id = ST.p.bloqueId || '';
+  var bloque_id = ST.p.bloqueId || ST.p.bloqueId || '';
+  if(!bloque_id){console.warn('[Serie] No bloque_id');return;}
   var semana = ST.semVer || ST.u.semana || 1;
 
   clearTimeout(window['_serSave_' + key + '_' + si]);
@@ -254,6 +255,7 @@ async function loadClienteData() {
     const plan = await api('GET', '/api/entreno/mi-plan');
 
     // Semana y bloque
+    ST.p.bloqueId = plan.bloque_id || '';
     ST.u.semana = plan.semana_actual || 1;
     ST.u.semTotal = plan.semanas_bloque || 13;
     ST.u.inicioBloque = plan.fecha_inicio ? plan.fecha_inicio.split('T')[0] : '';
