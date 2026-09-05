@@ -17,7 +17,7 @@ function renderEntreno(){
       if(curDay<0)curDay=0;
     }
   }
-  if(!ST.semVer)ST.semVer=ST.u.semana||1;
+  if(!ST.semVer)ST.semVer=Math.max(1,ST.u.semana||1); // S0 shows week 1
   var sem=ST.semVer;
   var di=curDay;
   var cacheKey=sem+'_'+di;
