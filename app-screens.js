@@ -44,10 +44,17 @@ function renderEntreno(){
 function _fillEjStatesFromCache(di,sem){
   var cacheKey=sem+'_'+di;
   var data=ENT_CACHE[cacheKey]||{};
+  var hasData=Object.keys(data).length>0;
   DIAS[di]&&DIAS[di].ejercicios&&DIAS[di].ejercicios.forEach(function(ej,ei){
     var key=di+'_'+ei;
-    // Always rebuild ejStates if sem changed or not set
-    if(!ST.ejStates[key]||ST.ejStates[key]._sem!==sem){
+    var existing=ST.ejStates[key];
+    // Rebuild if: wrong sem, doesn't exist, OR cache has data but fields are empty
+    var needsRebuild=!existing||existing._sem!==sem;
+    if(!needsRebuild&&hasData){
+      var allEmpty=existing.series.every(function(s){return !s.kg&&!s.repsH;});
+      if(allEmpty)needsRebuild=true;
+    }
+    if(needsRebuild){
       var series=Array.from({length:ej.sets||3},function(_,si){
         var rec=data&&data[ej.nom+'_'+(si+1)];
         return {
