@@ -30,9 +30,11 @@ function renderEntreno(){
       cargarRegistrosSemDia(capturedSem, capturedDi, function(){
         cargarRegistrosAnt(capturedSem, capturedDi, function(){
           _fillEjStatesFromCache(capturedDi, capturedSem);
-          if(ST.semVer===capturedSem && curDay===capturedDi){
-            var ct=document.getElementById('ct');
-            if(ct)ct.innerHTML=buildEntHTML(capturedDi);
+          // Re-render if still on entreno screen (any day/sem)
+          var ct=document.getElementById('ct');
+          if(ct&&ct.querySelector('.ent-wrap')){
+            _fillEjStatesFromCache(curDay,ST.semVer);
+            ct.innerHTML=buildEntHTML(curDay);
           }
         });
       });
