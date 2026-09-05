@@ -8,7 +8,16 @@ let curDay=null,_entTX=0;
 
 function renderEntreno(){
   if(!ST.ejStates)ST.ejStates={};
-  if(curDay===null)curDay=[6,0,1,2,3,4,5][new Date().getDay()]||0;
+  if(curDay===null){
+    var _todayIdx=[6,0,1,2,3,4,5][new Date().getDay()];
+    // Use today if it's a training day, otherwise first training day
+    if(DIAS[_todayIdx]&&!DIAS[_todayIdx].rest){
+      curDay=_todayIdx;
+    } else {
+      curDay=DIAS.findIndex(function(d){return !d.rest;});
+      if(curDay<0)curDay=0;
+    }
+  }
   if(!ST.semVer)ST.semVer=ST.u.semana||1;
   var sem=ST.semVer;
   var di=curDay;
