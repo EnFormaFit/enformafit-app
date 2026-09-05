@@ -237,6 +237,22 @@ function autoGuardarSerie(di, ei, si) {
 // Función legacy - mantener para compatibilidad
 function cargarHistorial() {}
 
+
+// Get date range for a given semana (e.g. "8 sep - 14 sep")
+function getSemanaFechas(semana) {
+  if (!ST.p.fechaInicio) return '';
+  var inicio = new Date(ST.p.fechaInicio);
+  inicio.setHours(0,0,0,0);
+  var lunSem = new Date(inicio);
+  lunSem.setDate(inicio.getDate() + (semana - 1) * 7);
+  var domSem = new Date(lunSem);
+  domSem.setDate(lunSem.getDate() + 6);
+  var meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  var lunStr = lunSem.getDate() + ' ' + meses[lunSem.getMonth()];
+  var domStr = domSem.getDate() + ' ' + meses[domSem.getMonth()];
+  return lunStr + ' – ' + domStr;
+}
+
 async function loadClienteData() {
   try {
     // ── 1. Perfil básico del usuario ────────────────────────────────────────
@@ -256,6 +272,7 @@ async function loadClienteData() {
 
     // Semana y bloque
     ST.p.bloqueId = plan.bloque_id || '';
+    ST.p.fechaInicio = plan.fecha_inicio || null;
     ST.u.semana = plan.semana_actual || 1;
     ST.u.semTotal = plan.semanas_bloque || 13;
     ST.u.inicioBloque = plan.fecha_inicio ? plan.fecha_inicio.split('T')[0] : '';
