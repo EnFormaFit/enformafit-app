@@ -81,6 +81,7 @@ function buildEntHTML(di){
     <button onclick="if(ST.semVer>1){ST.semVer--;ST.ejStates={};buildDIAS(ST.semVer);document.getElementById('ct').innerHTML=renderEntreno();}" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--az);padding:4px 8px" ${(ST.semVer||semActual)<=1?'disabled':''}>‹</button>
     <div style="text-align:center">
       <div style="font-size:13px;font-weight:700;color:var(--az)">Semana ${ST.semVer||semActual} de ${semTotal}</div>
+      <div style="font-size:10px;color:var(--t3);margin-top:1px">${getSemanaFechas(ST.semVer||semActual)}</div>
       ${(ST.semVer||semActual)!==semActual?`<div style="font-size:10px;color:var(--nr);font-weight:600">← Semana actual: ${semActual}</div>`:'<div style="font-size:10px;color:var(--t3)">Semana actual</div>'}
     </div>
     <button onclick="if((ST.semVer||1)<${semTotal}){ST.semVer++;ST.ejStates={};buildDIAS(ST.semVer);document.getElementById('ct').innerHTML=renderEntreno();}" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--az);padding:4px 8px" ${(ST.semVer||semActual)>=semTotal?'disabled':''}>›</button>
