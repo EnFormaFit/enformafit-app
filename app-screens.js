@@ -255,12 +255,51 @@ function guardarDia(di){
 
 // Historial por ejercicio
 function openHistEj(nom,di,ei){
-  const hist=ST.histEnt[nom];
-  if(!hist||!hist.semanas||!Object.keys(hist.semanas).length){toast('Sin historial aún para este ejercicio','');return;}
-  const sems=Object.keys(hist.semanas).sort((a,b)=>Number(a)-Number(b));
+  // Load historial for this exercise from BD
   document.getElementById('histTitle').textContent=nom;
-  const hm=document.getElementById('histModal');hm.classList.add('show');
-  showHistSem(nom,sems[sems.length-1],sems);
+  document.getElementById('histWeeks').innerHTML='<div style="color:var(--t3);font-size:13px">Cargando...</div>';
+  document.getElementById('histContent').innerHTML='';
+  document.getElementById('histModal').classList.add('show');
+
+  api('GET','/api/entreno/mi-historial').then(function(rows){
+    // Filter rows for this exercise
+    var ejRows=(rows||[]).filter(function(r){return r.ejercicio===nom;});
+    if(!ejRows.length){
+      document.getElementById('histWeeks').innerHTML='';
+      document.getElementById('histContent').innerHTML='<div style="color:var(--t3);font-size:13px;padding:20px 0">Sin historial aún para este ejercicio</div>';
+      return;
+    }
+    // Group by semana
+    var semanas={};
+    ejRows.forEach(function(r){
+      var s=String(r.semana);
+      if(!semanas[s])semanas[s]=[];
+      semanas[s].push(r);
+    });
+    var sems=Object.keys(semanas).sort(function(a,b){return Number(a)-Number(b);});
+    showHistSemBD(nom,sems[sems.length-1],sems,semanas);
+  }).catch(function(){
+    document.getElementById('histContent').innerHTML='<div style="color:var(--rj)">Error cargando historial</div>';
+  });
+}
+
+function showHistSemBD(nom,sem,sems,semanas){
+  var rows=semanas[sem]||[];
+  var weeksHtml=sems.map(function(s){
+    return '<button class="hw '+(s===sem?'on':'')+'" onclick="showHistSemBD(''+nom.replace(/'/g,"\'")+'',''+s+'',['+sems.map(function(x){return"'"+x+"'"}).join(',')+'],JSON.parse(decodeURIComponent(''+encodeURIComponent(JSON.stringify(semanas))+''))">S'+s+'</button>';
+  }).join('');
+  document.getElementById('histWeeks').innerHTML=weeksHtml;
+  var content='<div style="font-size:13px;color:var(--t3);margin-bottom:10px">Semana '+sem+'</div>';
+  content+='<div style="display:grid;grid-template-columns:30px 1fr 1fr 1fr;gap:6px;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;margin-bottom:6px"><span>#</span><span>Kg</span><span>Reps</span><span>RIR</span></div>';
+  rows.sort(function(a,b){return a.serie-b.serie;}).forEach(function(r){
+    content+='<div style="display:grid;grid-template-columns:30px 1fr 1fr 1fr;gap:6px;padding:8px 0;border-bottom:1px solid var(--bor2);font-size:14px">';
+    content+='<span style="color:var(--t3);font-weight:700">'+r.serie+'</span>';
+    content+='<span style="font-weight:700;color:var(--az)">'+(r.kg?r.kg+'kg':'—')+'</span>';
+    content+='<span style="color:var(--t2)">'+(r.reps_reales?r.reps_reales+' reps':'—')+'</span>';
+    content+='<span style="color:var(--nr)">'+(r.rir_real!==null&&r.rir_real!==undefined?'RIR'+r.rir_real:'—')+'</span>';
+    content+='</div>';
+  });
+  document.getElementById('histContent').innerHTML=content;
 }
 function showHistSem(nom,sem,sems){
   const hist=ST.histEnt[nom];
