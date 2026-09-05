@@ -12,26 +12,40 @@ function renderEntreno(){
   if(!ST.semVer)ST.semVer=ST.u.semana||1;
   var sem=ST.semVer;
   var di=curDay;
-  // Load current semana+dia from BD, then re-render with real values
-  cargarRegistrosSemDia(sem,di,function(data){
-    // Also pre-load previous semana for "Anterior"
-    cargarRegistrosAnt(sem,di,function(){
-      // Reset ejStates for this sem/dia so values are pre-filled
-      DIAS[di]&&DIAS[di].ejercicios&&DIAS[di].ejercicios.forEach(function(ej,ei){
-        var key=di+'_'+ei;
-        if(!ST.ejStates[key]||ST.ejStates[key]._sem!==sem){
-          var series=Array.from({length:ej.sets||3},function(_,si){
-            var rec=data[ej.nom+'_'+(si+1)];
-            return {kg:rec&&rec.kg?String(rec.kg):'',repsH:rec&&rec.reps?String(rec.reps):'',done:!!(rec&&rec.done),rir:rec&&rec.rir!==undefined?rec.rir:''};
-          });
-          ST.ejStates[key]={collapsed:false,rest:ej.rest||120,series:series,_sem:sem};
-        }
-      });
-      var ct=document.getElementById('ct');
-      if(ct&&ct.querySelector&&ct.querySelector('.ent-wrap'))ct.innerHTML=buildEntHTML(di);
-    });
+  // Reset ejStates for this sem+dia to force reload from cache
+  DIAS[di]&&DIAS[di].ejercicios&&DIAS[di].ejercicios.forEach(function(ej,ei){
+    var key=di+'_'+ei;
+    if(ST.ejStates[key]&&ST.ejStates[key]._sem!==sem) delete ST.ejStates[key];
   });
+  // Load from BD then fill DOM
+  var cacheKey=sem+'_'+di;
+  if(!ENT_CACHE[cacheKey]){
+    cargarRegistrosSemDia(sem,di,function(data){
+      cargarRegistrosAnt(sem,di,function(){
+        _fillEjStatesFromCache(di,sem);
+        var ct=document.getElementById('ct');
+        if(ct)ct.innerHTML=buildEntHTML(di);
+      });
+    });
+  } else {
+    _fillEjStatesFromCache(di,sem);
+  }
   return buildEntHTML(di);
+}
+
+function _fillEjStatesFromCache(di,sem){
+  var cacheKey=sem+'_'+di;
+  var data=ENT_CACHE[cacheKey]||{};
+  DIAS[di]&&DIAS[di].ejercicios&&DIAS[di].ejercicios.forEach(function(ej,ei){
+    var key=di+'_'+ei;
+    if(!ST.ejStates[key]||ST.ejStates[key]._sem!==sem){
+      var series=Array.from({length:ej.sets||3},function(_,si){
+        var rec=data[ej.nom+'_'+(si+1)];
+        return {kg:rec&&rec.kg?String(rec.kg):'',repsH:rec&&rec.reps?String(rec.reps):'',done:!!(rec&&rec.done),rir:rec&&rec.rir!==undefined?String(rec.rir):''};
+      });
+      ST.ejStates[key]={collapsed:false,rest:ej.rest||120,series:series,_sem:sem};
+    }
+  });
 }
 
 function buildEntHTML(di){
