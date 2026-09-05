@@ -10,7 +10,6 @@ function renderEntreno(){
   if(!ST.ejStates)ST.ejStates={};
   if(curDay===null){
     var _todayIdx=[6,0,1,2,3,4,5][new Date().getDay()];
-    // Use today if it's a training day, otherwise first training day
     if(DIAS[_todayIdx]&&!DIAS[_todayIdx].rest){
       curDay=_todayIdx;
     } else {
@@ -22,13 +21,15 @@ function renderEntreno(){
   var sem=ST.semVer;
   var di=curDay;
   var cacheKey=sem+'_'+di;
-  if(!ENT_CACHE[cacheKey]){
-    // Load from BD — capture sem and di in closure
+  // Always fill ejStates from cache (may be empty if not loaded yet)
+  _fillEjStatesFromCache(di, sem);
+  // If not in cache yet, load from BD then re-render
+  if(ENT_CACHE[cacheKey]===undefined){
+    ENT_CACHE[cacheKey]=null; // mark as loading
     (function(capturedSem, capturedDi){
       cargarRegistrosSemDia(capturedSem, capturedDi, function(){
         cargarRegistrosAnt(capturedSem, capturedDi, function(){
           _fillEjStatesFromCache(capturedDi, capturedSem);
-          // Only re-render if still on same sem+dia
           if(ST.semVer===capturedSem && curDay===capturedDi){
             var ct=document.getElementById('ct');
             if(ct)ct.innerHTML=buildEntHTML(capturedDi);
@@ -36,8 +37,6 @@ function renderEntreno(){
         });
       });
     })(sem, di);
-  } else {
-    _fillEjStatesFromCache(di, sem);
   }
   return buildEntHTML(di);
 }
@@ -47,10 +46,16 @@ function _fillEjStatesFromCache(di,sem){
   var data=ENT_CACHE[cacheKey]||{};
   DIAS[di]&&DIAS[di].ejercicios&&DIAS[di].ejercicios.forEach(function(ej,ei){
     var key=di+'_'+ei;
+    // Always rebuild ejStates if sem changed or not set
     if(!ST.ejStates[key]||ST.ejStates[key]._sem!==sem){
       var series=Array.from({length:ej.sets||3},function(_,si){
-        var rec=data[ej.nom+'_'+(si+1)];
-        return {kg:rec&&rec.kg?String(rec.kg):'',repsH:rec&&rec.reps?String(rec.reps):'',done:!!(rec&&rec.done),rir:rec&&rec.rir!==undefined?String(rec.rir):''};
+        var rec=data&&data[ej.nom+'_'+(si+1)];
+        return {
+          kg:rec&&rec.kg?String(rec.kg):'',
+          repsH:rec&&rec.reps?String(rec.reps):'',
+          done:!!(rec&&rec.done),
+          rir:rec&&rec.rir!==undefined&&rec.rir!==null?String(rec.rir):''
+        };
       });
       ST.ejStates[key]={collapsed:false,rest:ej.rest||120,series:series,_sem:sem};
     }
