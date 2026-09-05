@@ -273,7 +273,7 @@ async function loadClienteData() {
     // Semana y bloque
     ST.p.bloqueId = plan.bloque_id || '';
     ST.p.fechaInicio = plan.fecha_inicio || null;
-    ST.u.semana = plan.semana_actual || 1;
+    ST.u.semana = plan.semana_actual !== undefined ? plan.semana_actual : 1;
     // Auto-reset check-in when week changes
     if (ST.ci && ST.ci.semana !== undefined && ST.ci.semana !== ST.u.semana) {
       ST.ci = { done: false, open: false, semana: ST.u.semana };
