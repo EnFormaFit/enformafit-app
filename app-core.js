@@ -160,7 +160,7 @@ function buildDIAS(semana) {
           reps: String(e.reps || '8-10'),
           rir: e.rir !== undefined ? e.rir : 2,
           rest: e.rest || 120,
-          url: e.url || '',
+          url: e.url || (typeof EJ_URLS !== 'undefined' && EJ_URLS[e.nom]) || '',
           acl: e.acl || '',
           bw: e.bw || false
         };
