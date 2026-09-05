@@ -225,6 +225,12 @@ function cargarHistorial() {
       };
     });
     save();
+    // If on entreno screen, reset ejStates so values from histEnt are pre-filled
+    ST.ejStates = {};
+    var ct = document.getElementById('ct');
+    if (ct && ct.querySelector('.ent-wrap')) {
+      ct.innerHTML = renderEntreno ? renderEntreno() : '';
+    }
   }).catch(function() {});
 }
 
