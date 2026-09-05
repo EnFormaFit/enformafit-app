@@ -175,7 +175,34 @@ function buildDIAS(semana) {
 }
 
 
-// ── Auto-guardar serie al cambiar un campo ────────────────────────────────────
+// ── Sistema de entreno — BD como fuente de verdad ────────────────────────────
+
+// Caché de registros cargados: { "semana_dia": { "ejercicio_serie": {kg,reps,rir,done} } }
+var ENT_CACHE = {};
+
+// Cargar registros de BD para semana+día concreto
+function cargarRegistrosSemDia(semana, dia, callback) {
+  var cacheKey = semana + '_' + dia;
+  if (ENT_CACHE[cacheKey]) { if(callback)callback(ENT_CACHE[cacheKey]); return; }
+  api('GET', '/api/entreno/mi-historial?semana=' + semana + '&dia=' + dia)
+    .then(function(rows) {
+      var data = {};
+      (rows || []).forEach(function(r) {
+        var k = r.ejercicio + '_' + r.serie;
+        data[k] = { kg: r.kg || '', reps: r.reps_reales || '', rir: r.rir_real !== undefined ? r.rir_real : '', done: !!(r.completada) };
+      });
+      ENT_CACHE[cacheKey] = data;
+      if(callback)callback(data);
+    }).catch(function() { if(callback)callback({}); });
+}
+
+// Cargar registros de semana anterior (para mostrar "Anterior")
+function cargarRegistrosAnt(semana, dia, callback) {
+  if (semana <= 1) { if(callback)callback({}); return; }
+  cargarRegistrosSemDia(semana - 1, dia, callback);
+}
+
+// Auto-guardar serie al cambiar un campo (debounced 800ms)
 function autoGuardarSerie(di, ei, si) {
   var ej = DIAS[di] && DIAS[di].ejercicios ? DIAS[di].ejercicios[ei] : null;
   if (!ej) return;
@@ -186,7 +213,6 @@ function autoGuardarSerie(di, ei, si) {
   var bloque_id = ST.p.bloqueId || '';
   var semana = ST.semVer || ST.u.semana || 1;
 
-  // Save to backend
   clearTimeout(window['_serSave_' + key + '_' + si]);
   window['_serSave_' + key + '_' + si] = setTimeout(function() {
     api('POST', '/api/entreno/registrar-serie', {
@@ -197,42 +223,18 @@ function autoGuardarSerie(di, ei, si) {
       serie: si + 1,
       kg: parseFloat(s.kg) || 0,
       reps_reales: parseInt(s.repsH) || 0,
-      rir_real: s.rir !== undefined ? s.rir : (ej.rir || 2)
+      rir_real: s.rir !== undefined && s.rir !== '' ? parseInt(s.rir) : (ej.rir || 2)
+    }).then(function() {
+      // Update cache
+      var cacheKey = semana + '_' + di;
+      if (!ENT_CACHE[cacheKey]) ENT_CACHE[cacheKey] = {};
+      ENT_CACHE[cacheKey][ej.nom + '_' + (si + 1)] = { kg: s.kg, reps: s.repsH, rir: s.rir, done: s.done };
     }).catch(function(e) { console.warn('[Serie]', e.message); });
   }, 800);
 }
 
-// ── Cargar historial desde BD ─────────────────────────────────────────────────
-function cargarHistorial() {
-  api('GET', '/api/entreno/mi-historial').then(function(rows) {
-    if (!rows || !rows.length) return;
-    if (!ST.histEnt) ST.histEnt = {};
-    var semActual = ST.u.semana || 1;
-    var semAnt = semActual - 1;
-    rows.forEach(function(r) {
-      var nom = r.ejercicio;
-      if (!ST.histEnt[nom]) ST.histEnt[nom] = { semanas: {} };
-      var semKey = String(r.semana);
-      if (!ST.histEnt[nom].semanas[semKey]) ST.histEnt[nom].semanas[semKey] = { series: [] };
-      // series indexed by serie number (1-based)
-      while (ST.histEnt[nom].semanas[semKey].series.length < r.serie) {
-        ST.histEnt[nom].semanas[semKey].series.push({ kg: '', reps: '', done: false });
-      }
-      ST.histEnt[nom].semanas[semKey].series[r.serie - 1] = {
-        kg: r.kg || '',
-        reps: r.reps_reales || '',
-        done: r.completada || false
-      };
-    });
-    save();
-    // If on entreno screen, reset ejStates so values from histEnt are pre-filled
-    ST.ejStates = {};
-    var ct = document.getElementById('ct');
-    if (ct && ct.querySelector('.ent-wrap')) {
-      ct.innerHTML = renderEntreno ? renderEntreno() : '';
-    }
-  }).catch(function() {});
-}
+// Función legacy - mantener para compatibilidad
+function cargarHistorial() {}
 
 async function loadClienteData() {
   try {
