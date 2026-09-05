@@ -274,6 +274,14 @@ async function loadClienteData() {
     ST.p.bloqueId = plan.bloque_id || '';
     ST.p.fechaInicio = plan.fecha_inicio || null;
     ST.u.semana = plan.semana_actual || 1;
+    // Auto-reset check-in when week changes
+    if (ST.ci && ST.ci.semana !== undefined && ST.ci.semana !== ST.u.semana) {
+      ST.ci = { done: false, open: false, semana: ST.u.semana };
+      save();
+    } else if (ST.ci && ST.ci.semana === undefined) {
+      ST.ci.semana = ST.u.semana;
+      save();
+    }
     ST.u.semTotal = plan.semanas_bloque || 13;
     ST.u.inicioBloque = plan.fecha_inicio ? plan.fecha_inicio.split('T')[0] : '';
     ST.u.diasEnt = plan.dias_entreno || 3;
