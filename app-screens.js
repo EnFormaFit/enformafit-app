@@ -121,6 +121,8 @@ function swipeEnt(e,di){
 }
 
 function getGrabarIdxs(di){
+  // Only 1a1 clients record exercises
+  if(ST.u.tipo!=='uno')return[];
   const s=ST.u.semana;
   const seed=Math.floor((s-1)/2);
   const ejs=DIAS[di]?.ejercicios||[];
