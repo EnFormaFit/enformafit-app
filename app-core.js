@@ -167,6 +167,10 @@ function buildDIAS(semana) {
       tipo: isRest ? 'Descanso' : 'Entreno',
       rest: isRest,
       ejercicios: isRest ? [] : ejes.map(function(e) {
+        if (typeof e === 'string') {
+          return { nom: e, sets: 3, reps: '8-10', rir: 2, rest: 120,
+            url: (typeof EJ_URLS !== 'undefined' && EJ_URLS[e]) || '', acl: '', bw: false };
+        }
         return {
           nom: e.nom || '',
           sets: e.sets || 3,
