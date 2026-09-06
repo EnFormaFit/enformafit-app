@@ -139,13 +139,26 @@ async function doLogin(){
 // Usa rutina_semanas[semana] si hay override, si no rutina_base
 function buildDIAS(semana) {
   const NOMBRES = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-  const base = ST.p.rutinaDias || {};  // rutina_base (claves "0".."6" o "LUNES" etc.)
+  const DIA_IDX = {'LUNES':0,'MARTES':1,'MIERCOLES':2,'MIÉRCOLES':2,'JUEVES':3,'VIERNES':4,'SABADO':5,'SÁBADO':5,'DOMINGO':6};
+  const base = ST.p.rutinaDias || {};
   const semanas = ST.p.rutinaSemanas || {};
-  const semData = semanas[semana] || semanas[String(semana)] || base;
+  const semDataRaw = semanas[semana] || semanas[String(semana)] || base;
+
+  // Normalize keys: convert string day names to numeric indices
+  const semData = {};
+  Object.entries(semDataRaw).forEach(function([k, v]) {
+    var numKey = parseInt(k);
+    if (!isNaN(numKey)) {
+      semData[numKey] = v;
+    } else {
+      var idx = DIA_IDX[k.toUpperCase().replace('É','E').replace('Á','A').replace('Ó','O')];
+      if (idx !== undefined) semData[idx] = v;
+    }
+  });
 
   var trainCount = 0;
   for (var i = 0; i < 7; i++) {
-    var ejes = semData[i] || semData[String(i)] || [];
+    var ejes = semData[i] || [];
     var isRest = !ejes || ejes.length === 0;
     if (!isRest) trainCount++;
     DIAS[i] = {
