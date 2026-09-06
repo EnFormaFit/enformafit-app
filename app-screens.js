@@ -140,7 +140,7 @@ function renderEj(ej,ei,di,grabIdxs){
   if(!ST.ejStates[key])ST.ejStates[key]={collapsed:false,rest:ej.rest||120,series:Array.from({length:ej.sets||3},()=>({kg:'',repsH:'',done:false,rir:''})),_sem:ST.semVer||1};
   const st=ST.ejStates[key];
   const esGrabar=(grabIdxs||[]).includes(ei);
-  const hist=ST.histEnt&&ST.histEnt[ej.nom]?ST.histEnt[ej.nom]:null;
+  const hist=null; // histEnt removed — Anterior loaded from ENT_CACHE
 
   if(st.collapsed){
     const done=st.series.filter(s=>s.done).length;
