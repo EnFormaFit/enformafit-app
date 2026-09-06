@@ -224,7 +224,8 @@ function autoGuardarSerie(di, ei, si) {
       serie: si + 1,
       kg: parseFloat(s.kg) || 0,
       reps_reales: parseInt(s.repsH) || 0,
-      rir_real: s.rir !== undefined && s.rir !== '' ? parseInt(s.rir) : (ej.rir || 2)
+      rir_real: s.rir !== undefined && s.rir !== '' ? parseInt(s.rir) : (ej.rir || 2),
+      completada: s.done === true
     }).then(function() {
       // Update cache
       var cacheKey = semana + '_' + di;
