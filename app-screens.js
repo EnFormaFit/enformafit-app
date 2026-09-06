@@ -229,27 +229,11 @@ function toggleSer(key,si,di){
 
 function guardarDia(di){
   if(!ST.ejStates)ST.ejStates={};
-  if(!ST.histEnt)ST.histEnt={};
-  DIAS[di].ejercicios.forEach((ej,ei)=>{
-    const key=`${di}_${ei}`;
-    if(!ST.ejStates[key]){
-      var semK=String(ST.semVer||ST.u.semana||1);
-      var histCur=ST.histEnt&&ST.histEnt[ej.nom]&&ST.histEnt[ej.nom].semanas?ST.histEnt[ej.nom].semanas[semK]:null;
-      ST.ejStates[key]={collapsed:true,rest:ej.rest||120,series:Array.from({length:ej.sets||3},function(_,si){
-        var hd=histCur&&histCur.series?histCur.series[si]:null;
-        return {kg:hd&&hd.kg?String(hd.kg):'',repsH:hd&&hd.reps?String(hd.reps):'',done:!!(hd&&hd.done),rir:hd&&hd.rir_real!==undefined?hd.rir_real:''};
-      })};
-    }
-    const st=ST.ejStates[key];
-    const doneSeries=st.series.filter(s=>s.done&&s.kg);
-    if(doneSeries.length){
-      if(!ST.histEnt[ej.nom])ST.histEnt[ej.nom]={semanas:{}};
-      ST.histEnt[ej.nom].semanas[String(ST.u.semana)]={series:st.series.map(s=>({kg:s.kg||'',reps:s.repsH||'',done:s.done}))};
-      ST.histEnt[ej.nom].series=st.series.map(s=>({kg:s.kg||'',reps:s.repsH||''}));
-    }
-    st.collapsed=true;
+  // Collapse all series and show toast — data is auto-saved to BD via autoGuardarSerie
+  DIAS[di]&&DIAS[di].ejercicios&&DIAS[di].ejercicios.forEach(function(ej,ei){
+    var key=di+'_'+ei;
+    if(ST.ejStates[key])ST.ejStates[key].collapsed=true;
   });
-  save();
   document.getElementById('ct').innerHTML=buildEntHTML(di);
   toast('Entrenamiento guardado ✓','vd');
 }
@@ -307,22 +291,7 @@ function _showHistSem(sem,sems){
 }
 
 
-function showHistSem(nom,sem,sems){
-  const hist=ST.histEnt[nom];
-  const data=hist.semanas[sem];
-  const weeksHtml=sems.map(s=>`<button class="hw ${s===sem?'on':''}" onclick="showHistSem('${nom.replace(/'/g,"\\'")}','${s}',[${sems.map(x=>"'"+x+"'").join(',')}])">S${s}</button>`).join('');
-  document.getElementById('histWeeks').innerHTML=weeksHtml;
-  let content=`<div style="font-size:13px;color:var(--t3);margin-bottom:10px">Semana ${sem}</div>`;
-  content+=`<div style="display:grid;grid-template-columns:30px 1fr 1fr;gap:6px;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;margin-bottom:6px"><span>#</span><span>Kg</span><span>Reps</span></div>`;
-  (data.series||[]).forEach((s,i)=>{
-    content+=`<div style="display:grid;grid-template-columns:30px 1fr 1fr;gap:6px;padding:8px 0;border-bottom:1px solid var(--bor2);font-size:14px">
-      <span style="color:var(--t3);font-weight:700">${i+1}</span>
-      <span style="font-weight:700;color:var(--az)">${s.kg||'—'}${s.kg?'kg':''}</span>
-      <span style="color:var(--t2)">${s.reps||'—'}${s.reps?' reps':''}</span>
-    </div>`;
-  });
-  document.getElementById('histContent').innerHTML=content;
-}
+// showHistSem removed — replaced by _showHistSem which loads from BD
 function closeHist(){document.getElementById('histModal').classList.remove('show');}
 
 // Timer
