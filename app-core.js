@@ -683,8 +683,7 @@ function calcularEquivalencias(planAlimentos) {
       });
 
       if (!planItem) {
-        // No base item from trainer — use MENU defaults
-        resultado[meal][menuCat] = menuItems;
+        // No base item from trainer for this category — skip it
         return;
       }
 
