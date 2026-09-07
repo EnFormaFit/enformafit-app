@@ -344,8 +344,14 @@ async function loadClienteData() {
       // App expects: { rev_0: url, rev_1: url, rev_2: url, rev_3: url }
       const POSE_MAP = { frente: 0, perfil_d: 1, perfil_i: 2, espalda: 3 };
       Object.entries(fotosS0).forEach(function([pose, url]) {
-        const idx = POSE_MAP[pose];
-        if (idx !== undefined && url) ST.revHistorial[0].fotos['rev_' + idx] = url;
+        if (!url) return;
+        // Handle both formats: 'frente' and 'rev_0'
+        if (pose.startsWith('rev_')) {
+          ST.revHistorial[0].fotos[pose] = url;
+        } else {
+          const idx = POSE_MAP[pose];
+          if (idx !== undefined) ST.revHistorial[0].fotos['rev_' + idx] = url;
+        }
       });
       // Also load medidas S0
       if (Object.keys(ST.medidasS0).length > 0) {
