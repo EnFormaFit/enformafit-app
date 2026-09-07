@@ -512,7 +512,7 @@ function guardarMenu(di){
     const md=MENU[meal]||MENU[_MEAL_BASE_MAP[meal]]||MENU['comida']||{};
     const n=NAMES[meal];
     if(!ms.prot)faltantes.push(n+': falta proteína');
-    if(!ms.hidrat)faltantes.push(n+': falta hidrato');
+    if(!ms.hidrat&&md.hidratos&&md.hidratos.length)faltantes.push(n+': falta hidrato');
     if(ms.prot&&ms.protType==='magra'&&md.grasas&&md.grasas.length&&!ms.fat)faltantes.push(n+': falta grasa');
     if((meal==='comida'||meal==='cena')&&md.verduras&&md.verduras.length&&!ms.verd)faltantes.push(n+': falta verdura');
     if(meal==='desayuno'&&md.frutas&&md.frutas.length&&!ms.fruta)faltantes.push(n+': falta fruta');
