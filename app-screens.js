@@ -417,7 +417,8 @@ function renderMenuEditor(di){
 
     out+=`<div class="meal-sec"><div class="meal-title">${_MEAL_NAMES[meal]||meal}</div>`;
 
-    out+=`<div class="cat-lbl">Proteína magra</div><div class="opts">`;
+    if(md.proteinas_magras&&md.proteinas_magras.length){
+      out+=`<div class="cat-lbl">Proteína magra</div><div class="opts">`;
     (md.proteinas_magras||[]).forEach(it=>{
       const on=ms.prot&&ms.prot.nom===it.nom&&protType==='magra';
       const idx=_NIT.push(it)-1;
@@ -425,7 +426,8 @@ function renderMenuEditor(di){
     });
     out+=`</div>`;
 
-    out+=`<div class="cat-lbl">Proteína con grasa</div><div class="opts">`;
+    if(md.proteinas_grasas&&md.proteinas_grasas.length){
+      out+=`<div class="cat-lbl">Proteína con grasa</div><div class="opts">`;
     (md.proteinas_grasas||[]).forEach(it=>{
       const on=ms.prot&&ms.prot.nom===it.nom&&protType==='grasa';
       const idx=_NIT.push(it)-1;
@@ -435,13 +437,15 @@ function renderMenuEditor(di){
 
     if(isFat)out+=`<div class="fat-alert">⚠️ Esta proteína ya aporta grasa — no añadas más en esta comida.</div>`;
 
-    out+=`<div class="cat-lbl">Hidrato</div><div class="opts">`;
-    (md.hidratos||[]).forEach(it=>{
-      const on=ms.hidrat&&ms.hidrat.nom===it.nom;
-      const idx=_NIT.push(it)-1;
-      out+=`<button class="opt ${on?'on':''}" onclick="nitI(${di},'${meal}','hidrat',${idx})">${it.nom}<small>${it.cantidad}${it.u}</small></button>`;
-    });
-    out+=`</div>`;
+    if(md.hidratos&&md.hidratos.length){
+      out+=`<div class="cat-lbl">Hidrato</div><div class="opts">`;
+      (md.hidratos||[]).forEach(it=>{
+        const on=ms.hidrat&&ms.hidrat.nom===it.nom;
+        const idx=_NIT.push(it)-1;
+        out+=`<button class="opt ${on?'on':''}" onclick="nitI(${di},'${meal}','hidrat',${idx})">${it.nom}<small>${it.cantidad}${it.u}</small></button>`;
+      });
+      out+=`</div>`;
+    }
 
     if(md.verduras){
       out+=`<div class="cat-lbl">Verdura</div><div class="opts">`;
