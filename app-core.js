@@ -741,6 +741,41 @@ function calcularEquivalencias(planAlimentos) {
     });
   });
 
+  // Add proteinas_grasas option when plan has both prot + fat (combination equivalence)
+  MEAL_KEYS.forEach(function(meal) {
+    if (!resultado[meal]) return;
+    var planItems = planAlimentos[meal] || [];
+    var planByCat = {};
+    planItems.forEach(function(item) { planByCat[item.cat] = item; });
+
+    var hasProt = planByCat['prot'];
+    var hasFat = planByCat['fat'];
+
+    if (hasProt && hasFat && MENU[meal] && MENU[meal].proteinas_grasas) {
+      // Combined kcal = prot kcal + fat kcal
+      var protKcal = (hasProt.cantidad / 100) * hasProt.k100;
+      var fatKcal = (hasFat.cantidad / 100) * hasFat.k100;
+      var totalKcal = protKcal + fatKcal;
+
+      // Calculate equivalences for proteinas_grasas based on total kcal
+      resultado[meal].proteinas_grasas = MENU[meal].proteinas_grasas.map(function(mi) {
+        var miKcal100 = mi.kcal > 0 ? (mi.kcal / (mi.cantidad || 100)) * 100 : 0;
+        if (!miKcal100) return mi;
+        var newCant = Math.max(10, Math.round((totalKcal / miKcal100) * 100 / 5) * 5);
+        var factor = newCant / (mi.cantidad || 100);
+        return {
+          nom: mi.nom,
+          cantidad: newCant,
+          u: mi.u,
+          p: Math.round((mi.p || 0) * factor * 10) / 10,
+          c: Math.round((mi.c || 0) * factor * 10) / 10,
+          g: Math.round((mi.g || 0) * factor * 10) / 10,
+          kcal: Math.round(totalKcal)
+        };
+      });
+    }
+  });
+
   return resultado;
 }
 
