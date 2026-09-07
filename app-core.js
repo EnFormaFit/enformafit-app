@@ -748,9 +748,18 @@ function calcularEquivalencias(planAlimentos) {
 function aplicarCantidadesPersonalizadas(planAlimentos) {
   if (!planAlimentos || !Object.keys(planAlimentos).length) return;
   var equivalencias = calcularEquivalencias(planAlimentos);
-  // Apply to MENU
+  // Replace MENU categories completely with plan categories (not just update)
   Object.keys(equivalencias).forEach(function(meal) {
-    if (!MENU[meal]) return;
+    if (!MENU[meal]) MENU[meal] = {};
+    // Remove categories not in plan
+    var planCats = Object.keys(equivalencias[meal]).filter(function(k){ return k !== 'nom'; });
+    var allCats = ['proteinas','magras','grasas','hidratos','verduras','frutas','prot','fat','hidrat','verd','fruta'];
+    allCats.forEach(function(cat) {
+      if (!planCats.includes(cat) && MENU[meal][cat]) {
+        delete MENU[meal][cat];
+      }
+    });
+    // Apply plan categories
     Object.keys(equivalencias[meal]).forEach(function(cat) {
       if (cat === 'nom') return;
       MENU[meal][cat] = equivalencias[meal][cat];
