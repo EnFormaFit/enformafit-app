@@ -688,7 +688,10 @@ function calcularEquivalencias(planAlimentos) {
       });
 
       if (!planItem) {
-        // No base item from trainer for this category — skip it
+        // Frutas and verduras are always shown as fixed lists if MENU has them
+        if (menuCat === 'verduras' || menuCat === 'frutas') {
+          resultado[meal][menuCat] = menuItems;
+        }
         return;
       }
 
