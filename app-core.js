@@ -751,11 +751,11 @@ function aplicarCantidadesPersonalizadas(planAlimentos) {
   // Replace MENU categories completely with plan categories (not just update)
   Object.keys(equivalencias).forEach(function(meal) {
     if (!MENU[meal]) MENU[meal] = {};
-    // Remove categories not in plan
+    // Remove categories not in plan (use all possible MENU keys)
     var planCats = Object.keys(equivalencias[meal]).filter(function(k){ return k !== 'nom'; });
-    var allCats = ['proteinas','magras','grasas','hidratos','verduras','frutas','prot','fat','hidrat','verd','fruta'];
+    var allCats = Object.keys(MENU[meal]).filter(function(k){ return k !== 'nom'; });
     allCats.forEach(function(cat) {
-      if (!planCats.includes(cat) && MENU[meal][cat]) {
+      if (!planCats.includes(cat)) {
         delete MENU[meal][cat];
       }
     });
