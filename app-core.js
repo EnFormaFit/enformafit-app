@@ -732,8 +732,6 @@ function calcularEquivalencias(planAlimentos) {
           var perUnit = miCant > 0 ? per100 / miCant : 0;
           if (!perUnit) return mi;
           var newUnits = Math.max(1, Math.round(targetMacro / perUnit));
-          // Cap at reasonable max (e.g. 5 units)
-          newUnits = Math.min(newUnits, 5);
           factor = newUnits / miCant;
           newCant = newUnits;
         } else {
@@ -782,7 +780,7 @@ function calcularEquivalencias(planAlimentos) {
         if (isUnit2) {
           var kcalPerUnit = miCantBase > 0 ? mi.kcal / miCantBase : 0;
           if (!kcalPerUnit) return mi;
-          newCant = Math.max(1, Math.min(5, Math.round(totalKcal / kcalPerUnit)));
+          newCant = Math.max(1, Math.round(totalKcal / kcalPerUnit));
           factor = newCant / miCantBase;
         } else {
           var miKcal100 = mi.kcal > 0 ? (mi.kcal / miCantBase) * 100 : 0;
