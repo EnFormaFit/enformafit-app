@@ -722,16 +722,27 @@ function calcularEquivalencias(planAlimentos) {
 
       // Calculate equivalent quantity for each MENU item
       resultado[meal][menuCat] = menuItems.map(function(mi) {
-        var per100 = useMacro === 'p' ? (mi.p||0) : useMacro === 'c' ? (mi.c||0) : (mi.g||0);
-        // per100 is already the value FOR the base quantity (not per 100g)
-        // Need to get per-100g value
         var miCant = mi.cantidad || 100;
-        var per100g = miCant > 0 ? (per100 / miCant) * 100 : 0;
+        var isUnit = mi.u && (mi.u.includes('ud') || mi.u.includes('unid'));
+        var per100 = useMacro === 'p' ? (mi.p||0) : useMacro === 'c' ? (mi.c||0) : (mi.g||0);
 
-        if (!per100g || per100g === 0) return mi;
-
-        var newCant = Math.max(5, Math.round((targetMacro / per100g) * 100 / 5) * 5);
-        var factor = newCant / miCant;
+        var newCant, factor;
+        if (isUnit) {
+          // For unit-based foods: calculate per unit
+          var perUnit = miCant > 0 ? per100 / miCant : 0;
+          if (!perUnit) return mi;
+          var newUnits = Math.max(1, Math.round(targetMacro / perUnit));
+          // Cap at reasonable max (e.g. 5 units)
+          newUnits = Math.min(newUnits, 5);
+          factor = newUnits / miCant;
+          newCant = newUnits;
+        } else {
+          // For weight-based foods: calculate per 100g
+          var per100g = miCant > 0 ? (per100 / miCant) * 100 : 0;
+          if (!per100g) return mi;
+          newCant = Math.max(5, Math.round((targetMacro / per100g) * 100 / 5) * 5);
+          factor = newCant / miCant;
+        }
 
         return {
           nom: mi.nom,
@@ -765,10 +776,20 @@ function calcularEquivalencias(planAlimentos) {
 
       // Calculate equivalences for proteinas_grasas based on total kcal
       resultado[meal].proteinas_grasas = menuMealComb.proteinas_grasas.map(function(mi) {
-        var miKcal100 = mi.kcal > 0 ? (mi.kcal / (mi.cantidad || 100)) * 100 : 0;
-        if (!miKcal100) return mi;
-        var newCant = Math.max(10, Math.round((totalKcal / miKcal100) * 100 / 5) * 5);
-        var factor = newCant / (mi.cantidad || 100);
+        var miCantBase = mi.cantidad || 100;
+        var isUnit2 = mi.u && (mi.u.includes('ud') || mi.u.includes('unid'));
+        var newCant, factor;
+        if (isUnit2) {
+          var kcalPerUnit = miCantBase > 0 ? mi.kcal / miCantBase : 0;
+          if (!kcalPerUnit) return mi;
+          newCant = Math.max(1, Math.min(5, Math.round(totalKcal / kcalPerUnit)));
+          factor = newCant / miCantBase;
+        } else {
+          var miKcal100 = mi.kcal > 0 ? (mi.kcal / miCantBase) * 100 : 0;
+          if (!miKcal100) return mi;
+          newCant = Math.max(10, Math.round((totalKcal / miKcal100) * 100 / 5) * 5);
+          factor = newCant / miCantBase;
+        }
         return {
           nom: mi.nom,
           cantidad: newCant,
