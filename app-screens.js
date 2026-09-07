@@ -419,21 +419,23 @@ function renderMenuEditor(di){
 
     if(md.proteinas_magras&&md.proteinas_magras.length){
       out+=`<div class="cat-lbl">Proteína magra</div><div class="opts">`;
-    (md.proteinas_magras||[]).forEach(it=>{
-      const on=ms.prot&&ms.prot.nom===it.nom&&protType==='magra';
-      const idx=_NIT.push(it)-1;
-      out+=`<button class="opt ${on?'on':''}" onclick="nitP(${di},'${meal}','magra',${idx})">${it.nom}<small>${it.cantidad}${it.u}</small></button>`;
-    });
-    out+=`</div>`;
+      (md.proteinas_magras||[]).forEach(it=>{
+        const on=ms.prot&&ms.prot.nom===it.nom&&protType==='magra';
+        const idx=_NIT.push(it)-1;
+        out+=`<button class="opt ${on?'on':''}" onclick="nitP(${di},'${meal}','magra',${idx})">${it.nom}<small>${it.cantidad}${it.u}</small></button>`;
+      });
+      out+=`</div>`;
+    }
 
     if(md.proteinas_grasas&&md.proteinas_grasas.length){
       out+=`<div class="cat-lbl">Proteína con grasa</div><div class="opts">`;
-    (md.proteinas_grasas||[]).forEach(it=>{
-      const on=ms.prot&&ms.prot.nom===it.nom&&protType==='grasa';
-      const idx=_NIT.push(it)-1;
-      out+=`<button class="opt ${on?'on':''}" onclick="nitP(${di},'${meal}','grasa',${idx})">${it.nom}<small>${it.cantidad}${it.u}</small></button>`;
-    });
-    out+=`</div>`;
+      (md.proteinas_grasas||[]).forEach(it=>{
+        const on=ms.prot&&ms.prot.nom===it.nom&&protType==='grasa';
+        const idx=_NIT.push(it)-1;
+        out+=`<button class="opt ${on?'on':''}" onclick="nitP(${di},'${meal}','grasa',${idx})">${it.nom}<small>${it.cantidad}${it.u}</small></button>`;
+      });
+      out+=`</div>`;
+    }
 
     if(isFat)out+=`<div class="fat-alert">⚠️ Esta proteína ya aporta grasa — no añadas más en esta comida.</div>`;
 
