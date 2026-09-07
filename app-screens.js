@@ -1330,14 +1330,34 @@ function revHistMed(inp){
   save();
 }
 
-function guardarRevAnterior(sem){
+async function guardarRevAnterior(sem){
   if(!ST.revHistorial)ST.revHistorial={};
   if(!ST.revHistorial[sem])ST.revHistorial[sem]={medidas:{},fotos:{},preguntas:{}};
   var hist=ST.revHistorial[sem];
   save();
   if(_tk){
-    api('POST','/api/entreno/revision',{semana:sem,medidas:hist.medidas||{},preguntas:hist.preguntas||{},estado:'revisada'}).then(function(){
-      toast('Revision S'+sem+' guardada','vd');
+    toast('Guardando...','');
+    // Upload any base64 fotos to Cloudinary first
+    var fotoUrls={};
+    var POSES=['frente','perfil_d','perfil_i','espalda'];
+    var fotosRaw=hist.fotos||{};
+    for(var i=0;i<4;i++){
+      var key='rev_'+i;
+      var b64=fotosRaw[key];
+      if(b64&&b64.startsWith('data:')){
+        try{
+          var res=await api('POST','/api/entreno/upload-foto',{foto_b64:b64,pose:POSES[i],semana:sem});
+          if(res.url)fotoUrls[key]=res.url;
+        }catch(e){fotoUrls[key]=b64;}
+      } else if(b64){
+        fotoUrls[key]=b64; // already a URL
+      }
+    }
+    // Merge uploaded URLs back
+    if(Object.keys(fotoUrls).length)hist.fotos=fotoUrls;
+    save();
+    api('POST','/api/entreno/revision',{semana:sem,medidas:hist.medidas||{},preguntas:hist.preguntas||{},fotos:hist.fotos||{},estado:'revisada'}).then(function(){
+      toast('Revision S'+sem+' guardada ✓','vd');
       ST._editandoRevSem=null;render();
     }).catch(function(e){toast('Error: '+e.message,'rj');});
   } else {
