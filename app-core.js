@@ -653,13 +653,18 @@ function calcularEquivalencias(planAlimentos) {
   };
 
   // Meal key mapping (plan uses flat keys, MENU uses same)
-  var MEAL_KEYS = ['desayuno','comida','cena','snack'];
+  // Include all possible meal keys including snack variants
+  var MEAL_BASE_MAP = {desayuno_extra:'desayuno',snack_am:'snack',snack_pm:'snack',post_entreno:'snack',comida_extra:'comida',cena_extra:'cena'};
+  var MEAL_KEYS = Object.keys(planAlimentos).map(function(k){ return k; });
 
   MEAL_KEYS.forEach(function(meal) {
     var planItems = planAlimentos[meal];
-    if (!planItems || !MENU[meal]) return;
+    var menuKey = meal;
+    if (!MENU[menuKey]) menuKey = MEAL_BASE_MAP[meal] || meal;
+    if (!planItems || !MENU[menuKey]) return;
+    var menuMeal = MENU[menuKey];
 
-    resultado[meal] = { nom: MENU[meal].nom };
+    resultado[meal] = { nom: menuMeal.nom };
 
     // Group plan items by category
     var planByCat = {};
@@ -668,9 +673,9 @@ function calcularEquivalencias(planAlimentos) {
     });
 
     // For each category in MENU, calculate equivalences
-    Object.keys(MENU[meal]).forEach(function(menuCat) {
+    Object.keys(menuMeal).forEach(function(menuCat) {
       if (menuCat === 'nom') return;
-      var menuItems = MENU[meal][menuCat];
+      var menuItems = menuMeal[menuCat];
       if (!Array.isArray(menuItems)) return;
 
       // Find the plan item for this category
@@ -751,14 +756,15 @@ function calcularEquivalencias(planAlimentos) {
     var hasProt = planByCat['prot'];
     var hasFat = planByCat['fat'];
 
-    if (hasProt && hasFat && MENU[meal] && MENU[meal].proteinas_grasas) {
+    var menuMealComb = MENU[meal] || MENU[MEAL_BASE_MAP[meal]] || {};
+    if (hasProt && hasFat && menuMealComb.proteinas_grasas) {
       // Combined kcal = prot kcal + fat kcal
       var protKcal = (hasProt.cantidad / 100) * hasProt.k100;
       var fatKcal = (hasFat.cantidad / 100) * hasFat.k100;
       var totalKcal = protKcal + fatKcal;
 
       // Calculate equivalences for proteinas_grasas based on total kcal
-      resultado[meal].proteinas_grasas = MENU[meal].proteinas_grasas.map(function(mi) {
+      resultado[meal].proteinas_grasas = menuMealComb.proteinas_grasas.map(function(mi) {
         var miKcal100 = mi.kcal > 0 ? (mi.kcal / (mi.cantidad || 100)) * 100 : 0;
         if (!miKcal100) return mi;
         var newCant = Math.max(10, Math.round((totalKcal / miKcal100) * 100 / 5) * 5);
