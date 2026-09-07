@@ -518,7 +518,7 @@ function guardarMenu(di){
   }
   ST.menuGuardado[di]=JSON.parse(JSON.stringify(m));
   ST.nutEditing=false;
-  api('POST','/api/entreno/menu-semanal',{menu_semanal:ST.menuGuardado,semana_inicio:ST.u.semana||1}).catch(function(e){console.warn('guardarMenu BD:',e);});
+  api('POST','/api/entreno/menu-semanal',{menu_semanal:ST.menuGuardado}).catch(function(e){console.warn('guardarMenu BD:',e);});
   save();
   document.getElementById('ct').innerHTML=renderNutricion();
   document.getElementById('ct').scrollTop=0;
