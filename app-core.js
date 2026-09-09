@@ -494,9 +494,15 @@ function renderInicio(){
   const revSems=tipo==='programa'?[4,8,12]:[3,7,11];
   const nextRev=revSems.find(rs=>rs>=s)||revSems[revSems.length-1];
   const semsLeft=nextRev-s;
-  const adh=ST.adh;
+  // Use last check-in data if available
+  const lastCI = (ST.checkIns && ST.checkIns.length) ? ST.checkIns[0] : null;
+  const adh = lastCI ? (lastCI.adherencia||0)/100 : (ST.adh||0);
   const adhPct=Math.round(adh*100);
   const adhCol=adh>=.8?'var(--vd)':adh>=.6?'var(--nr)':'var(--rj)';
+  const ciDiasEnt = lastCI ? lastCI.dias_entreno_real : null;
+  const ciDiasNut = lastCI ? lastCI.dias_nutricion : null;
+  const ciDiasPasos = lastCI ? lastCI.dias_pasos : null;
+  const diasEntObj = ST.u.diasSemana || 4;
   const todayDow=new Date().getDay();
   const diaIdx=[6,0,1,2,3,4,5][todayDow]||0;
   const diaHoy=DIAS[diaIdx];
@@ -545,9 +551,9 @@ function renderInicio(){
   <div class="ch"><h2>📊 Adherencia semana pasada</h2><span class="badge ${adh>=.8?'bvd':'bnr'}">${adhPct}%</span></div>
   <div class="cb">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
-      <div class="maci"><div class="macv" style="color:var(--az);font-size:17px">4/4</div><div class="macl">Entrenos</div></div>
-      <div class="maci"><div class="macv" style="color:var(--vd);font-size:17px">6/7</div><div class="macl">Nutrición</div></div>
-      <div class="maci"><div class="macv" style="color:var(--nr);font-size:17px">5/7</div><div class="macl">Pasos</div></div>
+      <div class="maci"><div class="macv" style="color:var(--az);font-size:17px">${ciDiasEnt!==null?ciDiasEnt+'/'+diasEntObj:'—'}</div><div class="macl">Entrenos</div></div>
+      <div class="maci"><div class="macv" style="color:var(--vd);font-size:17px">${ciDiasNut!==null?ciDiasNut+'/7':'—'}</div><div class="macl">Nutrición</div></div>
+      <div class="maci"><div class="macv" style="color:var(--nr);font-size:17px">${ciDiasPasos!==null?ciDiasPasos+'/7':'—'}</div><div class="macl">Pasos</div></div>
     </div>
     <div class="pb"><div class="pf" style="width:${adhPct}%;background:${adhCol}"></div></div>
   </div>
