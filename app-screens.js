@@ -123,18 +123,21 @@ function swipeEnt(e,di){
 function getGrabarIdxs(di){
   // Only 1a1 clients record exercises
   if(ST.u.tipo!=='uno')return[];
-  const s=ST.u.semana;
-  const seed=Math.floor((s-1)/2);
+  const s=ST.u.semana||1;
   const ejs=DIAS[di]?.ejercicios||[];
   if(!ejs.length)return[];
-  const idxs=[];
-  const n=Math.min(2,ejs.length);
-  for(let i=0;i<n;i++){
-    const idx=(seed*3+di*7+i*4)%ejs.length;
-    if(!idxs.includes(idx))idxs.push(idx);
-    else idxs.push((idx+1)%ejs.length);
-  }
-  return idxs;
+
+  // Exclude cardio exercises
+  const CARDIO_KEYS=['hiit','carrera','caminata','cinta','cardio','bicicleta','remo','elíptica','eliptica','saltar','saltos','burpees'];
+  const elegibles=ejs.map((ej,i)=>({ej,i})).filter(({ej})=>{
+    const nom=(ej.nom||'').toLowerCase();
+    return !CARDIO_KEYS.some(k=>nom.includes(k));
+  });
+  if(!elegibles.length)return[];
+
+  // Rotate every 2 weeks: weeks 1-2 → idx 0, weeks 3-4 → idx 1, etc.
+  const rotIdx=Math.floor((s-1)/2)%elegibles.length;
+  return[elegibles[rotIdx].i];
 }
 
 function renderEj(ej,ei,di,grabIdxs){
