@@ -402,7 +402,29 @@ async function loadClienteData() {
       }
     } catch(e) {}
 
-    save();
+    // Load check-ins from BD
+    try {
+      const cisBD = await api('GET', '/api/entreno/checkins');
+      if (Array.isArray(cisBD) && cisBD.length) {
+        ST.checkIns = cisBD;
+        const inicioBloque = ST.u.inicioBloque;
+        const ciActual = inicioBloque ? cisBD.find(ci => (ci.semana_inicio||'').substring(0,10) === inicioBloque.substring(0,10)) : cisBD[0];
+        if (ciActual) {
+          ST.ci = ST.ci || {};
+          ST.ci.diasEnt = ciActual.dias_entreno_real || 0;
+          ST.ci.diasNut = ciActual.dias_nutricion || 0;
+          ST.ci.diasPasos = ciActual.dias_pasos || 0;
+          ST.ci.orgullo = ciActual.orgullos || '';
+          ST.ci.compromiso = ciActual.compromisos || '';
+          ST.ci.sensaciones = ciActual.sensaciones || '';
+          ST.ci.como = ciActual.como_semana || '';
+          ST.ci.adh = ciActual.adherencia || 0;
+          ST.checkInDone = true;
+        }
+      }
+    } catch(e) { console.warn('[CI load]', e); }
+
+        save();
     render();
   } catch(e) {
     console.error('loadClienteData error:', e);
