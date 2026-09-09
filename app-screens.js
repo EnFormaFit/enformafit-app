@@ -101,7 +101,7 @@ function buildEntHTML(di){
       <div class="alert avd" style="text-align:left">💡 Aprovecha para acumular tus <b>${ST.pasos.obj.toLocaleString('es')} pasos</b> diarios y seguir tu plan de nutrición.</div>
     </div></div>`;
   } else {
-    const grabIdxs=getGrabarIdxs(di);
+    const grabIdxs=getGrabarIdxs(di,ST.semVer||ST.u.semana||1);
     body=d.ejercicios.map((ej,ei)=>renderEj(ej,ei,di,grabIdxs)).join('');
     body+=`<button class="btn btnp btnf" onclick="guardarDia(${di})">Guardar entrenamiento ✓</button>`;
   }
@@ -120,10 +120,10 @@ function swipeEnt(e,di){
   else if(dx>0&&di>0){curDay=di-1;document.getElementById('ct').innerHTML=buildEntHTML(di-1);}
 }
 
-function getGrabarIdxs(di){
+function getGrabarIdxs(di,s){
   // Only 1a1 clients record exercises
   if(ST.u.tipo!=='uno')return[];
-  const s=ST.u.semana||1;
+  s=s||ST.semVer||ST.u.semana||1;
   const ejs=DIAS[di]?.ejercicios||[];
   if(!ejs.length)return[];
 
