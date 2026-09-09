@@ -71,7 +71,10 @@ try{
   if(d.listaCheck)ST.listaCheck=d.listaCheck;
   if(d.u_lesiones!==undefined)ST.u.lesiones=d.u_lesiones;
   if(d.u_dob)ST.u.dob=d.u_dob;
-}catch(e){}}
+}catch(e){}
+  // Ensure new ST keys exist after loading from localStorage
+  if(ST.checkIns===undefined)ST.checkIns=null;
+  if(ST.checkInDone===undefined)ST.checkInDone=false;}
 
 // ── NAV ──
 let SEC='inicio';
