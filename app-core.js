@@ -610,7 +610,7 @@ function renderCI(){
   }
   var h='<div class="card" style="margin-bottom:10px">'
     +'<div class="ch" onclick="ST.ci.open=!ST.ci.open;render()" style="cursor:pointer">'
-      +'<h2>Check-in semanal</h2><span style="color:var(--t3)">'+(ci.open?'▲':'▼')+'</span>'
+      +'<h2>Check-in semanal</h2>'+(ST.checkInDone?'<span class="badge bvd" style="font-size:11px">✓ Enviado</span>':'')+'<span style="color:var(--t3)">'+(ci.open?'▲':'▼')+'</span>'
     +'</div>';
   if(!ci.open)return h+'</div>';
   h+='<div class="cb">';
