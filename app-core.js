@@ -620,17 +620,17 @@ function renderCI(){
   }
   h+='<div style="background:var(--bg);border-radius:10px;padding:12px;margin-bottom:10px">'
     +'<div style="display:flex;justify-content:space-between;align-items:center">'
-      +'<span style="font-size:12px;font-weight:600">Dias entrenamiento</span>'
+      +'<span style="font-size:12px;font-weight:600">Días de entrenamiento cumplidos</span>'
       +'<span id="ci-ent-n" style="font-weight:800;color:var(--az)">'+(ci.diasEnt||0)+'/'+dp+'</span></div>'
     +mkDots('diasEnt',ci.diasEnt||0,dp)+'</div>';
   h+='<div style="background:var(--bg);border-radius:10px;padding:12px;margin-bottom:10px">'
     +'<div style="display:flex;justify-content:space-between;align-items:center">'
-      +'<span style="font-size:12px;font-weight:600">Dias plan nutricional</span>'
+      +'<span style="font-size:12px;font-weight:600">Días del plan nutricional cumplidos</span>'
       +'<span id="ci-nut-n" style="font-weight:800;color:var(--az)">'+(ci.diasNut||0)+'/7</span></div>'
     +mkDots('diasNut',ci.diasNut||0,7)+'</div>';
   h+='<div style="background:var(--bg);border-radius:10px;padding:12px;margin-bottom:10px">'
     +'<div style="display:flex;justify-content:space-between;align-items:center">'
-      +'<span style="font-size:12px;font-weight:600">Dias pasos</span>'
+      +'<span style="font-size:12px;font-weight:600">Días de pasos cumplidos</span>'
       +'<span id="ci-pas-n" style="font-weight:800;color:var(--az)">'+(ci.diasPasos||0)+'/7</span></div>'
     +mkDots('diasPasos',ci.diasPasos||0,7)+'</div>';
   if(tipo==='uno'){
