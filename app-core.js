@@ -379,6 +379,29 @@ async function loadClienteData() {
       }
     } catch(e) {}
 
+    // Load check-ins from BD
+    try {
+      const cisBD = await api('GET', '/api/entreno/checkins');
+      if (cisBD && cisBD.length) {
+        ST.checkIns = cisBD;
+        // Load current week's check-in into ST.ci if exists
+        const inicioBloque = ST.u.inicioBloque || new Date().toISOString().split('T')[0];
+        const ciActual = cisBD.find(ci => ci.semana_inicio && ci.semana_inicio.startsWith(inicioBloque.substring(0,10)));
+        if (ciActual) {
+          ST.ci = ST.ci || {};
+          ST.ci.diasEnt = ciActual.dias_entreno_real || 0;
+          ST.ci.diasNut = ciActual.dias_nutricion || 0;
+          ST.ci.diasPasos = ciActual.dias_pasos || 0;
+          ST.ci.orgullo = ciActual.orgullos || '';
+          ST.ci.compromiso = ciActual.compromisos || '';
+          ST.ci.sensaciones = ciActual.sensaciones || '';
+          ST.ci.como = ciActual.como_semana || '';
+          ST.ci.adh = ciActual.adherencia || 0;
+          ST.checkInDone = true;
+        }
+      }
+    } catch(e) {}
+
     save();
     render();
   } catch(e) {
