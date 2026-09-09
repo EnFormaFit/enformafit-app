@@ -615,7 +615,7 @@ function renderCI(){
   if(!ci.open)return h+'</div>';
   h+='<div class="cb">';
   if(tipo==='uno'){
-    h+='<div style="margin-bottom:12px"><div style="font-size:13px;font-weight:600;margin-bottom:6px">Como fue la semana anterior?</div>'
+    h+='<div style="margin-bottom:12px"><div style="font-size:13px;font-weight:600;margin-bottom:6px">¿Cómo fue la semana anterior?</div>'
       +'<textarea oninput="ST.ci.como=this.value;save()" style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:none;min-height:65px;box-sizing:border-box;outline:none">'+(ci.como||'')+'</textarea></div>';
   }
   h+='<div style="background:var(--bg);border-radius:10px;padding:12px;margin-bottom:10px">'
@@ -634,11 +634,11 @@ function renderCI(){
       +'<span id="ci-pas-n" style="font-weight:800;color:var(--az)">'+(ci.diasPasos||0)+'/7</span></div>'
     +mkDots('diasPasos',ci.diasPasos||0,7)+'</div>';
   if(tipo==='uno'){
-    h+='<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">De que te enorgulleces esta semana</div>'
+    h+='<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">De que te ¿De qué te enorgulleces esta semana?</div>'
       +'<textarea oninput="ST.ci.orgullo=this.value;save()" style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:none;min-height:55px;box-sizing:border-box;outline:none">'+(ci.orgullo||'')+'</textarea></div>'
-    +'<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">Compromiso esta semana</div>'
+    +'<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">¿Compromiso esta semana?</div>'
       +'<textarea oninput="ST.ci.compromiso=this.value;save()" style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:none;min-height:55px;box-sizing:border-box;outline:none">'+(ci.compromiso||'')+'</textarea></div>'
-    +'<div style="margin-bottom:12px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">Sensaciones generales</div>'
+    +'<div style="margin-bottom:12px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">¿Sensaciones generales?</div>'
       +'<textarea oninput="ST.ci.sensaciones=this.value;save()" style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:none;min-height:55px;box-sizing:border-box;outline:none">'+(ci.sensaciones||'')+'</textarea></div>';
   }
   h+='<div style="background:var(--az3);border-radius:8px;padding:10px;text-align:center;margin-bottom:12px">'
