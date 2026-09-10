@@ -1423,6 +1423,10 @@ function renderPerfil(){
             <div style="font-size:10px;color:var(--t3)">Objetivo</div>
           </div>
           <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:24px;font-weight:800;color:var(--nr)">${ST.u.objSemKg?ST.u.objSemKg+'kg/sem':'—'}</div>
+            <div style="font-size:10px;color:var(--t3)">Ritmo objetivo</div>
+          </div>
+          <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
             <div style="font-size:24px;font-weight:800;color:var(--az2)">${altura}cm</div>
             <div style="font-size:10px;color:var(--t3)">Altura</div>
           </div>
