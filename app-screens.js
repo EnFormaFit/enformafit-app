@@ -878,6 +878,7 @@ function renderProgreso(){
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:14px">
       <div class="maci"><div class="macv" style="color:var(--t2);font-size:17px">${ST.pesoInicial}kg</div><div class="macl">Peso inicial</div></div>
       <div class="maci"><div class="macv" style="color:var(--az2);font-size:17px">${ST.objPeso}kg</div><div class="macl">Objetivo</div></div>
+          <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--nr)">${ST.u.objSemKg?ST.u.objSemKg+'kg/sem':'—'}</div><div style="font-size:10px;color:var(--t3)">Ritmo objetivo</div></div>
       <div class="maci"><div class="macv" style="color:${cambio<0?'var(--vd)':'var(--rj)'};font-size:17px">${cambio>0?'+':''}${cambio.toFixed(1)}kg</div><div class="macl">Cambio total</div></div>
       <div class="maci"><div class="macv" style="color:var(--az);font-size:17px">${left>0?left.toFixed(1).replace('.',',')+' kg':'✅'}</div><div class="macl">Para objetivo</div></div>
       <div class="maci"><div class="macv" style="color:var(--az2);font-size:17px">${ST.p.objSemKg!=null?Math.abs(ST.p.objSemKg).toString().replace('.',',')+'kg':ST.bajanSem+'kg'}</div><div class="macl">Ritmo/sem</div></div>
