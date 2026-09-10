@@ -607,22 +607,7 @@ function renderListaCompra(){
 }
 
 function checkMenuCompleto(){
-  // Use plan meals (from trainer) instead of fixed list
-  var planMeals = ST.p && ST.p.alimentos ? Object.keys(ST.p.alimentos) : ['desayuno','comida','cena'];
-  // Map variant keys to base keys for menu lookup
-  var MEAL_BASE = {desayuno_extra:'desayuno',snack_am:'snack',snack_pm:'snack',post_entreno:'snack',comida_extra:'comida',cena_extra:'cena'};
-  var baseMeals = planMeals.map(function(m){return MEAL_BASE[m]||m;}).filter(function(m,i,a){return a.indexOf(m)===i;});
-  var DNOM=['Lunes','Martes','Miercoles','Jueves','Viernes','Sabado','Domingo'];
-  var inc=[];
-  for(var di=0;di<7;di++){
-    if(DIAS[di]&&DIAS[di].rest)continue;
-    var saved=ST.menuGuardado[di];
-    var ok=saved&&baseMeals.every(function(m){
-      return saved[m]&&Object.values(saved[m]).some(function(v){return v&&v.nom;});
-    });
-    if(!ok)inc.push(DNOM[di]);
-  }
-  if(inc.length){toast('Completa primero: '+inc.join(', '),'rj');return;}
+  // Generate PDF with whatever is filled — empty days show blank
   generateMenuPDF();
 }
 function generateMenuPDF(){
