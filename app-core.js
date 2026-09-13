@@ -705,6 +705,8 @@ function calcularEquivalencias(planAlimentos) {
     'fruta': 'frutas',
     'grasas_superavit': 'grasas_superavit'
   };
+  // Fixed display order for food categories
+  var CAT_ORDER_FIXED = ['prot','prot_g','hidrat','fat','verd','fruta'];
 
   // Meal key mapping (plan uses flat keys, MENU uses same)
   // Include all possible meal keys including snack variants
@@ -727,7 +729,7 @@ function calcularEquivalencias(planAlimentos) {
     });
 
     // For each category in MENU, calculate equivalences
-    Object.keys(menuMeal).forEach(function(menuCat) {
+    CAT_ORDER_FIXED.filter(function(k){return menuMeal[k]||planByCat[k];}).concat(Object.keys(menuMeal).filter(function(k){return CAT_ORDER_FIXED.indexOf(k)<0;})).forEach(function(menuCat) {
       if (menuCat === 'nom') return;
       var menuItems = menuMeal[menuCat];
       if (!Array.isArray(menuItems)) return;
