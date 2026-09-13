@@ -705,6 +705,7 @@ function calcularEquivalencias(planAlimentos) {
     'fruta': 'frutas',
     'grasas_superavit': 'grasas_superavit'
   };
+  var CAT_ORDER_FIXED = ['prot','prot_g','hidrat','fat','verd','fruta'];
   // Fixed display order for food categories
   var CAT_ORDER_FIXED = ['prot','prot_g','hidrat','fat','verd','fruta'];
 
