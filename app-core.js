@@ -729,6 +729,22 @@ function calcularEquivalencias(planAlimentos) {
       if (!planByCat[item.cat]) planByCat[item.cat] = item;
     });
 
+    // If plan has fruta or verd but MENU doesn't for this meal, inject them directly
+    if (planByCat['fruta'] && !menuMeal['frutas']) {
+      var fi = planByCat['fruta'];
+      resultado[meal]['frutas'] = [{
+        nom: fi.nom||fi.alimento||'Fruta', cantidad: fi.cantidad||100,
+        u: fi.u||'g', p_100:fi.p100||0, c_100:fi.c100||0, g_100:fi.g100||0, kcal_100:fi.k100||0
+      }];
+    }
+    if (planByCat['verd'] && !menuMeal['verduras']) {
+      var vi = planByCat['verd'];
+      resultado[meal]['verduras'] = [{
+        nom: vi.nom||vi.alimento||'Verdura', cantidad: vi.cantidad||0,
+        u: vi.u||'', p_100:vi.p100||0, c_100:vi.c100||0, g_100:vi.g100||0, kcal_100:vi.k100||0
+      }];
+    }
+
     // For each category in MENU, calculate equivalences
     CAT_ORDER_FIXED.filter(function(k){return menuMeal[k]||planByCat[k];}).concat(Object.keys(menuMeal).filter(function(k){return CAT_ORDER_FIXED.indexOf(k)<0;})).forEach(function(menuCat) {
       if (menuCat === 'nom') return;
