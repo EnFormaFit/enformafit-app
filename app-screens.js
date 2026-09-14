@@ -393,7 +393,7 @@ function renderMenuPlegado(di,g){
     </div>`;
   });
   out+=`<div style="display:flex;gap:8px;margin-bottom:12px">
-    <button class="btn btnp" style="flex:1;background:var(--az)" onclick="ST.nutEditing=true;document.getElementById('ct').innerHTML=renderNutricion()">✏️ Cambiar alimentos</button>
+    <button class="btn btnp" style="flex:1;background:var(--az)" onclick="ST.nutEditing=true;if(ST.menuGuardado&&ST.menuGuardado[ST.nutDay]&&(!ST.menu[ST.nutDay]||!Object.keys(ST.menu[ST.nutDay]).length)){ST.menu[ST.nutDay]=JSON.parse(JSON.stringify(ST.menuGuardado[ST.nutDay]));}document.getElementById('ct').innerHTML=renderNutricion()">✏️ Cambiar alimentos</button>
     <button class="btn btno" style="flex:1" onclick="copiarDia(${di})">📋 Pegar en...</button>
   </div>`;
   out+=`<div class="alert aaz">💧 Bebe al menos 2L de agua hoy</div>`;
