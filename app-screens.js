@@ -1041,7 +1041,7 @@ function renderRevision(){
     content=`<div style="display:flex;gap:12px;align-items:flex-start">
       <div style="flex:1">
         <div style="font-size:13px;color:var(--t2);margin-bottom:12px">Mídete en ayunas, sin ropa, con cinta métrica.</div>
-        <div style="background:rgba(0,122,255,.08);border-radius:6px;padding:8px;margin-bottom:10px;font-size:11px;color:var(--az)">Mide en la zona mas amplia. Si pone contraido, aprieta el musculo al medir.</div>${MEDS.map(([k,l,desc])=>`<div style="margin-bottom:10px"><label style="font-size:12px;font-weight:700;color:var(--t2);display:block;margin-bottom:1px">${l}</label><div style="font-size:10px;color:var(--t3);margin-bottom:3px">${desc||''}</div><input class="medin" type="number" inputmode="decimal" placeholder="—" value="${medidas[k]||''}" onchange="ST.rev.medidas['${k}']=this.value;save()" step="0.1"></div>`).join('')}
+        <div style="background:rgba(0,122,255,.08);border-radius:6px;padding:8px;margin-bottom:10px;font-size:11px;color:var(--az)">Mide en la zona mas amplia. Si pone contraido, aprieta el musculo al medir.</div>${MEDS.map(([k,l,desc])=>`<div style="margin-bottom:10px"><label style="font-size:12px;font-weight:700;color:var(--t2);display:block;margin-bottom:1px">${l}</label><div style="font-size:10px;color:var(--t3);margin-bottom:3px">${desc||''}</div><input class="medin" type="number" inputmode="decimal" placeholder="—" value="${medidas[k]||''}" oninput="ST.rev.medidas['${k}']=this.value;save()" step="0.1"></div>`).join('')}
       </div>
       <img src="data:image/png;base64,${BODY_B64}" style="width:100px;flex-shrink:0;margin-top:32px;opacity:.85" alt="Guía de medidas">
     </div>`;
@@ -1051,7 +1051,7 @@ function renderRevision(){
     </div>`;
   }
   else{
-    content=PP.map((q,i)=>`<div style="margin-bottom:12px"><div style="font-size:13.5px;font-weight:600;margin-bottom:5px">${i+1}. ${q}</div><textarea class="preqa" placeholder="Tu respuesta..." onchange="ST.rev.preguntas[${i}]=this.value;save()">${preguntas[i]||''}</textarea></div>`).join('');
+    content=PP.map((q,i)=>`<div style="margin-bottom:12px"><div style="font-size:13.5px;font-weight:600;margin-bottom:5px">${i+1}. ${q}</div><textarea class="preqa" placeholder="Tu respuesta..." oninput="ST.rev.preguntas[${i}]=this.value;save()">${preguntas[i]||''}</textarea></div>`).join('');
     content+=`<div style="display:flex;gap:8px">
       <button class="btn btno" style="flex:1" onclick="ST.rev.step=1;render()">← Atrás</button>
       <button class="btn btnp" style="flex:1" onclick="enviarRev()">Enviar ✓</button>
