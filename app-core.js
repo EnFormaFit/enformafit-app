@@ -81,14 +81,15 @@ let SEC='inicio';
 const TITLES={inicio:'Inicio',nutricion:'Nutrición',entreno:'Entreno',progreso:'Progreso',revision:'Revisión',perfil:'Perfil'};
 function S(s){
   SEC=s;
-  if(s==='progreso'&&_tk&&(!ST.revHistorial||!Object.keys(ST.revHistorial).length)){
+  if(s==='progreso'&&_tk&&!ST._revAllLoaded){
+    ST._revAllLoaded=true;
     api('GET','/api/entreno/revisiones/all').then(function(rows){
       if(rows&&rows.length){
         if(!ST.revHistorial)ST.revHistorial={};
         rows.forEach(function(d){ST.revHistorial[d.semana]=d;});
         render();
       }
-    }).catch(function(){});
+    }).catch(function(){ST._revAllLoaded=false;});
   }
   document.getElementById('st').textContent=TITLES[s]||s;
   ['ni','nn','ne','np','nr'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('on');});
