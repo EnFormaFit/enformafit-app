@@ -908,7 +908,7 @@ ${(function(){
   var ent=Object.entries(m).filter(function(e){var v=e[1];return v&&(typeof v==='number'||(typeof v==='object'&&Object.values(v).length>0));});
   if(!ent.length)return'';
   var vals=ent.map(function(e){var nom=e[0].replace(/\s*\([^)]*\)/g,'').trim();var v=e[1];if(typeof v==='object')v=Object.values(v)[0];return'<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor2);font-size:13px"><span style="color:var(--t2)">'+nom+'</span><span style="font-weight:700">'+v+' cm</span></div>';}).join('');
-  return'<div class="card" style="margin-bottom:12px"><div class="ch" onclick="toggleProgSection(1)" style="cursor:pointer"><h2>📏 Medidas corporales</h2><span style="color:var(--t3)">'+(ST.medidasOpen?'▲':'▼')+'</span></div>'+(ST.medidasOpen?'<div class="cb"><div style="font-size:11px;color:var(--t3);margin-bottom:8px">Medidas iniciales · S0</div>'+vals+'</div>':'')+'</div>';
+  return'';
 })()}`;
 }
 
