@@ -737,7 +737,7 @@ function buildMedidasTable(revSems,hist){
     var k=m[0],l=m[1];
     var hasRow=cols.some(function(c){
       var v=c.meds[k];
-      return v&&(typeof v==='number'||(typeof v==='object'&&Object.values(v).some(function(x){return x;})));
+      return v!=null&&v!==''&&(typeof v==='number'||typeof v==='string'||(typeof v==='object'&&Object.values(v).some(function(x){return x;})));
     });
     if(!hasRow)return;
     html+='<tr>';
@@ -745,8 +745,9 @@ function buildMedidasTable(revSems,hist){
     cols.forEach(function(c){
       var v=c.meds[k];
       var val='';
-      if(v){
+      if(v!=null&&v!==''){
         if(typeof v==='number')val=v;
+        else if(typeof v==='string'&&v!=='')val=parseFloat(v)||v;
         else if(typeof v==='object'){var arr=Object.values(v).filter(function(x){return x;});val=arr[arr.length-1]||'';}
       }
       html+='<td style="text-align:center;padding:6px 8px;border-bottom:1px solid var(--bor2);font-weight:'+(val?'700':'400')+';color:'+(val?'var(--az)':'var(--t3)')+'">'+( val?val+' cm':'—')+'</td>';
