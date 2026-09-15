@@ -818,7 +818,7 @@ function renderProgreso(){
   let fotosH=`<div class="fscroll">`;
   revSems.forEach((rs,gi)=>{
     const locked=rs>semana;
-    const isCur=(rs===nextRev&&!ST.rev.done===false)||rs===nextRev;
+    const isCur=rs===nextRev&&!(ST.revHistorial&&ST.revHistorial[rs]&&ST.revHistorial[rs].fotos&&Object.keys(ST.revHistorial[rs].fotos).length>0)&&!ST.rev.done;
     const col=locked?'ft-gr':rs===0?'ft-vd':'ft-az';
     const gtit=rs===0?'Inicio':'S'+rs;
     fotosH+=`<div class="fgrp"><div class="fgrp-t ${col}">${gtit}</div>`;
