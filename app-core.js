@@ -399,6 +399,16 @@ async function loadClienteData() {
       }
     } catch(e) {}
 
+        // Load all revisiones from BD
+    try {
+      const revsBD = await api('GET', '/api/entreno/revisiones/all');
+      if (revsBD && revsBD.length) {
+        if (!ST.revHistorial) ST.revHistorial = {};
+        revsBD.forEach(function(d) { ST.revHistorial[d.semana] = d; });
+        ST._revAllLoaded = true;
+      }
+    } catch(e) {}
+
     // Load check-ins from BD
     try {
       const cisBD = await api('GET', '/api/entreno/checkins');
