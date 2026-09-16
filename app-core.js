@@ -506,10 +506,11 @@ async function loadClienteData() {
     // Restore ejStates and histEnt from BD
     try {
       var semActual = ST.semVer || ST.u.semana || 1;
-      var histBD = await api('GET', '/api/entreno/mi-historial?semana=' + semActual);
+      var histBD = await api('GET', '/api/entreno/mi-historial'); // load all semanas
       if (histBD && Array.isArray(histBD) && histBD.length) {
         ST.ejStates = {};
         histBD.forEach(function(row) {
+          var rowSem = parseInt(row.semana) || 1;
           var nom = row.ejercicio;
           var dia = parseInt(row.dia) || 0;
           var si = (parseInt(row.serie) || 1) - 1;
@@ -520,8 +521,8 @@ async function loadClienteData() {
               if ((ej.nom || ej.nombre) === nom) ejIdx = i;
             });
           }
-          // Restore ejStates
-          if (ejIdx >= 0) {
+          // Restore ejStates only for current semana
+          if (ejIdx >= 0 && parseInt(row.semana) === semActual) {
             var key = dia + '_' + ejIdx;
             var ej = DIAS[dia].ejercicios[ejIdx];
             var nSets = ej.sets || 3;
