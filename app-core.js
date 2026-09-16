@@ -241,6 +241,7 @@ function autoGuardarSerie(di, ei, si) {
   if(!bloque_id){console.warn('[Serie] No bloque_id');return;}
   var semana = ST.semVer || ST.u.semana || 1;
 
+  save(); // persist ejStates immediately
   clearTimeout(window['_serSave_' + key + '_' + si]);
   window['_serSave_' + key + '_' + si] = setTimeout(function() {
     api('POST', '/api/entreno/registrar-serie', {
