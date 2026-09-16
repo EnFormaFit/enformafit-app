@@ -503,7 +503,26 @@ async function loadClienteData() {
       }
     } catch(eHist) { console.warn('[historial]', eHist && eHist.message); }
 
-    save();
+    // Restore training history from BD
+    try {
+      var histBD = await api('GET', '/api/entreno/mi-historial?semana=' + (ST.u.semana || 1));
+      if (histBD && Array.isArray(histBD) && histBD.length) {
+        histBD.forEach(function(row) {
+          var nom = row.ejercicio;
+          var dia = parseInt(row.dia) || 0;
+          var si = (parseInt(row.serie) || 1) - 1;
+          if (nom) {
+            if (!ST.histEnt[nom]) ST.histEnt[nom] = {semanas:{}};
+            var sem = String(row.semana || ST.u.semana || 1);
+            if (!ST.histEnt[nom].semanas[sem]) ST.histEnt[nom].semanas[sem] = {};
+            var serKey = 'dia' + dia + '_s' + (si+1);
+            ST.histEnt[nom].semanas[sem][serKey] = {kg: String(row.kg||''), reps: String(row.reps_reales||''), done: !!row.completada};
+          }
+        });
+      }
+    } catch(eHist) { console.warn('[hist]', eHist && eHist.message); }
+
+        save();
     render();
   } catch(e) {
     console.error('loadClienteData error:', e);
