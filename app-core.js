@@ -393,45 +393,8 @@ async function loadClienteData() {
       }
     } catch(e) {}
 
-    // Load training history from BD to restore ejStates
+    // Load all revisiones from BD
     try {
-      const histBD = await api('GET', '/api/entreno/mi-historial?semana=' + (ST.u.semana || 1));
-      if (histBD && histBD.length) {
-        histBD.forEach(function(row) {
-          var key = row.dia + '_' + (row.ej_idx || 0);
-          var nom = row.ejercicio;
-          // Update histEnt with BD data
-          if (nom) {
-            if (!ST.histEnt[nom]) ST.histEnt[nom] = {semanas:{}};
-            var sem = String(row.semana || ST.u.semana);
-            if (!ST.histEnt[nom].semanas[sem]) ST.histEnt[nom].semanas[sem] = {};
-            var serKey = 'dia' + row.dia + '_s' + row.serie;
-            ST.histEnt[nom].semanas[sem][serKey] = {kg: String(row.kg||''), reps: String(row.reps_reales||''), done: row.completada};
-          }
-        });
-        save();
-      }
-    } catch(e) {}
-
-        // Load training history from BD to restore ejStates
-    try {
-      const histBD = await api('GET', '/api/entreno/mi-historial?semana=' + (ST.u.semana || 1));
-      if (histBD && histBD.length) {
-        histBD.forEach(function(row) {
-          var nom = row.ejercicio;
-          if (nom) {
-            if (!ST.histEnt[nom]) ST.histEnt[nom] = {semanas:{}};
-            var sem = String(row.semana || ST.u.semana);
-            if (!ST.histEnt[nom].semanas[sem]) ST.histEnt[nom].semanas[sem] = {};
-            var serKey = 'dia' + row.dia + '_s' + row.serie;
-            ST.histEnt[nom].semanas[sem][serKey] = {kg: String(row.kg||''), reps: String(row.reps_reales||''), done: row.completada};
-          }
-        });
-        save();
-      }
-    } catch(e) { console.warn('historial BD:', e.message); }
-
-    // Load all revisiones from BD try {
       const revsBD = await api('GET', '/api/entreno/revisiones/all');
       if (revsBD && revsBD.length) {
         if (!ST.revHistorial) ST.revHistorial = {};
@@ -452,27 +415,7 @@ async function loadClienteData() {
       }
     } catch(e) {}
 
-        // Load training history from BD to restore ejStates
-    try {
-      const histBD = await api('GET', '/api/entreno/mi-historial?semana=' + (ST.u.semana || 1));
-      if (histBD && histBD.length) {
-        histBD.forEach(function(row) {
-          var key = row.dia + '_' + (row.ej_idx || 0);
-          var nom = row.ejercicio;
-          // Update histEnt with BD data
-          if (nom) {
-            if (!ST.histEnt[nom]) ST.histEnt[nom] = {semanas:{}};
-            var sem = String(row.semana || ST.u.semana);
-            if (!ST.histEnt[nom].semanas[sem]) ST.histEnt[nom].semanas[sem] = {};
-            var serKey = 'dia' + row.dia + '_s' + row.serie;
-            ST.histEnt[nom].semanas[sem][serKey] = {kg: String(row.kg||''), reps: String(row.reps_reales||''), done: row.completada};
-          }
-        });
-        save();
-      }
-    } catch(e) {}
-
-    // Load all revisiones from BD
+        // Load all revisiones from BD
     try {
       const revsBD = await api('GET', '/api/entreno/revisiones/all');
       if (revsBD && revsBD.length) {
