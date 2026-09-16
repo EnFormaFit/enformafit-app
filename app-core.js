@@ -337,6 +337,7 @@ async function loadClienteData() {
 
     // Pasos
     ST.u.pasosObj = plan.pasos_obj || 8000;
+    ST.pasos.obj = ST.u.pasosObj;
 
     // Menú personalizado — aplicar cantidades del plan al MENU global
     if (plan.alimentos && Object.keys(plan.alimentos).length > 0) {
