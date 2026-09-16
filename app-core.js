@@ -783,8 +783,11 @@ function calcularEquivalencias(planAlimentos) {
     // For each category in MENU, calculate equivalences
     CAT_ORDER_FIXED.filter(function(k){
         // frutas and verduras only show if the trainer assigned them in the plan
-        if(k==='frutas'||k==='verduras'){return !!planByCat['fruta']||!!planByCat['verd'];}
-        return menuMeal[k]||planByCat[k];
+        // k maps via CAT_MAP: fruta->frutas, verd->verduras
+        var menuKey=CAT_MAP[k]||k;
+        if(menuKey==='frutas'){return !!planByCat['fruta'];}
+        if(menuKey==='verduras'){return !!planByCat['verd'];}
+        return menuMeal[menuKey]||planByCat[k];
       }).concat(Object.keys(menuMeal).filter(function(k){return CAT_ORDER_FIXED.indexOf(k)<0;})).forEach(function(menuCat) {
       if (menuCat === 'nom') return;
       var menuItems = menuMeal[menuCat];
