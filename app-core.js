@@ -503,17 +503,41 @@ async function loadClienteData() {
       }
     } catch(eHist) { console.warn('[historial]', eHist && eHist.message); }
 
-    // Restore training history from BD
+    // Restore ejStates and histEnt from BD
     try {
-      var histBD = await api('GET', '/api/entreno/mi-historial?semana=' + (ST.u.semana || 1));
+      var semActual = ST.semVer || ST.u.semana || 1;
+      var histBD = await api('GET', '/api/entreno/mi-historial?semana=' + semActual);
       if (histBD && Array.isArray(histBD) && histBD.length) {
+        ST.ejStates = {};
         histBD.forEach(function(row) {
           var nom = row.ejercicio;
           var dia = parseInt(row.dia) || 0;
           var si = (parseInt(row.serie) || 1) - 1;
+          // Find ej index by name in DIAS
+          var ejIdx = -1;
+          if (DIAS && DIAS[dia] && DIAS[dia].ejercicios) {
+            DIAS[dia].ejercicios.forEach(function(ej, i) {
+              if ((ej.nom || ej.nombre) === nom) ejIdx = i;
+            });
+          }
+          // Restore ejStates
+          if (ejIdx >= 0) {
+            var key = dia + '_' + ejIdx;
+            var ej = DIAS[dia].ejercicios[ejIdx];
+            var nSets = ej.sets || 3;
+            if (!ST.ejStates[key]) {
+              ST.ejStates[key] = {series: Array.from({length: nSets}, function() { return {kg:'',repsH:'',done:false,rir:''}; }), rest: ej.rest||90, collapsed:false, _sem: semActual};
+            }
+            if (!ST.ejStates[key].series[si]) ST.ejStates[key].series[si] = {kg:'',repsH:'',done:false,rir:''};
+            ST.ejStates[key].series[si].kg = String(row.kg || '');
+            ST.ejStates[key].series[si].repsH = String(row.reps_reales || '');
+            ST.ejStates[key].series[si].rir = String(row.rir_real || '');
+            ST.ejStates[key].series[si].done = !!row.completada;
+          }
+          // Also restore histEnt
           if (nom) {
             if (!ST.histEnt[nom]) ST.histEnt[nom] = {semanas:{}};
-            var sem = String(row.semana || ST.u.semana || 1);
+            var sem = String(row.semana || semActual);
             if (!ST.histEnt[nom].semanas[sem]) ST.histEnt[nom].semanas[sem] = {};
             var serKey = 'dia' + dia + '_s' + (si+1);
             ST.histEnt[nom].semanas[sem][serKey] = {kg: String(row.kg||''), reps: String(row.reps_reales||''), done: !!row.completada};
