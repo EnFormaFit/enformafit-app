@@ -401,8 +401,12 @@ async function loadClienteData() {
         const semana = ST.u && ST.u.semana;
         const revSemsFull = tipo==='programa'?[4,8,12]:[3,7,11];
         const nextRev = revSemsFull.find(function(rs){return rs>=semana;})||revSemsFull[revSemsFull.length-1];
-        if (ST.revHistorial[nextRev] && ST.revHistorial[nextRev].fotos && Object.keys(ST.revHistorial[nextRev].fotos).length > 0) {
+        const submittedRev = ST.revHistorial[nextRev];
+        if (submittedRev && submittedRev.fotos && Object.keys(submittedRev.fotos).length > 0) {
           ST.rev.done = true;
+          ST.rev.fotos = submittedRev.fotos || {};
+          ST.rev.medidas = submittedRev.medidas || {};
+          ST.rev.preguntas = submittedRev.preguntas || {};
         }
       }
     } catch(e) {}
@@ -419,8 +423,12 @@ async function loadClienteData() {
         const semana = ST.u && ST.u.semana;
         const revSemsFull = tipo==='programa'?[4,8,12]:[3,7,11];
         const nextRev = revSemsFull.find(function(rs){return rs>=semana;})||revSemsFull[revSemsFull.length-1];
-        if (ST.revHistorial[nextRev] && ST.revHistorial[nextRev].fotos && Object.keys(ST.revHistorial[nextRev].fotos).length > 0) {
+        const submittedRev = ST.revHistorial[nextRev];
+        if (submittedRev && submittedRev.fotos && Object.keys(submittedRev.fotos).length > 0) {
           ST.rev.done = true;
+          ST.rev.fotos = submittedRev.fotos || {};
+          ST.rev.medidas = submittedRev.medidas || {};
+          ST.rev.preguntas = submittedRev.preguntas || {};
         }
       }
     } catch(e) {}
