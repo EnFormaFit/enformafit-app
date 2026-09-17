@@ -857,7 +857,7 @@ function calcularEquivalencias(planAlimentos) {
         if(menuKey==='frutas'){return !!planByCat['fruta'];}
         if(menuKey==='verduras'){return !!planByCat['verd'];}
         return menuMeal[menuKey]||planByCat[k];
-      }).concat(Object.keys(menuMeal).filter(function(k){return CAT_ORDER_FIXED.indexOf(k)<0;})).forEach(function(menuCat) {
+      }).concat(Object.keys(menuMeal).filter(function(k){if(k==='frutas')return !!planByCat['fruta'];if(k==='verduras')return !!planByCat['verd'];return CAT_ORDER_FIXED.indexOf(k)<0;})).forEach(function(menuCat) {
       if (menuCat === 'nom') return;
       var menuItems = menuMeal[menuCat];
       if (!Array.isArray(menuItems)) return;
