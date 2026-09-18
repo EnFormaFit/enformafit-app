@@ -256,6 +256,7 @@ function restoreEjStatesFromHistEnt(semActual) {
         if (!ST.ejStates[key].series[si]) ST.ejStates[key].series[si] = {kg:'',repsH:'',done:false,rir:''};
         if (d.kg && parseFloat(d.kg) > 0 && !ST.ejStates[key].series[si].kg) ST.ejStates[key].series[si].kg = String(parseFloat(d.kg));
         if (d.reps && parseInt(d.reps) > 0 && !ST.ejStates[key].series[si].repsH) ST.ejStates[key].series[si].repsH = String(d.reps);
+        if (d.rir != null && d.rir !== '' && !ST.ejStates[key].series[si].rir) ST.ejStates[key].series[si].rir = String(d.rir);
         if (d.done) ST.ejStates[key].series[si].done = true;
       });
     });
@@ -529,7 +530,7 @@ async function loadClienteData() {
             var sem = String(row.semana || ST.u.semana || 1);
             if (!ST.histEnt[nom].semanas[sem]) ST.histEnt[nom].semanas[sem] = {};
             var serKey = 'dia' + dia + '_s' + (si+1);
-            ST.histEnt[nom].semanas[sem][serKey] = {kg: String(row.kg||''), reps: String(row.reps_reales||''), done: !!row.completada};
+            ST.histEnt[nom].semanas[sem][serKey] = {kg: String(row.kg||''), reps: String(row.reps_reales||''), rir: row.rir_real!=null?String(row.rir_real):'', done: !!row.completada};
           }
         });
       }
@@ -581,7 +582,7 @@ async function loadClienteData() {
             var sem = String(row.semana || semActual);
             if (!ST.histEnt[nom].semanas[sem]) ST.histEnt[nom].semanas[sem] = {};
             var serKey = 'dia' + dia + '_s' + (si+1);
-            ST.histEnt[nom].semanas[sem][serKey] = {kg: String(row.kg||''), reps: String(row.reps_reales||''), done: !!row.completada};
+            ST.histEnt[nom].semanas[sem][serKey] = {kg: String(row.kg||''), reps: String(row.reps_reales||''), rir: row.rir_real!=null?String(row.rir_real):'', done: !!row.completada};
           }
         });
       }
