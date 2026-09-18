@@ -180,7 +180,7 @@ function renderEj(ej,ei,di,grabIdxs){
       <div class="serant">${antKg}${antReps}</div>
       <input class="sinp" type="number" inputmode="decimal" placeholder="kg" min="0" value="${s.kg}" oninput="if(parseFloat(this.value)<0)this.value=0;ST.ejStates['${key}'].series[${si}].kg=this.value;autoGuardarSerie(${di},${ei},${si})">
       <input class="sinp" type="number" inputmode="numeric" placeholder="${ej.reps}" min="0" value="${s.repsH}" oninput="if(parseFloat(this.value)<0)this.value=0;ST.ejStates['${key}'].series[${si}].repsH=this.value;autoGuardarSerie(${di},${ei},${si})">
-      <input class="sinp" type="number" inputmode="numeric" placeholder="RIR" min="0" max="5" value="${s.rir||''}" oninput="ST.ejStates['${key}'].series[${si}].rir=this.value;autoGuardarSerie(${di},${ei},${si})" style="color:var(--nr)">
+      <input class="sinp" type="number" inputmode="numeric" placeholder="RIR" max="5" value="${s.rir||''}" oninput="ST.ejStates['${key}'].series[${si}].rir=this.value;autoGuardarSerie(${di},${ei},${si})" style="color:var(--nr)">
       <button class="ck ${s.done?'on':''}" onclick="toggleSer('${key}',${si},${di})">${s.done?'✓':''}</button>
     </div>`;
   });
