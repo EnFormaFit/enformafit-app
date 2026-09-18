@@ -521,7 +521,7 @@ async function loadClienteData() {
               if ((ej.nom || ej.nombre) === nom) ejIdx = i;
             });
           }
-          // Restore ejStates only for current semana
+          // Restore ejStates only for current semana — prefer completada=true records
           if (ejIdx >= 0 && parseInt(row.semana) === semActual) {
             var key = dia + '_' + ejIdx;
             var ej = DIAS[dia].ejercicios[ejIdx];
@@ -530,10 +530,18 @@ async function loadClienteData() {
               ST.ejStates[key] = {series: Array.from({length: nSets}, function() { return {kg:'',repsH:'',done:false,rir:''}; }), rest: ej.rest||90, collapsed:false, _sem: semActual};
             }
             if (!ST.ejStates[key].series[si]) ST.ejStates[key].series[si] = {kg:'',repsH:'',done:false,rir:''};
-            ST.ejStates[key].series[si].kg = String(row.kg || '');
-            ST.ejStates[key].series[si].repsH = String(row.reps_reales || '');
-            ST.ejStates[key].series[si].rir = String(row.rir_real || '');
-            ST.ejStates[key].series[si].done = !!row.completada;
+            var existing = ST.ejStates[key].series[si];
+            // Only overwrite if: current record is better (completada=true and existing is not, or existing has no data)
+            var rowKg = parseFloat(row.kg) || 0;
+            var existKg = parseFloat(existing.kg) || 0;
+            var isBetter = row.completada && !existing.done;
+            var hasMoreData = rowKg > 0 && existKg === 0;
+            if (isBetter || hasMoreData || (!existing.done && !row.completada && existKg === 0)) {
+              existing.kg = rowKg > 0 ? String(row.kg) : existing.kg;
+              existing.repsH = row.reps_reales ? String(row.reps_reales) : existing.repsH;
+              existing.rir = row.rir_real ? String(row.rir_real) : existing.rir;
+              if (row.completada) existing.done = true;
+            }
           }
           // Also restore histEnt
           if (nom) {
