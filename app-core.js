@@ -537,9 +537,9 @@ async function loadClienteData() {
             var isBetter = row.completada && !existing.done;
             var hasMoreData = rowKg > 0 && existKg === 0;
             if (isBetter || hasMoreData || (!existing.done && !row.completada && existKg === 0)) {
-              existing.kg = rowKg > 0 ? String(row.kg) : existing.kg;
-              existing.repsH = row.reps_reales ? String(row.reps_reales) : existing.repsH;
-              existing.rir = row.rir_real ? String(row.rir_real) : existing.rir;
+              if (rowKg > 0) existing.kg = String(parseFloat(row.kg));
+              if (row.reps_reales && row.reps_reales > 0) existing.repsH = String(row.reps_reales);
+              if (row.rir_real !== null && row.rir_real >= 0) existing.rir = String(row.rir_real);
               if (row.completada) existing.done = true;
             }
           }
@@ -555,7 +555,7 @@ async function loadClienteData() {
       }
     } catch(eHist) { console.warn('[hist]', eHist && eHist.message); }
 
-        save();
+    save();
     render();
   } catch(e) {
     console.error('loadClienteData error:', e);
