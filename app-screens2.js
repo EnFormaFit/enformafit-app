@@ -219,7 +219,7 @@ function toggleSer(key,si,di){
       if(ej){
         api('POST','/api/entreno/registrar-serie',{
           ejercicio:ej.nom||ej.nombre||key,
-          dia:dia.cod||dia.nom||'',
+          dia:String(diaIdx), // always numeric index
           semana:ST.u.semana||1,
           serie:si+1,
           kg:parseFloat(s.kg)||0,
