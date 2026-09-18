@@ -233,7 +233,9 @@ function cargarRegistrosAnt(semana, dia, callback) {
 
 function restoreEjStatesFromHistEnt(semActual) {
   if (!ST.histEnt || !DIAS) return;
-  ST.ejStates = {};
+  // Check if we already have ejStates for this semana - don't reset if so
+  var hasCurrentSem = Object.keys(ST.ejStates||{}).some(function(k){return ST.ejStates[k]._sem===semActual;});
+  if (!hasCurrentSem) ST.ejStates = {};
   DIAS.forEach(function(dia, di) {
     if (!dia || !dia.ejercicios) return;
     dia.ejercicios.forEach(function(ej, ei) {
@@ -252,8 +254,8 @@ function restoreEjStatesFromHistEnt(semActual) {
         var si = parseInt(match[1]) - 1;
         var d = semData[serKey];
         if (!ST.ejStates[key].series[si]) ST.ejStates[key].series[si] = {kg:'',repsH:'',done:false,rir:''};
-        if (d.kg && parseFloat(d.kg) > 0) ST.ejStates[key].series[si].kg = String(parseFloat(d.kg));
-        if (d.reps && parseInt(d.reps) > 0) ST.ejStates[key].series[si].repsH = String(d.reps);
+        if (d.kg && parseFloat(d.kg) > 0 && !ST.ejStates[key].series[si].kg) ST.ejStates[key].series[si].kg = String(parseFloat(d.kg));
+        if (d.reps && parseInt(d.reps) > 0 && !ST.ejStates[key].series[si].repsH) ST.ejStates[key].series[si].repsH = String(d.reps);
         if (d.done) ST.ejStates[key].series[si].done = true;
       });
     });
