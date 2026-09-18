@@ -230,6 +230,36 @@ function cargarRegistrosAnt(semana, dia, callback) {
 }
 
 // Auto-guardar serie al cambiar un campo (debounced 800ms)
+
+function restoreEjStatesFromHistEnt(semActual) {
+  if (!ST.histEnt || !DIAS) return;
+  ST.ejStates = {};
+  DIAS.forEach(function(dia, di) {
+    if (!dia || !dia.ejercicios) return;
+    dia.ejercicios.forEach(function(ej, ei) {
+      var nom = ej.nom || ej.nombre;
+      if (!nom || !ST.histEnt[nom]) return;
+      var semData = ST.histEnt[nom].semanas && ST.histEnt[nom].semanas[String(semActual)];
+      if (!semData) return;
+      var key = di + '_' + ei;
+      var nSets = ej.sets || 3;
+      if (!ST.ejStates[key]) {
+        ST.ejStates[key] = {series: Array.from({length: nSets}, function() { return {kg:'',repsH:'',done:false,rir:''}; }), rest: ej.rest||90, collapsed:false, _sem: semActual};
+      }
+      Object.keys(semData).forEach(function(serKey) {
+        var match = serKey.match(/dia\d+_s(\d+)/);
+        if (!match) return;
+        var si = parseInt(match[1]) - 1;
+        var d = semData[serKey];
+        if (!ST.ejStates[key].series[si]) ST.ejStates[key].series[si] = {kg:'',repsH:'',done:false,rir:''};
+        if (d.kg && parseFloat(d.kg) > 0) ST.ejStates[key].series[si].kg = String(parseFloat(d.kg));
+        if (d.reps && parseInt(d.reps) > 0) ST.ejStates[key].series[si].repsH = String(d.reps);
+        if (d.done) ST.ejStates[key].series[si].done = true;
+      });
+    });
+  });
+}
+
 function autoGuardarSerie(di, ei, si) {
   var ej = DIAS[di] && DIAS[di].ejercicios ? DIAS[di].ejercicios[ei] : null;
   if (!ej) return;
