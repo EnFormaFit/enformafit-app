@@ -536,55 +536,55 @@ async function loadClienteData() {
       }
     } catch(eHist) { console.warn('[historial]', eHist && eHist.message); }
 
-    // Restore ejStates and histEnt from BD
+    // Restore histEnt from BD (for reference weights) — never overwrite ejStates from localStorage
     try {
       var semActual = ST.semVer || ST.u.semana || 1;
-      var histBD = await api('GET', '/api/entreno/mi-historial'); // load all semanas
+      var histBD = await api('GET', '/api/entreno/mi-historial');
       if (histBD && Array.isArray(histBD) && histBD.length) {
-        // Don't wipe ejStates loaded from localStorage - only fill gaps from BD
-        var localHasSem = Object.keys(ST.ejStates||{}).some(function(k){return ST.ejStates[k]&&ST.ejStates[k]._sem===semActual;});
-        if (!localHasSem) ST.ejStates = {};
+        // Only populate histEnt — never touch ejStates if localStorage already has it
+        var localEjOK = Object.keys(ST.ejStates||{}).some(function(k){
+          return ST.ejStates[k] && ST.ejStates[k]._sem === semActual;
+        });
         histBD.forEach(function(row) {
-          var rowSem = parseInt(row.semana) || 1;
           var nom = row.ejercicio;
           var dia = parseInt(row.dia) || 0;
           var si = (parseInt(row.serie) || 1) - 1;
-          // Find ej index by name in DIAS
-          var ejIdx = -1;
-          if (DIAS && DIAS[dia] && DIAS[dia].ejercicios) {
-            DIAS[dia].ejercicios.forEach(function(ej, i) {
-              if ((ej.nom || ej.nombre) === nom) ejIdx = i;
-            });
-          }
-          // Restore ejStates only for current semana — prefer completada=true records
-          if (ejIdx >= 0 && parseInt(row.semana) === semActual) {
-            var key = dia + '_' + ejIdx;
-            var ej = DIAS[dia].ejercicios[ejIdx];
-            var nSets = ej.sets || 3;
-            if (!ST.ejStates[key]) {
-              ST.ejStates[key] = {series: Array.from({length: nSets}, function() { return {kg:'',repsH:'',done:false,rir:''}; }), rest: ej.rest||90, collapsed:false, _sem: semActual};
-            }
-            if (!ST.ejStates[key].series[si]) ST.ejStates[key].series[si] = {kg:'',repsH:'',done:false,rir:''};
-            var existing = ST.ejStates[key].series[si];
-            // Only overwrite if: current record is better (completada=true and existing is not, or existing has no data)
-            var rowKg = parseFloat(row.kg) || 0;
-            var existKg = parseFloat(existing.kg) || 0;
-            var isBetter = row.completada && !existing.done;
-            var hasMoreData = rowKg > 0 && existKg === 0;
-            if (isBetter || hasMoreData || (!existing.done && !row.completada && existKg === 0)) {
-              if (rowKg > 0) existing.kg = String(parseFloat(row.kg));
-              if (row.reps_reales && row.reps_reales > 0) existing.repsH = String(row.reps_reales);
-              if (row.rir_real !== null && row.rir_real >= 0) existing.rir = String(row.rir_real);
-              if (row.completada) existing.done = true;
-            }
-          }
-          // Also restore histEnt
+          // Always update histEnt for reference weights
           if (nom) {
             if (!ST.histEnt[nom]) ST.histEnt[nom] = {semanas:{}};
             var sem = String(row.semana || semActual);
             if (!ST.histEnt[nom].semanas[sem]) ST.histEnt[nom].semanas[sem] = {};
             var serKey = 'dia' + dia + '_s' + (si+1);
-            ST.histEnt[nom].semanas[sem][serKey] = {kg: String(row.kg||''), reps: String(row.reps_reales||''), rir: row.rir_real!=null?String(row.rir_real):'', done: !!row.completada};
+            ST.histEnt[nom].semanas[sem][serKey] = {
+              kg: String(row.kg||''),
+              reps: String(row.reps_reales||''),
+              rir: row.rir_real!=null?String(row.rir_real):'',
+              done: !!row.completada
+            };
+          }
+          // Only restore ejStates from BD if localStorage doesn't have this semana
+          if (!localEjOK && parseInt(row.semana) === semActual) {
+            var ejIdx = -1;
+            if (DIAS && DIAS[dia] && DIAS[dia].ejercicios) {
+              DIAS[dia].ejercicios.forEach(function(ej, i) {
+                if ((ej.nom || ej.nombre) === nom) ejIdx = i;
+              });
+            }
+            if (ejIdx >= 0) {
+              var key = dia + '_' + ejIdx;
+              var ej = DIAS[dia].ejercicios[ejIdx];
+              var nSets = ej.sets || 3;
+              if (!ST.ejStates[key]) {
+                ST.ejStates[key] = {series: Array.from({length: nSets}, function() { return {kg:'',repsH:'',done:false,rir:''}; }), rest: ej.rest||90, collapsed:false, _sem: semActual};
+              }
+              if (!ST.ejStates[key].series[si]) ST.ejStates[key].series[si] = {kg:'',repsH:'',done:false,rir:''};
+              var existing = ST.ejStates[key].series[si];
+              var rowKg = parseFloat(row.kg) || 0;
+              if (rowKg > 0 && !existing.kg) existing.kg = String(rowKg);
+              if (row.reps_reales && row.reps_reales > 0 && !existing.repsH) existing.repsH = String(row.reps_reales);
+              if (row.rir_real !== null && row.rir_real !== undefined && !existing.rir) existing.rir = String(row.rir_real);
+              if (row.completada) existing.done = true;
+            }
           }
         });
       }
