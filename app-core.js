@@ -542,7 +542,9 @@ async function loadClienteData() {
       var semActual = ST.semVer || ST.u.semana || 1;
       var histBD = await api('GET', '/api/entreno/mi-historial'); // load all semanas
       if (histBD && Array.isArray(histBD) && histBD.length) {
-        ST.ejStates = {};
+        // Don't wipe ejStates loaded from localStorage - only fill gaps from BD
+        var localHasSem = Object.keys(ST.ejStates||{}).some(function(k){return ST.ejStates[k]&&ST.ejStates[k]._sem===semActual;});
+        if (!localHasSem) ST.ejStates = {};
         histBD.forEach(function(row) {
           var rowSem = parseInt(row.semana) || 1;
           var nom = row.ejercicio;
