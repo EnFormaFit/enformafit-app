@@ -88,7 +88,7 @@ function buildEntHTML(di){
   </div>
   ${(ST.semVer||semActual)!==semActual?`<div style="background:rgba(255,160,0,.12);border:1px solid rgba(255,160,0,.4);border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:12px;color:var(--nr);display:flex;justify-content:space-between;align-items:center">
     <span>Viendo S${ST.semVer} — solo lectura</span>
-    <button onclick="ST.semVer=${semActual};ST.ejStates={};buildDIAS(ST.semVer);document.getElementById('ct').innerHTML=renderEntreno()" style="background:var(--nr);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">Ir a actual</button>
+    <button onclick="ST.semVer=${semActual};buildDIAS(ST.semVer);restoreEjStatesFromHistEnt(ST.semVer);buildDIAS(ST.semVer);document.getElementById('ct').innerHTML=renderEntreno()" style="background:var(--nr);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">Ir a actual</button>
   </div>`:''}`;
   const dayBtns=DIAS.map((dd,i)=>`<button class="day-b${i===di?' on':''}${i===todayIdx?' today':''}${dd.rest?' rest':''}" onclick="curDay=${i};document.getElementById('ct').innerHTML=buildEntHTML(${i})">${dd.nom}<br><small style="font-size:9px;opacity:.6">${dd.tipo}</small></button>`).join('');
 
