@@ -64,6 +64,20 @@ try{
   if(d.ci)Object.assign(ST.ci,d.ci);
   if(d.ejStates)ST.ejStates=d.ejStates;
   if(d.histEnt)Object.assign(ST.histEnt,d.histEnt);
+  // Clean menuGuardado after loading from localStorage
+  if (ST.menuGuardado && ST.p && ST.p.planAlimentos) {
+    ['desayuno','comida','cena','snack','snack_am','snack_pm'].forEach(function(meal) {
+      var baseMeal = meal==='snack_am'||meal==='snack_pm'?'snack':meal;
+      var planMeal = ST.p.planAlimentos[baseMeal] || ST.p.planAlimentos[meal] || [];
+      var planCats = planMeal.map(function(a){return a.cat;});
+      var saved = ST.menuGuardado[0] && ST.menuGuardado[0][meal];
+      if (!saved || !planCats.length) return;
+      Object.keys(saved).forEach(function(savedCat) {
+        if (savedCat === 'protType') return;
+        if (planCats.indexOf(savedCat) < 0) delete saved[savedCat];
+      });
+    });
+  }
   if(d.nutTab)ST.nutTab=d.nutTab;
   if(d.nutDay!==undefined)ST.nutDay=d.nutDay;
   if(d.pesosOpen!==undefined)ST.pesosOpen=d.pesosOpen;
@@ -375,24 +389,7 @@ async function loadClienteData() {
     ST.pasos.obj = ST.u.pasosObj;
     ST.pasos.obj = ST.u.pasosObj;
 
-    // Clean menuGuardado: remove items no longer in the current plan
-    if (plan.alimentos && ST.menuGuardado) {
-      ['desayuno','comida','cena','snack','snack_am','snack_pm'].forEach(function(meal) {
-        var baseMeal = meal==='snack_am'||meal==='snack_pm'?'snack':meal;
-        var planMeal = plan.alimentos[baseMeal] || plan.alimentos[meal] || [];
-        var planCats = planMeal.map(function(a){return a.cat;});
-        var saved = ST.menuGuardado[0] && ST.menuGuardado[0][meal];
-        if (!saved) return;
-        Object.keys(saved).forEach(function(savedCat) {
-          if (savedCat === 'protType') return;
-          // savedCat is in plan-code format (prot, hidrat, fat, verd, fruta)
-          // just check if it's in planCats directly
-          if (planCats.indexOf(savedCat) < 0) {
-            delete saved[savedCat];
-          }
-        });
-      });
-    }
+
 
     // Clean menuGuardado: remove items that no longer exist in the current plan
     if (plan.alimentos && ST.menuGuardado) {
