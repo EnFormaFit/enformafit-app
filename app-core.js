@@ -64,20 +64,6 @@ try{
   if(d.ci)Object.assign(ST.ci,d.ci);
   if(d.ejStates)ST.ejStates=d.ejStates;
   if(d.histEnt)Object.assign(ST.histEnt,d.histEnt);
-  // Clean menuGuardado after loading from localStorage
-  if (ST.menuGuardado && ST.p && ST.p.planAlimentos) {
-    ['desayuno','comida','cena','snack','snack_am','snack_pm'].forEach(function(meal) {
-      var baseMeal = meal==='snack_am'||meal==='snack_pm'?'snack':meal;
-      var planMeal = ST.p.planAlimentos[baseMeal] || ST.p.planAlimentos[meal] || [];
-      var planCats = planMeal.map(function(a){return a.cat;});
-      var saved = ST.menuGuardado[0] && ST.menuGuardado[0][meal];
-      if (!saved || !planCats.length) return;
-      Object.keys(saved).forEach(function(savedCat) {
-        if (savedCat === 'protType') return;
-        if (planCats.indexOf(savedCat) < 0) delete saved[savedCat];
-      });
-    });
-  }
   if(d.nutTab)ST.nutTab=d.nutTab;
   if(d.nutDay!==undefined)ST.nutDay=d.nutDay;
   if(d.pesosOpen!==undefined)ST.pesosOpen=d.pesosOpen;
@@ -389,8 +375,6 @@ async function loadClienteData() {
     ST.pasos.obj = ST.u.pasosObj;
     ST.pasos.obj = ST.u.pasosObj;
 
-
-
     // Clean menuGuardado: remove items that no longer exist in the current plan
     if (plan.alimentos && ST.menuGuardado) {
       var CAT_MAP_CLEAN = {prot:'proteinas_magras',prot_g:'proteinas_grasas',hidrat:'hidratos',fat:'grasas',verd:'verduras',fruta:'frutas'};
@@ -418,41 +402,7 @@ async function loadClienteData() {
     // Menú personalizado — aplicar cantidades del plan al MENU global
     if (plan.alimentos && Object.keys(plan.alimentos).length > 0) {
       ST.p.planAlimentos = plan.alimentos;
-      ST.p.alimentos = plan.alimentos; // alias for menu valida
-      // Clean menuGuardado: remove saved items no longer in plan
-      if (ST.menuGuardado && plan.alimentos) {
-        ['desayuno','comida','cena','snack','snack_am','snack_pm'].forEach(function(meal) {
-          var baseMeal = meal==='snack_am'||meal==='snack_pm'?'snack':meal;
-          var planMeal = plan.alimentos[baseMeal]||plan.alimentos[meal]||[];
-          var planCats = planMeal.map(function(a){return a.cat;});
-          if (!planCats.length) return;
-          Object.keys(ST.menuGuardado).forEach(function(dayIdx) {
-            var saved = ST.menuGuardado[dayIdx]&&ST.menuGuardado[dayIdx][meal];
-            if (!saved) return;
-            Object.keys(saved).forEach(function(cat) {
-              if (cat==='protType') return;
-              if (planCats.indexOf(cat)<0) delete saved[cat];
-            });
-          });
-        });
-      }
-      // Clean menuGuardado: remove saved items no longer in plan
-      if (ST.menuGuardado) {
-        ['desayuno','comida','cena','snack','snack_am','snack_pm'].forEach(function(meal) {
-          var baseMeal = meal==='snack_am'||meal==='snack_pm'?'snack':meal;
-          var planMeal = (plan.alimentos[baseMeal]||plan.alimentos[meal]||[]);
-          var planCats = planMeal.map(function(a){return a.cat;});
-          if (!planCats.length) return;
-          Object.keys(ST.menuGuardado).forEach(function(dayIdx) {
-            var saved = ST.menuGuardado[dayIdx] && ST.menuGuardado[dayIdx][meal];
-            if (!saved) return;
-            Object.keys(saved).forEach(function(cat) {
-              if (cat==='protType') return;
-              if (planCats.indexOf(cat)<0) delete saved[cat];
-            });
-          });
-        });
-      }tion
+      ST.p.alimentos = plan.alimentos; // alias for menu validation
       aplicarCantidadesPersonalizadas(plan.alimentos);
     }
 
