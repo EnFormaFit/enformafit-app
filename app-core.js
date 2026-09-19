@@ -420,6 +420,23 @@ async function loadClienteData() {
       ST.p.planAlimentos = plan.alimentos;
       ST.p.alimentos = plan.alimentos; // alias for menu valida
       // Clean menuGuardado: remove saved items no longer in plan
+      if (ST.menuGuardado && plan.alimentos) {
+        ['desayuno','comida','cena','snack','snack_am','snack_pm'].forEach(function(meal) {
+          var baseMeal = meal==='snack_am'||meal==='snack_pm'?'snack':meal;
+          var planMeal = plan.alimentos[baseMeal]||plan.alimentos[meal]||[];
+          var planCats = planMeal.map(function(a){return a.cat;});
+          if (!planCats.length) return;
+          Object.keys(ST.menuGuardado).forEach(function(dayIdx) {
+            var saved = ST.menuGuardado[dayIdx]&&ST.menuGuardado[dayIdx][meal];
+            if (!saved) return;
+            Object.keys(saved).forEach(function(cat) {
+              if (cat==='protType') return;
+              if (planCats.indexOf(cat)<0) delete saved[cat];
+            });
+          });
+        });
+      }
+      // Clean menuGuardado: remove saved items no longer in plan
       if (ST.menuGuardado) {
         ['desayuno','comida','cena','snack','snack_am','snack_pm'].forEach(function(meal) {
           var baseMeal = meal==='snack_am'||meal==='snack_pm'?'snack':meal;
