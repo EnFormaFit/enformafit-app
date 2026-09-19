@@ -375,6 +375,24 @@ async function loadClienteData() {
     ST.pasos.obj = ST.u.pasosObj;
     ST.pasos.obj = ST.u.pasosObj;
 
+    // Clean menuGuardado: remove items no longer in the current plan
+    if (plan.alimentos && ST.menuGuardado) {
+      var CAT_MAP_CLEAN = {prot:'proteinas_magras',prot_g:'proteinas_grasas',hidrat:'hidratos',fat:'grasas',verd:'verduras',fruta:'frutas'};
+      ['desayuno','comida','cena','snack','snack_am','snack_pm'].forEach(function(meal) {
+        var planMeal = plan.alimentos[meal] || [];
+        var planCats = planMeal.map(function(a){return a.cat;});
+        var saved = ST.menuGuardado[0] && ST.menuGuardado[0][meal];
+        if (!saved) return;
+        Object.keys(saved).forEach(function(menuCat) {
+          if (menuCat === 'protType') return;
+          var planCat = Object.keys(CAT_MAP_CLEAN).find(function(k){return CAT_MAP_CLEAN[k]===menuCat;})||menuCat;
+          if (planCats.indexOf(planCat)<0 && planCats.indexOf(menuCat)<0) {
+            delete saved[menuCat];
+          }
+        });
+      });
+    }
+
     // Clean menuGuardado: remove items that no longer exist in the current plan
     if (plan.alimentos && ST.menuGuardado) {
       var CAT_MAP_CLEAN = {prot:'proteinas_magras',prot_g:'proteinas_grasas',hidrat:'hidratos',fat:'grasas',verd:'verduras',fruta:'frutas'};
