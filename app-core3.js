@@ -32,7 +32,7 @@ function fmtFechaApp(f){
   const p=f.split('-');
   return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:f;
 }
-function save(){try{localStorage.setItem('ef8',JSON.stringify({
+function save(){try{localStorage.setItem('ef8_ver',APP_VER);localStorage.setItem('ef8',JSON.stringify({
   _v:'v2',
   menu:ST.menu,menuGuardado:ST.menuGuardado,pesos:ST.pesos,
   rev:ST.rev,revHistorial:ST.revHistorial,medidasIni:ST.medidasIni,
