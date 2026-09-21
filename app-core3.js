@@ -650,8 +650,22 @@ async function loadClienteData() {
       });
     }
 
+    // Before final save, merge localStorage menuGuardado to preserve user selections
+    try {
+      var _lsRaw = localStorage.getItem('ef8');
+      if (_lsRaw) {
+        var _lsObj = JSON.parse(_lsRaw);
+        if (_lsObj.menuGuardado) {
+          // Merge: keep all localStorage days, only add BD days if not present
+          Object.keys(_lsObj.menuGuardado).forEach(function(k){
+            if (!ST.menuGuardado[k]) ST.menuGuardado[k] = _lsObj.menuGuardado[k];
+          });
+        }
+      }
+    } catch(eMg) {}
+
     // Save everything EXCEPT ejStates — ejStates is only saved by user actions
-    try{localStorage.setItem('ef8',JSON.stringify({
+    try{localStorage.setItem('ef8_ver',APP_VER);localStorage.setItem('ef8',JSON.stringify({
       _v:'v2',
       menu:ST.menu,menuGuardado:ST.menuGuardado,pesos:ST.pesos,
       rev:ST.rev,revHistorial:ST.revHistorial,medidasIni:ST.medidasIni,
