@@ -447,12 +447,16 @@ async function loadClienteData() {
     // Cargar historial de entreno desde BD
     cargarHistorial();
 
-    // ── 4. Menú semanal guardado ─────────────────────────────────────────────
+    // ── 4. Menú semanal guardado — merge BD into localStorage, don't overwrite
     try {
       const menuBD = await api('GET', '/api/entreno/menu-semanal');
       if (menuBD && menuBD.menu_semanal) {
         Object.entries(menuBD.menu_semanal).forEach(([day, meals]) => {
-          ST.menuGuardado[parseInt(day)] = meals;
+          var dayInt = parseInt(day);
+          // Only restore from BD if localStorage doesn't have this day
+          if (!ST.menuGuardado[dayInt] && !ST.menuGuardado[String(dayInt)]) {
+            ST.menuGuardado[dayInt] = meals;
+          }
         });
       }
     } catch(e) {}
