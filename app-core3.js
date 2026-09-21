@@ -318,6 +318,13 @@ function getSemanaFechas(semana) {
 }
 
 async function loadClienteData() {
+  // Snapshot menuGuardado from localStorage BEFORE anything modifies it
+  var _menuGuardadoSnapshot = {};
+  try {
+    var _snap = JSON.parse(localStorage.getItem('ef8')||'{}');
+    if (_snap.menuGuardado) _menuGuardadoSnapshot = _snap.menuGuardado;
+  } catch(e) {}
+
   try {
     // ── 1. Perfil básico del usuario ────────────────────────────────────────
     const perfil = await api('GET', '/api/clientes/me/perfil');
@@ -650,18 +657,11 @@ async function loadClienteData() {
       });
     }
 
-    // Before final save, merge localStorage menuGuardado to preserve user selections
+    // Restore menuGuardado from snapshot taken at start — preserves user selections
     try {
-      var _lsRaw = localStorage.getItem('ef8');
-      if (_lsRaw) {
-        var _lsObj = JSON.parse(_lsRaw);
-        if (_lsObj.menuGuardado) {
-          // Merge: keep all localStorage days, only add BD days if not present
-          Object.keys(_lsObj.menuGuardado).forEach(function(k){
-            if (!ST.menuGuardado[k]) ST.menuGuardado[k] = _lsObj.menuGuardado[k];
-          });
-        }
-      }
+      Object.keys(_menuGuardadoSnapshot).forEach(function(k){
+        if (!ST.menuGuardado[k]) ST.menuGuardado[k] = _menuGuardadoSnapshot[k];
+      });
     } catch(eMg) {}
 
     // Save everything EXCEPT ejStates — ejStates is only saved by user actions
