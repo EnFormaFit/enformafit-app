@@ -19,6 +19,7 @@ const ST={
   perfilEditing:false,
   copyTargets:[],copyFrom:-1,
   listaCheck:{},
+  pendingNutChanges:null,
   revHistorial:{},
   _editandoRevSem:null,
 };
@@ -328,6 +329,12 @@ async function loadClienteData() {
     ST.u.dob = perfil.fecha_nacimiento ? perfil.fecha_nacimiento.split('T')[0] : '';
     ST.u.lesiones = perfil.lesiones || '';
     ST.u.altura = parseFloat(perfil.altura) || 175;
+    // Load pending nutrition changes alert
+    if (perfil.notas && perfil.notas.pendingNutChanges && !perfil.notas.pendingNutChanges.leido) {
+      ST.pendingNutChanges = perfil.notas.pendingNutChanges;
+    } else {
+      ST.pendingNutChanges = null;
+    }
     ST.pesoInicial = parseFloat(perfil.peso_inicial) || 0;
 
     // ── 2. Todo el plan en UNA sola llamada ──────────────────────────────────
