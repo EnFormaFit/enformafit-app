@@ -334,6 +334,20 @@ function selItem(di,meal,cat,item){
 
 function renderNutricion(){
   const tab=ST.nutTab,di=ST.nutDay;
+  // Pending nutrition changes banner
+  const pnc=ST.pendingNutChanges;
+  const pncBanner=pnc&&!pnc.leido?`<div style="background:#FF6B00;border-radius:12px;padding:13px 15px;color:#fff;margin-bottom:12px">
+    <div style="display:flex;align-items:flex-start;gap:12px">
+      <div style="font-size:24px">⚠️</div>
+      <div style="flex:1">
+        <div style="font-weight:800;font-size:14px;margin-bottom:4px">Tu entrenador actualizó tu plan nutricional</div>
+        <div style="font-size:12px;opacity:.9;margin-bottom:8px">Fecha: ${pnc.fecha}</div>
+        ${(pnc.cambios||[]).map(c=>`<div style="font-size:12px;background:rgba(255,255,255,.2);border-radius:6px;padding:4px 8px;margin-bottom:3px">• ${c}</div>`).join('')}
+        <div style="font-size:11px;opacity:.8;margin-top:8px">Entra a cada comida y actualiza los alimentos marcados en naranja.</div>
+      </div>
+      <button onclick="ST.pendingNutChanges.leido=true;save();render()" style="background:rgba(255,255,255,.3);border:none;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer">✓ Entendido</button>
+    </div>
+  </div>`:'';
   const DSHORT=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
   const dayTabs=DSHORT.map((d,i)=>`<button class="dt ${i===di?'on':''}" onclick="ST.nutDay=${i};ST.nutEditing=false;document.getElementById('ct').innerHTML=renderNutricion()">${d}</button>`).join('');
   const dayTabsNav=DSHORT.map((d,i)=>`<button class="dt ${i===di?'on':''}" onclick="ST.nutDay=${i};ST.nutEditing=false;ST.nutTab='menu';document.getElementById('ct').innerHTML=renderNutricion()">${d}</button>`).join('');
