@@ -345,7 +345,7 @@ function renderNutricion(){
         ${(pnc.cambios||[]).map(c=>`<div style="font-size:12px;background:rgba(255,255,255,.2);border-radius:6px;padding:4px 8px;margin-bottom:3px">• ${c}</div>`).join('')}
         <div style="font-size:11px;opacity:.8;margin-top:8px">Entra a cada comida y actualiza los alimentos marcados en naranja.</div>
       </div>
-      <button onclick="ST.pendingNutChanges.leido=true;save();render()" style="background:rgba(255,255,255,.3);border:none;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer">✓ Entendido</button>
+      <button onclick="ST.pendingNutChanges.leido=true;save();api('POST','/api/clientes/me/nut-changes-leido',{}).catch(()=>{});render()" style="background:rgba(255,255,255,.3);border:none;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer">✓ Entendido</button>
     </div>
   </div>`:'';
   const DSHORT=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
