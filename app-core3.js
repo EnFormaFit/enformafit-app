@@ -621,6 +621,31 @@ async function loadClienteData() {
       }
     } catch(eHist) { console.warn('[hist]', eHist && eHist.message); }
 
+    // Clean menuGuardado: remove categories not in current plan
+    // Runs here so both plan and menuGuardado are fully loaded
+    if (ST.p.planAlimentos && ST.menuGuardado) {
+      var _MEALS_CLEAN = ['desayuno','comida','cena','snack','snack_am','snack_pm','post_entreno','desayuno_extra','comida_extra','cena_extra'];
+      _MEALS_CLEAN.forEach(function(meal) {
+        var baseMeal = meal==='snack_am'||meal==='snack_pm'||meal==='post_entreno'?'snack':
+                       meal==='desayuno_extra'?'desayuno':
+                       meal==='comida_extra'?'comida':
+                       meal==='cena_extra'?'cena':meal;
+        var planMeal = ST.p.planAlimentos[baseMeal] || ST.p.planAlimentos[meal] || [];
+        var planCats = planMeal.map(function(a){return a.cat;});
+        if (!planCats.length) return;
+        Object.keys(ST.menuGuardado).forEach(function(dayIdx) {
+          var saved = ST.menuGuardado[dayIdx] && ST.menuGuardado[dayIdx][meal];
+          if (!saved) return;
+          Object.keys(saved).forEach(function(cat) {
+            if (cat === 'protType') return;
+            if (planCats.indexOf(cat) < 0) {
+              delete saved[cat];
+            }
+          });
+        });
+      });
+    }
+
     // Save everything EXCEPT ejStates — ejStates is only saved by user actions
     try{localStorage.setItem('ef8',JSON.stringify({
       _v:'v2',
