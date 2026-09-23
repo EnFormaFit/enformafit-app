@@ -32,7 +32,11 @@ function fmtFechaApp(f){
   const p=f.split('-');
   return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:f;
 }
-function save(){try{localStorage.setItem('ef8_ver',APP_VER);localStorage.setItem('ef8',JSON.stringify({
+function save(){
+  // DEBUG: track rir value
+  var _dbgRir = ST.ejStates?.['1_0']?.series?.[0]?.rir;
+  if(_dbgRir !== undefined) console.log('[SAVE] rir 1_0 s0:', JSON.stringify(_dbgRir), new Error().stack.split('\n')[2]);
+  try{localStorage.setItem('ef8_ver',APP_VER);localStorage.setItem('ef8',JSON.stringify({
   _v:'v2',
   menu:ST.menu,menuGuardado:ST.menuGuardado,pesos:ST.pesos,
   rev:ST.rev,revHistorial:ST.revHistorial,medidasIni:ST.medidasIni,
