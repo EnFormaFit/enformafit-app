@@ -234,9 +234,10 @@ function cargarRegistrosAnt(semana, dia, callback) {
 
 function restoreEjStatesFromHistEnt(semActual) {
   if (!ST.histEnt || !DIAS) return;
-  // Check if we already have ejStates for this semana - don't reset if so
-  var hasCurrentSem = Object.keys(ST.ejStates||{}).some(function(k){return ST.ejStates[k]._sem===semActual;});
-  if (!hasCurrentSem) ST.ejStates = {};
+  // If we already have ejStates for this semana, don't touch them — user data has priority
+  var hasCurrentSem = Object.keys(ST.ejStates||{}).some(function(k){return ST.ejStates[k] && ST.ejStates[k]._sem===semActual;});
+  if (hasCurrentSem) return; // User already has data for this week, don't overwrite
+  ST.ejStates = {};
   DIAS.forEach(function(dia, di) {
     if (!dia || !dia.ejercicios) return;
     dia.ejercicios.forEach(function(ej, ei) {
