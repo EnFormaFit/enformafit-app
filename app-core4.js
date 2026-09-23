@@ -82,6 +82,10 @@ let SEC='inicio';
 const TITLES={inicio:'Inicio',nutricion:'Nutrición',entreno:'Entreno',progreso:'Progreso',revision:'Revisión',perfil:'Perfil'};
 function S(s){
   SEC=s;
+  // When navigating to entreno, restore ejStates from histEnt for current week
+  if(s==='entreno' && ST.histEnt && DIAS) {
+    restoreEjStatesFromHistEnt(ST.semVer||ST.u.semana||1);
+  }
   if(s==='progreso'&&_tk&&!ST._revAllLoaded){
     ST._revAllLoaded=true;
     api('GET','/api/entreno/revisiones/all').then(function(rows){
