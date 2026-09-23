@@ -690,7 +690,15 @@ async function loadClienteData() {
 
     save(); // save all including ejStates
     render();
-    setTimeout(function(){ render(); }, 1500);
+    // Re-render after short delay to ensure DOM is updated with BD data
+    setTimeout(function(){
+      render();
+      // If on entreno screen, also rebuild the current day
+      if(SEC==='entreno' && typeof buildEntHTML==='function') {
+        var ct=document.getElementById('ct');
+        if(ct) ct.innerHTML=buildEntHTML(ST.diaIdx||0);
+      }
+    }, 500);
   } catch(e) {
     console.error('loadClienteData error:', e);
     render();
