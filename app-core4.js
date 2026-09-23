@@ -688,6 +688,34 @@ async function loadClienteData() {
       });
     } catch(eMg) {}
 
+    // Before final save: restore ejStates from localStorage snapshot to preserve user data
+    // BD may have overwritten rir/kg with old values during restore
+    if (_menuGuardadoSnapshot && Object.keys(ST.ejStates||{}).length === 0) {
+      // ejStates is empty - keep what we built from BD
+    } else {
+      try {
+        var _lsSnap2 = JSON.parse(localStorage.getItem('ef8')||'{}');
+        if (_lsSnap2.ejStates && Object.keys(_lsSnap2.ejStates).length > 0) {
+          // Merge: localStorage has priority for all fields including rir
+          Object.keys(_lsSnap2.ejStates).forEach(function(k) {
+            if (ST.ejStates[k]) {
+              // For each serie, localStorage values take priority
+              (_lsSnap2.ejStates[k].series||[]).forEach(function(lsSerie, si) {
+                if (ST.ejStates[k].series && ST.ejStates[k].series[si]) {
+                  // rir: always use localStorage value (even if empty)
+                  if (lsSerie.rir !== undefined) ST.ejStates[k].series[si].rir = lsSerie.rir;
+                  // kg/reps: use localStorage if it has a value
+                  if (lsSerie.kg) ST.ejStates[k].series[si].kg = lsSerie.kg;
+                  if (lsSerie.repsH) ST.ejStates[k].series[si].repsH = lsSerie.repsH;
+                  // done: keep true if either has true
+                  if (lsSerie.done) ST.ejStates[k].series[si].done = true;
+                }
+              });
+            }
+          });
+        }
+      } catch(eLs) {}
+    }
     save(); // save all including ejStates
     render();
     // Re-render after short delay to ensure DOM is updated with BD data
