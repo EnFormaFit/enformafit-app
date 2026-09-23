@@ -256,10 +256,14 @@ function restoreEjStatesFromHistEnt(semActual) {
         var si = parseInt(match[1]) - 1;
         var d = semData[serKey];
         if (!ST.ejStates[key].series[si]) ST.ejStates[key].series[si] = {kg:'',repsH:'',done:false,rir:''};
-        if (d.kg && parseFloat(d.kg) > 0 && !ST.ejStates[key].series[si].kg) ST.ejStates[key].series[si].kg = String(parseFloat(d.kg));
-        if (d.reps && parseInt(d.reps) > 0 && !ST.ejStates[key].series[si].repsH) ST.ejStates[key].series[si].repsH = String(d.reps);
-        if (d.rir != null && d.rir !== '' && !ST.ejStates[key].series[si].rir) ST.ejStates[key].series[si].rir = String(d.rir);
-        if (d.done) ST.ejStates[key].series[si].done = true;
+        var ex = ST.ejStates[key].series[si];
+        // Only fill gaps — never overwrite existing user data with histEnt data
+        if (d.kg && parseFloat(d.kg) > 0 && (!ex.kg || ex.kg === '0' || ex.kg === '0.00')) ex.kg = String(parseFloat(d.kg));
+        if (d.reps && parseInt(d.reps) > 0 && (!ex.repsH || ex.repsH === '0')) ex.repsH = String(d.reps);
+        // RIR: only fill if empty, never autocomplete
+        if (d.rir != null && d.rir !== '' && d.rir !== '0' && (ex.rir === '' || ex.rir === null || ex.rir === undefined)) ex.rir = String(d.rir);
+        // done: only set true, never false
+        if (d.done === true) ex.done = true;
       });
     });
   });
