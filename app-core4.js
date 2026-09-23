@@ -688,18 +688,7 @@ async function loadClienteData() {
       });
     } catch(eMg) {}
 
-    // Save everything EXCEPT ejStates — ejStates is only saved by user actions
-    try{localStorage.setItem('ef8_ver',APP_VER);localStorage.setItem('ef8',JSON.stringify({
-      _v:'v2',
-      menu:ST.menu,menuGuardado:ST.menuGuardado,pesos:ST.pesos,
-      rev:ST.rev,revHistorial:ST.revHistorial,medidasIni:ST.medidasIni,
-      ci:ST.ci,
-      histEnt:ST.histEnt,
-      nutTab:ST.nutTab,nutDay:ST.nutDay,pesosOpen:ST.pesosOpen,
-      fotosOpen:ST.fotosOpen,listaCheck:ST.listaCheck,
-      u_lesiones:ST.u.lesiones,u_dob:ST.u.dob,
-      // ejStates intentionally NOT saved here — only saved by user actions
-    }));}catch(e){}
+    save(); // save all including ejStates
     render();
     setTimeout(function(){ render(); }, 1500);
   } catch(e) {
