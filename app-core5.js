@@ -1,0 +1,1222 @@
+// ── STATE ──
+const APP_VER='v8.4';
+const ST={
+  u:{nom:'',init:'',plan:'',semana:1,semTotal:12,tipo:'programa',
+     altura:175,peso:80,dob:'',objetivo:75,lesiones:'',
+     inicioBloque:'2026-06-13'},
+  p:{macro:{kcal:2000,p:160,c:200,g:65},superavit:false,def:-500},
+  pasos:{obj:10000},
+  pesos:[],
+  objPeso:0,pesoInicial:0,bajanSem:0,
+  racha:0,adh:0,checkIns:null,checkInDone:false,checkIns:null,checkInDone:false,
+  menu:{},menuGuardado:{},
+  ejStates:{},histEnt:{"Sentadilla Barra Alta": {"semanas": {"1": {"series": [{"kg": "60.0", "reps": "6", "done": true}, {"kg": "60.0", "reps": "6", "done": true}, {"kg": "60.0", "reps": "6", "done": true}]}, "2": {"series": [{"kg": "62.5", "reps": "6", "done": true}, {"kg": "62.5", "reps": "6", "done": true}, {"kg": "62.5", "reps": "6", "done": true}]}, "3": {"series": [{"kg": "65.0", "reps": "6", "done": true}, {"kg": "65.0", "reps": "6", "done": true}, {"kg": "65.0", "reps": "6", "done": true}]}, "4": {"series": [{"kg": "67.5", "reps": "6", "done": true}, {"kg": "67.5", "reps": "6", "done": true}, {"kg": "67.5", "reps": "6", "done": true}]}, "5": {"series": [{"kg": "70.0", "reps": "6", "done": true}, {"kg": "70.0", "reps": "6", "done": true}, {"kg": "70.0", "reps": "6", "done": true}]}, "6": {"series": [{"kg": "72.5", "reps": "6", "done": true}, {"kg": "72.5", "reps": "6", "done": true}, {"kg": "72.5", "reps": "6", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "72.5", "reps": "6", "done": true}, {"kg": "72.5", "reps": "6", "done": true}, {"kg": "72.5", "reps": "6", "done": true}]}, "Sentadilla Búlgara con Mancuerna": {"semanas": {"1": {"series": [{"kg": "60.0", "reps": "12", "done": true}, {"kg": "60.0", "reps": "12", "done": true}, {"kg": "60.0", "reps": "12", "done": true}]}, "2": {"series": [{"kg": "62.5", "reps": "12", "done": true}, {"kg": "62.5", "reps": "12", "done": true}, {"kg": "62.5", "reps": "12", "done": true}]}, "3": {"series": [{"kg": "65.0", "reps": "12", "done": true}, {"kg": "65.0", "reps": "12", "done": true}, {"kg": "65.0", "reps": "12", "done": true}]}, "4": {"series": [{"kg": "67.5", "reps": "12", "done": true}, {"kg": "67.5", "reps": "12", "done": true}, {"kg": "67.5", "reps": "12", "done": true}]}, "5": {"series": [{"kg": "70.0", "reps": "12", "done": true}, {"kg": "70.0", "reps": "12", "done": true}, {"kg": "70.0", "reps": "12", "done": true}]}, "6": {"series": [{"kg": "72.5", "reps": "12", "done": true}, {"kg": "72.5", "reps": "12", "done": true}, {"kg": "72.5", "reps": "12", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "72.5", "reps": "12", "done": true}, {"kg": "72.5", "reps": "12", "done": true}, {"kg": "72.5", "reps": "12", "done": true}]}, "Curl de Isquio en Máquina tumbado": {"semanas": {"1": {"series": [{"kg": "20.0", "reps": "16", "done": true}, {"kg": "20.0", "reps": "16", "done": true}, {"kg": "20.0", "reps": "16", "done": true}]}, "2": {"series": [{"kg": "22.5", "reps": "16", "done": true}, {"kg": "22.5", "reps": "16", "done": true}, {"kg": "22.5", "reps": "16", "done": true}]}, "3": {"series": [{"kg": "25.0", "reps": "16", "done": true}, {"kg": "25.0", "reps": "16", "done": true}, {"kg": "25.0", "reps": "16", "done": true}]}, "4": {"series": [{"kg": "27.5", "reps": "16", "done": true}, {"kg": "27.5", "reps": "16", "done": true}, {"kg": "27.5", "reps": "16", "done": true}]}, "5": {"series": [{"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}]}, "6": {"series": [{"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}]}, "Crunch Abdominal": {"semanas": {"1": {"series": [{"kg": "30.0", "reps": "22", "done": true}, {"kg": "30.0", "reps": "22", "done": true}, {"kg": "30.0", "reps": "22", "done": true}]}, "2": {"series": [{"kg": "32.5", "reps": "22", "done": true}, {"kg": "32.5", "reps": "22", "done": true}, {"kg": "32.5", "reps": "22", "done": true}]}, "3": {"series": [{"kg": "35.0", "reps": "22", "done": true}, {"kg": "35.0", "reps": "22", "done": true}, {"kg": "35.0", "reps": "22", "done": true}]}, "4": {"series": [{"kg": "37.5", "reps": "22", "done": true}, {"kg": "37.5", "reps": "22", "done": true}, {"kg": "37.5", "reps": "22", "done": true}]}, "5": {"series": [{"kg": "40.0", "reps": "22", "done": true}, {"kg": "40.0", "reps": "22", "done": true}, {"kg": "40.0", "reps": "22", "done": true}]}, "6": {"series": [{"kg": "42.5", "reps": "22", "done": true}, {"kg": "42.5", "reps": "22", "done": true}, {"kg": "42.5", "reps": "22", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "42.5", "reps": "22", "done": true}, {"kg": "42.5", "reps": "22", "done": true}, {"kg": "42.5", "reps": "22", "done": true}]}, "Elevaciones laterales en máquina": {"semanas": {"1": {"series": [{"kg": "20.0", "reps": "16", "done": true}, {"kg": "20.0", "reps": "16", "done": true}, {"kg": "20.0", "reps": "16", "done": true}]}, "2": {"series": [{"kg": "22.5", "reps": "16", "done": true}, {"kg": "22.5", "reps": "16", "done": true}, {"kg": "22.5", "reps": "16", "done": true}]}, "3": {"series": [{"kg": "25.0", "reps": "16", "done": true}, {"kg": "25.0", "reps": "16", "done": true}, {"kg": "25.0", "reps": "16", "done": true}]}, "4": {"series": [{"kg": "27.5", "reps": "16", "done": true}, {"kg": "27.5", "reps": "16", "done": true}, {"kg": "27.5", "reps": "16", "done": true}]}, "5": {"series": [{"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}]}, "6": {"series": [{"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}]}, "Press Banca Inclinado con Mancuernas": {"semanas": {"1": {"series": [{"kg": "40.0", "reps": "12", "done": true}, {"kg": "40.0", "reps": "12", "done": true}, {"kg": "40.0", "reps": "12", "done": true}]}, "2": {"series": [{"kg": "42.5", "reps": "12", "done": true}, {"kg": "42.5", "reps": "12", "done": true}, {"kg": "42.5", "reps": "12", "done": true}]}, "3": {"series": [{"kg": "45.0", "reps": "12", "done": true}, {"kg": "45.0", "reps": "12", "done": true}, {"kg": "45.0", "reps": "12", "done": true}]}, "4": {"series": [{"kg": "47.5", "reps": "12", "done": true}, {"kg": "47.5", "reps": "12", "done": true}, {"kg": "47.5", "reps": "12", "done": true}]}, "5": {"series": [{"kg": "50.0", "reps": "12", "done": true}, {"kg": "50.0", "reps": "12", "done": true}, {"kg": "50.0", "reps": "12", "done": true}]}, "6": {"series": [{"kg": "52.5", "reps": "12", "done": true}, {"kg": "52.5", "reps": "12", "done": true}, {"kg": "52.5", "reps": "12", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "52.5", "reps": "12", "done": true}, {"kg": "52.5", "reps": "12", "done": true}, {"kg": "52.5", "reps": "12", "done": true}]}, "Dominadas Pronas en Máquina asistida": {"semanas": {"1": {"series": [{"kg": "30.0", "reps": "12", "done": true}, {"kg": "30.0", "reps": "12", "done": true}, {"kg": "30.0", "reps": "12", "done": true}]}, "2": {"series": [{"kg": "32.5", "reps": "12", "done": true}, {"kg": "32.5", "reps": "12", "done": true}, {"kg": "32.5", "reps": "12", "done": true}]}, "3": {"series": [{"kg": "35.0", "reps": "12", "done": true}, {"kg": "35.0", "reps": "12", "done": true}, {"kg": "35.0", "reps": "12", "done": true}]}, "4": {"series": [{"kg": "37.5", "reps": "12", "done": true}, {"kg": "37.5", "reps": "12", "done": true}, {"kg": "37.5", "reps": "12", "done": true}]}, "5": {"series": [{"kg": "40.0", "reps": "12", "done": true}, {"kg": "40.0", "reps": "12", "done": true}, {"kg": "40.0", "reps": "12", "done": true}]}, "6": {"series": [{"kg": "42.5", "reps": "12", "done": true}, {"kg": "42.5", "reps": "12", "done": true}, {"kg": "42.5", "reps": "12", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "42.5", "reps": "12", "done": true}, {"kg": "42.5", "reps": "12", "done": true}, {"kg": "42.5", "reps": "12", "done": true}]}, "Press Militar en Máquina": {"semanas": {"1": {"series": [{"kg": "40.0", "reps": "16", "done": true}, {"kg": "40.0", "reps": "16", "done": true}, {"kg": "40.0", "reps": "16", "done": true}]}, "2": {"series": [{"kg": "42.5", "reps": "16", "done": true}, {"kg": "42.5", "reps": "16", "done": true}, {"kg": "42.5", "reps": "16", "done": true}]}, "3": {"series": [{"kg": "45.0", "reps": "16", "done": true}, {"kg": "45.0", "reps": "16", "done": true}, {"kg": "45.0", "reps": "16", "done": true}]}, "4": {"series": [{"kg": "47.5", "reps": "16", "done": true}, {"kg": "47.5", "reps": "16", "done": true}, {"kg": "47.5", "reps": "16", "done": true}]}, "5": {"series": [{"kg": "50.0", "reps": "16", "done": true}, {"kg": "50.0", "reps": "16", "done": true}, {"kg": "50.0", "reps": "16", "done": true}]}, "6": {"series": [{"kg": "52.5", "reps": "16", "done": true}, {"kg": "52.5", "reps": "16", "done": true}, {"kg": "52.5", "reps": "16", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "52.5", "reps": "16", "done": true}, {"kg": "52.5", "reps": "16", "done": true}, {"kg": "52.5", "reps": "16", "done": true}]}, "Remo Bilateral con Mancuernas": {"semanas": {"1": {"series": [{"kg": "30.0", "reps": "14", "done": true}, {"kg": "30.0", "reps": "14", "done": true}, {"kg": "30.0", "reps": "14", "done": true}]}, "2": {"series": [{"kg": "32.5", "reps": "14", "done": true}, {"kg": "32.5", "reps": "14", "done": true}, {"kg": "32.5", "reps": "14", "done": true}]}, "3": {"series": [{"kg": "35.0", "reps": "14", "done": true}, {"kg": "35.0", "reps": "14", "done": true}, {"kg": "35.0", "reps": "14", "done": true}]}, "4": {"series": [{"kg": "37.5", "reps": "14", "done": true}, {"kg": "37.5", "reps": "14", "done": true}, {"kg": "37.5", "reps": "14", "done": true}]}, "5": {"series": [{"kg": "40.0", "reps": "14", "done": true}, {"kg": "40.0", "reps": "14", "done": true}, {"kg": "40.0", "reps": "14", "done": true}]}, "6": {"series": [{"kg": "42.5", "reps": "14", "done": true}, {"kg": "42.5", "reps": "14", "done": true}, {"kg": "42.5", "reps": "14", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "42.5", "reps": "14", "done": true}, {"kg": "42.5", "reps": "14", "done": true}, {"kg": "42.5", "reps": "14", "done": true}]}, "Curl de Bíceps en Polea": {"semanas": {"1": {"series": [{"kg": "20.0", "reps": "16", "done": true}, {"kg": "20.0", "reps": "16", "done": true}, {"kg": "20.0", "reps": "16", "done": true}]}, "2": {"series": [{"kg": "22.5", "reps": "16", "done": true}, {"kg": "22.5", "reps": "16", "done": true}, {"kg": "22.5", "reps": "16", "done": true}]}, "3": {"series": [{"kg": "25.0", "reps": "16", "done": true}, {"kg": "25.0", "reps": "16", "done": true}, {"kg": "25.0", "reps": "16", "done": true}]}, "4": {"series": [{"kg": "27.5", "reps": "16", "done": true}, {"kg": "27.5", "reps": "16", "done": true}, {"kg": "27.5", "reps": "16", "done": true}]}, "5": {"series": [{"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}]}, "6": {"series": [{"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}]}, "Extensión de Tríceps Bilateral en Polea": {"semanas": {"1": {"series": [{"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}]}, "2": {"series": [{"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}]}, "3": {"series": [{"kg": "35.0", "reps": "16", "done": true}, {"kg": "35.0", "reps": "16", "done": true}, {"kg": "35.0", "reps": "16", "done": true}]}, "4": {"series": [{"kg": "37.5", "reps": "16", "done": true}, {"kg": "37.5", "reps": "16", "done": true}, {"kg": "37.5", "reps": "16", "done": true}]}, "5": {"series": [{"kg": "40.0", "reps": "16", "done": true}, {"kg": "40.0", "reps": "16", "done": true}, {"kg": "40.0", "reps": "16", "done": true}]}, "6": {"series": [{"kg": "42.5", "reps": "16", "done": true}, {"kg": "42.5", "reps": "16", "done": true}, {"kg": "42.5", "reps": "16", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "42.5", "reps": "16", "done": true}, {"kg": "42.5", "reps": "16", "done": true}, {"kg": "42.5", "reps": "16", "done": true}]}, "Peso Muerto Convencional": {"semanas": {"1": {"series": [{"kg": "60.0", "reps": "6", "done": true}, {"kg": "60.0", "reps": "6", "done": true}, {"kg": "60.0", "reps": "6", "done": true}]}, "2": {"series": [{"kg": "62.5", "reps": "6", "done": true}, {"kg": "62.5", "reps": "6", "done": true}, {"kg": "62.5", "reps": "6", "done": true}]}, "3": {"series": [{"kg": "65.0", "reps": "6", "done": true}, {"kg": "65.0", "reps": "6", "done": true}, {"kg": "65.0", "reps": "6", "done": true}]}, "4": {"series": [{"kg": "67.5", "reps": "6", "done": true}, {"kg": "67.5", "reps": "6", "done": true}, {"kg": "67.5", "reps": "6", "done": true}]}, "5": {"series": [{"kg": "70.0", "reps": "6", "done": true}, {"kg": "70.0", "reps": "6", "done": true}, {"kg": "70.0", "reps": "6", "done": true}]}, "6": {"series": [{"kg": "72.5", "reps": "6", "done": true}, {"kg": "72.5", "reps": "6", "done": true}, {"kg": "72.5", "reps": "6", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "72.5", "reps": "6", "done": true}, {"kg": "72.5", "reps": "6", "done": true}, {"kg": "72.5", "reps": "6", "done": true}]}, "Prensa de Pierna Unilateral": {"semanas": {"1": {"series": [{"kg": "30.0", "reps": "12", "done": true}, {"kg": "30.0", "reps": "12", "done": true}, {"kg": "30.0", "reps": "12", "done": true}]}, "2": {"series": [{"kg": "32.5", "reps": "12", "done": true}, {"kg": "32.5", "reps": "12", "done": true}, {"kg": "32.5", "reps": "12", "done": true}]}, "3": {"series": [{"kg": "35.0", "reps": "12", "done": true}, {"kg": "35.0", "reps": "12", "done": true}, {"kg": "35.0", "reps": "12", "done": true}]}, "4": {"series": [{"kg": "37.5", "reps": "12", "done": true}, {"kg": "37.5", "reps": "12", "done": true}, {"kg": "37.5", "reps": "12", "done": true}]}, "5": {"series": [{"kg": "40.0", "reps": "12", "done": true}, {"kg": "40.0", "reps": "12", "done": true}, {"kg": "40.0", "reps": "12", "done": true}]}, "6": {"series": [{"kg": "42.5", "reps": "12", "done": true}, {"kg": "42.5", "reps": "12", "done": true}, {"kg": "42.5", "reps": "12", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "42.5", "reps": "12", "done": true}, {"kg": "42.5", "reps": "12", "done": true}, {"kg": "42.5", "reps": "12", "done": true}]}, "Aducción en Máquina": {"semanas": {"1": {"series": [{"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}]}, "2": {"series": [{"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}]}, "3": {"series": [{"kg": "35.0", "reps": "16", "done": true}, {"kg": "35.0", "reps": "16", "done": true}, {"kg": "35.0", "reps": "16", "done": true}]}, "4": {"series": [{"kg": "37.5", "reps": "16", "done": true}, {"kg": "37.5", "reps": "16", "done": true}, {"kg": "37.5", "reps": "16", "done": true}]}, "5": {"series": [{"kg": "40.0", "reps": "16", "done": true}, {"kg": "40.0", "reps": "16", "done": true}, {"kg": "40.0", "reps": "16", "done": true}]}, "6": {"series": [{"kg": "42.5", "reps": "16", "done": true}, {"kg": "42.5", "reps": "16", "done": true}, {"kg": "42.5", "reps": "16", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "42.5", "reps": "16", "done": true}, {"kg": "42.5", "reps": "16", "done": true}, {"kg": "42.5", "reps": "16", "done": true}]}, "Elevaciones Laterales con Mancuerna": {"semanas": {"1": {"series": [{"kg": "20.0", "reps": "16", "done": true}, {"kg": "20.0", "reps": "16", "done": true}, {"kg": "20.0", "reps": "16", "done": true}]}, "2": {"series": [{"kg": "22.5", "reps": "16", "done": true}, {"kg": "22.5", "reps": "16", "done": true}, {"kg": "22.5", "reps": "16", "done": true}]}, "3": {"series": [{"kg": "25.0", "reps": "16", "done": true}, {"kg": "25.0", "reps": "16", "done": true}, {"kg": "25.0", "reps": "16", "done": true}]}, "4": {"series": [{"kg": "27.5", "reps": "16", "done": true}, {"kg": "27.5", "reps": "16", "done": true}, {"kg": "27.5", "reps": "16", "done": true}]}, "5": {"series": [{"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}]}, "6": {"series": [{"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}]}, "Elevaciones de Piernas en Barra": {"semanas": {"1": {"series": [{"kg": "20.0", "reps": "16", "done": true}, {"kg": "20.0", "reps": "16", "done": true}, {"kg": "20.0", "reps": "16", "done": true}]}, "2": {"series": [{"kg": "22.5", "reps": "16", "done": true}, {"kg": "22.5", "reps": "16", "done": true}, {"kg": "22.5", "reps": "16", "done": true}]}, "3": {"series": [{"kg": "25.0", "reps": "16", "done": true}, {"kg": "25.0", "reps": "16", "done": true}, {"kg": "25.0", "reps": "16", "done": true}]}, "4": {"series": [{"kg": "27.5", "reps": "16", "done": true}, {"kg": "27.5", "reps": "16", "done": true}, {"kg": "27.5", "reps": "16", "done": true}]}, "5": {"series": [{"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}]}, "6": {"series": [{"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}]}, "Press Banca con Barra con agarre ancho": {"semanas": {"1": {"series": [{"kg": "40.0", "reps": "6", "done": true}, {"kg": "40.0", "reps": "6", "done": true}, {"kg": "40.0", "reps": "6", "done": true}, {"kg": "40.0", "reps": "6", "done": true}]}, "2": {"series": [{"kg": "42.5", "reps": "6", "done": true}, {"kg": "42.5", "reps": "6", "done": true}, {"kg": "42.5", "reps": "6", "done": true}, {"kg": "42.5", "reps": "6", "done": true}]}, "3": {"series": [{"kg": "45.0", "reps": "6", "done": true}, {"kg": "45.0", "reps": "6", "done": true}, {"kg": "45.0", "reps": "6", "done": true}, {"kg": "45.0", "reps": "6", "done": true}]}, "4": {"series": [{"kg": "47.5", "reps": "6", "done": true}, {"kg": "47.5", "reps": "6", "done": true}, {"kg": "47.5", "reps": "6", "done": true}, {"kg": "47.5", "reps": "6", "done": true}]}, "5": {"series": [{"kg": "50.0", "reps": "6", "done": true}, {"kg": "50.0", "reps": "6", "done": true}, {"kg": "50.0", "reps": "6", "done": true}, {"kg": "50.0", "reps": "6", "done": true}]}, "6": {"series": [{"kg": "52.5", "reps": "6", "done": true}, {"kg": "52.5", "reps": "6", "done": true}, {"kg": "52.5", "reps": "6", "done": true}, {"kg": "52.5", "reps": "6", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "52.5", "reps": "6", "done": true}, {"kg": "52.5", "reps": "6", "done": true}, {"kg": "52.5", "reps": "6", "done": true}, {"kg": "52.5", "reps": "6", "done": true}]}, "Jalón Neutro en Polea": {"semanas": {"1": {"series": [{"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}]}, "2": {"series": [{"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}]}, "3": {"series": [{"kg": "35.0", "reps": "16", "done": true}, {"kg": "35.0", "reps": "16", "done": true}, {"kg": "35.0", "reps": "16", "done": true}]}, "4": {"series": [{"kg": "37.5", "reps": "16", "done": true}, {"kg": "37.5", "reps": "16", "done": true}, {"kg": "37.5", "reps": "16", "done": true}]}, "5": {"series": [{"kg": "40.0", "reps": "16", "done": true}, {"kg": "40.0", "reps": "16", "done": true}, {"kg": "40.0", "reps": "16", "done": true}]}, "6": {"series": [{"kg": "42.5", "reps": "16", "done": true}, {"kg": "42.5", "reps": "16", "done": true}, {"kg": "42.5", "reps": "16", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "42.5", "reps": "16", "done": true}, {"kg": "42.5", "reps": "16", "done": true}, {"kg": "42.5", "reps": "16", "done": true}]}, "Press Banca en Máquina": {"semanas": {"1": {"series": [{"kg": "40.0", "reps": "12", "done": true}, {"kg": "40.0", "reps": "12", "done": true}, {"kg": "40.0", "reps": "12", "done": true}]}, "2": {"series": [{"kg": "42.5", "reps": "12", "done": true}, {"kg": "42.5", "reps": "12", "done": true}, {"kg": "42.5", "reps": "12", "done": true}]}, "3": {"series": [{"kg": "45.0", "reps": "12", "done": true}, {"kg": "45.0", "reps": "12", "done": true}, {"kg": "45.0", "reps": "12", "done": true}]}, "4": {"series": [{"kg": "47.5", "reps": "12", "done": true}, {"kg": "47.5", "reps": "12", "done": true}, {"kg": "47.5", "reps": "12", "done": true}]}, "5": {"series": [{"kg": "50.0", "reps": "12", "done": true}, {"kg": "50.0", "reps": "12", "done": true}, {"kg": "50.0", "reps": "12", "done": true}]}, "6": {"series": [{"kg": "52.5", "reps": "12", "done": true}, {"kg": "52.5", "reps": "12", "done": true}, {"kg": "52.5", "reps": "12", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "52.5", "reps": "12", "done": true}, {"kg": "52.5", "reps": "12", "done": true}, {"kg": "52.5", "reps": "12", "done": true}]}, "Curl de Bíceps en Banco Scott con Barra Z": {"semanas": {"1": {"series": [{"kg": "20.0", "reps": "16", "done": true}, {"kg": "20.0", "reps": "16", "done": true}, {"kg": "20.0", "reps": "16", "done": true}]}, "2": {"series": [{"kg": "22.5", "reps": "16", "done": true}, {"kg": "22.5", "reps": "16", "done": true}, {"kg": "22.5", "reps": "16", "done": true}]}, "3": {"series": [{"kg": "25.0", "reps": "16", "done": true}, {"kg": "25.0", "reps": "16", "done": true}, {"kg": "25.0", "reps": "16", "done": true}]}, "4": {"series": [{"kg": "27.5", "reps": "16", "done": true}, {"kg": "27.5", "reps": "16", "done": true}, {"kg": "27.5", "reps": "16", "done": true}]}, "5": {"series": [{"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}]}, "6": {"series": [{"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}]}, "Extensión de Tríceps con Mancuerna Overhead sentado": {"semanas": {"1": {"series": [{"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}, {"kg": "30.0", "reps": "16", "done": true}]}, "2": {"series": [{"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}, {"kg": "32.5", "reps": "16", "done": true}]}, "3": {"series": [{"kg": "35.0", "reps": "16", "done": true}, {"kg": "35.0", "reps": "16", "done": true}, {"kg": "35.0", "reps": "16", "done": true}]}, "4": {"series": [{"kg": "37.5", "reps": "16", "done": true}, {"kg": "37.5", "reps": "16", "done": true}, {"kg": "37.5", "reps": "16", "done": true}]}, "5": {"series": [{"kg": "40.0", "reps": "16", "done": true}, {"kg": "40.0", "reps": "16", "done": true}, {"kg": "40.0", "reps": "16", "done": true}]}, "6": {"series": [{"kg": "42.5", "reps": "16", "done": true}, {"kg": "42.5", "reps": "16", "done": true}, {"kg": "42.5", "reps": "16", "done": true}]}}, "fecha": "2026-07-18", "series": [{"kg": "42.5", "reps": "16", "done": true}, {"kg": "42.5", "reps": "16", "done": true}, {"kg": "42.5", "reps": "16", "done": true}]}},
+  rev:{done:false,fotos:{},medidas:{},preguntas:{},step:0},
+  revHistorial:{},medidasIni:{},
+  ci:{done:false,diasEnt:0,diasNut:0,diasPasos:0,como:'',orgullo:'',compromiso:'',sensaciones:'',adh:0,open:false},
+  nutTab:'menu',nutDay:0,nutEditing:false,
+  pesosOpen:false,medidasOpen:false,fotosOpen:false,
+  perfilEditing:false,
+  copyTargets:[],copyFrom:-1,
+  listaCheck:{},
+  pendingNutChanges:null,
+  revHistorial:{},
+  _editandoRevSem:null,
+};
+
+// ── PERSIST ──
+
+function fmtFechaApp(f){
+  if(!f)return'—';
+  if(f.includes('/'))return f;
+  const p=f.split('-');
+  return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:f;
+}
+function save(){
+  // DEBUG: track rir value
+  var _dbgRir = ST.ejStates?.['1_0']?.series?.[0]?.rir;
+  if(_dbgRir !== undefined) console.log('[SAVE] rir 1_0 s0:', JSON.stringify(_dbgRir), new Error().stack.split('\n')[2]);
+  try{localStorage.setItem('ef8_ver',APP_VER);localStorage.setItem('ef8',JSON.stringify({
+  _v:'v2',
+  menu:ST.menu,menuGuardado:ST.menuGuardado,pesos:ST.pesos,
+  rev:ST.rev,revHistorial:ST.revHistorial,medidasIni:ST.medidasIni,
+  ci:ST.ci,ejStates:ST.ejStates,histEnt:ST.histEnt,
+  nutTab:ST.nutTab,nutDay:ST.nutDay,pesosOpen:ST.pesosOpen,
+  fotosOpen:ST.fotosOpen,listaCheck:ST.listaCheck,
+  u_lesiones:ST.u.lesiones,u_dob:ST.u.dob,
+}))}catch(e){}}
+
+function load(){if(_isPreview)return; // skip localStorage for panel preview sessions
+try{
+  const ver=localStorage.getItem('ef8_ver');
+  if(ver!==APP_VER){localStorage.removeItem('ef8');localStorage.setItem('ef8_ver',APP_VER);return;}
+  const d=JSON.parse(localStorage.getItem('ef8')||'{}');
+  // v2: menu structure changed — discard old cached menu to force fresh load
+  const CACHE_VER='v2';
+  if(d._v===CACHE_VER){
+    if(d.menu)ST.menu=d.menu;
+    if(d.menuGuardado)ST.menuGuardado=d.menuGuardado;
+  } else {
+    // Clear stale cache — menu will reload from BD
+    delete d.menu; delete d.menuGuardado;
+  }
+  if(d.pesos&&d.pesos.length)ST.pesos=d.pesos;
+  if(d.rev)Object.assign(ST.rev,d.rev);
+  if(d.revHistorial)ST.revHistorial=d.revHistorial;
+  if(d._editandoRevSem!=null)ST._editandoRevSem=d._editandoRevSem;
+  if(d.revHistorial)ST.revHistorial=d.revHistorial;
+  if(d.medidasIni)ST.medidasIni=d.medidasIni;
+  if(d.ci)Object.assign(ST.ci,d.ci);
+  if(d.ejStates)ST.ejStates=d.ejStates;
+  if(d.histEnt)Object.assign(ST.histEnt,d.histEnt);
+  if(d.nutTab)ST.nutTab=d.nutTab;
+  if(d.nutDay!==undefined)ST.nutDay=d.nutDay;
+  if(d.pesosOpen!==undefined)ST.pesosOpen=d.pesosOpen;
+  if(d.fotosOpen!==undefined)ST.fotosOpen=d.fotosOpen;
+  if(d.listaCheck)ST.listaCheck=d.listaCheck;
+  if(d.u_lesiones!==undefined)ST.u.lesiones=d.u_lesiones;
+  if(d.u_dob)ST.u.dob=d.u_dob;
+}catch(e){}
+  // Ensure new ST keys exist after loading from localStorage
+  if(ST.checkIns===undefined)ST.checkIns=null;
+  if(ST.checkInDone===undefined)ST.checkInDone=false;}
+
+// ── NAV ──
+let SEC='inicio';
+const TITLES={inicio:'Inicio',nutricion:'Nutrición',entreno:'Entreno',progreso:'Progreso',revision:'Revisión',perfil:'Perfil'};
+function S(s){
+  SEC=s;
+  // When navigating to entreno, restore ejStates from histEnt for current week
+  if(s==='entreno' && ST.histEnt && DIAS) {
+    restoreEjStatesFromHistEnt(ST.semVer||ST.u.semana||1);
+  }
+  if(s==='progreso'&&_tk&&!ST._revAllLoaded){
+    ST._revAllLoaded=true;
+    api('GET','/api/entreno/revisiones/all').then(function(rows){
+      if(rows&&rows.length){
+        if(!ST.revHistorial)ST.revHistorial={};
+        rows.forEach(function(d){ST.revHistorial[d.semana]=d;});
+        render();
+      }
+    }).catch(function(){ST._revAllLoaded=false;});
+  }
+  document.getElementById('st').textContent=TITLES[s]||s;
+  ['ni','nn','ne','np','nr'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('on');});
+  const nm={inicio:'ni',nutricion:'nn',entreno:'ne',progreso:'np',revision:'nr'};
+  if(nm[s])document.getElementById(nm[s])?.classList.add('on');
+  render();
+}
+function render(){
+  const ct=document.getElementById('ct');
+  if(!ct)return;
+  const fns={inicio:renderInicio,nutricion:renderNutricion,entreno:renderEntreno,progreso:renderProgreso,revision:renderRevision,perfil:renderPerfil};
+  ct.innerHTML=(fns[SEC]||renderInicio)();
+  ct.scrollTop=0;
+}
+
+// ── LOGIN ──
+// ── API LAYER ──
+const API='https://enformafit-backend-production.up.railway.app';
+let _tk=localStorage.getItem('ef_tk')||null;
+let _isPreview=false;
+
+async function api(method,path,body){
+  const opts={method,headers:{'Content-Type':'application/json'}};
+  if(_tk)opts.headers['Authorization']='Bearer '+_tk;
+  if(body)opts.body=JSON.stringify(body);
+  const r=await fetch(API+path,opts);
+  const d=await r.json();
+  if(!r.ok)throw new Error(d.error||String(r.status));
+  return d;
+}
+
+async function doLogin(){
+  const e=document.getElementById('le').value.trim();
+  const p=document.getElementById('lp').value;
+  const errEl=document.getElementById('lerr');
+  if(!e||!p){errEl.textContent='Rellena email y contraseña';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  const btn=document.querySelector('.lbtn');
+  if(btn)btn.textContent='Entrando...';
+  try{
+    const data=await api('POST','/api/auth/login',{email:e,password:p});
+    _tk=data.token;
+    localStorage.setItem('ef_tk',_tk);
+    localStorage.setItem('ef_role',data.role||'cliente');
+    await loadClienteData();
+    showApp();
+  }catch(err){
+    errEl.textContent=err.message.includes('Credenciales')||err.message==='401'?'Email o contraseña incorrectos':err.message;
+    errEl.style.display='block';
+    if(btn)btn.textContent='Entrar →';
+  }
+}
+
+
+// ── Construir DIAS desde el plan del entrenador ─────────────────────────────
+// DIAS[0..6] donde 0=lunes, 1=martes, ..., 6=domingo
+// Usa rutina_semanas[semana] si hay override, si no rutina_base
+function buildDIAS(semana) {
+  const NOMBRES = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  const DIA_IDX = {'LUNES':0,'MARTES':1,'MIERCOLES':2,'MIÉRCOLES':2,'JUEVES':3,'VIERNES':4,'SABADO':5,'SÁBADO':5,'DOMINGO':6};
+  const base = ST.p.rutinaDias || {};
+  const semanas = ST.p.rutinaSemanas || {};
+  const semDataRaw = semanas[semana] || semanas[String(semana)] || base;
+
+  // Normalize keys: convert string day names to numeric indices
+  const semData = {};
+  Object.entries(semDataRaw).forEach(function([k, v]) {
+    var numKey = parseInt(k);
+    if (!isNaN(numKey)) {
+      semData[numKey] = v;
+    } else {
+      var idx = DIA_IDX[k.toUpperCase().replace('É','E').replace('Á','A').replace('Ó','O')];
+      if (idx !== undefined) semData[idx] = v;
+    }
+  });
+
+  var trainCount = 0;
+  for (var i = 0; i < 7; i++) {
+    var ejes = semData[i] || [];
+    var isRest = !ejes || ejes.length === 0;
+    if (!isRest) trainCount++;
+    DIAS[i] = {
+      cod: NOMBRES[i].toUpperCase().replace('É','E').replace('Í','I').replace('Á','A'),
+      nom: NOMBRES[i],
+      tipo: isRest ? 'Descanso' : 'Entreno',
+      rest: isRest,
+      ejercicios: isRest ? [] : ejes.map(function(e) {
+        if (typeof e === 'string') {
+          return { nom: e, sets: 3, reps: '8-10', rir: 2, rest: 120,
+            url: (typeof EJ_URLS !== 'undefined' && EJ_URLS[e]) || '', acl: '', bw: false };
+        }
+        return {
+          nom: e.nom || '',
+          sets: e.sets || 3,
+          reps: String(e.reps || '8-10'),
+          rir: e.rir !== undefined ? e.rir : 2,
+          rest: e.rest || 120,
+          url: e.url || (typeof EJ_URLS !== 'undefined' && EJ_URLS[e.nom]) || '',
+          acl: e.acl || '',
+          bw: e.bw || false
+        };
+      })
+    };
+  }
+  // Assign training numbers
+  var n = 0;
+  for (var j = 0; j < 7; j++) {
+    if (!DIAS[j].rest) { n++; DIAS[j].tipo = 'Entreno ' + n; }
+  }
+}
+
+
+// ── Sistema de entreno — BD como fuente de verdad ────────────────────────────
+
+// Caché de registros cargados: { "semana_dia": { "ejercicio_serie": {kg,reps,rir,done} } }
+var ENT_CACHE = {};
+
+// Cargar registros de BD para semana+día concreto
+function cargarRegistrosSemDia(semana, dia, callback) {
+  var cacheKey = semana + '_' + dia;
+  if (ENT_CACHE[cacheKey]) { if(callback)callback(ENT_CACHE[cacheKey]); return; }
+  api('GET', '/api/entreno/mi-historial?semana=' + semana + '&dia=' + dia)
+    .then(function(rows) {
+      var data = {};
+      (rows || []).forEach(function(r) {
+        var k = r.ejercicio + '_' + r.serie;
+        data[k] = { kg: r.kg ? String(parseFloat(r.kg)) : '', reps: r.reps_reales ? String(r.reps_reales) : '', rir: r.rir_real !== undefined ? r.rir_real : '', done: !!(r.completada) };
+      });
+      ENT_CACHE[cacheKey] = data;
+      if(callback)callback(data);
+    }).catch(function() { if(callback)callback({}); });
+}
+
+// Cargar registros de semana anterior (para mostrar "Anterior")
+function cargarRegistrosAnt(semana, dia, callback) {
+  if (semana <= 1) { if(callback)callback({}); return; }
+  cargarRegistrosSemDia(semana - 1, dia, callback);
+}
+
+// Auto-guardar serie al cambiar un campo (debounced 800ms)
+
+function restoreEjStatesFromHistEnt(semActual) {
+  if (!ST.histEnt || !DIAS) return;
+  // If we already have ejStates for this semana, don't touch them — user data has priority
+  var hasCurrentSem = Object.keys(ST.ejStates||{}).some(function(k){return ST.ejStates[k] && ST.ejStates[k]._sem===semActual;});
+  if (hasCurrentSem) return; // User already has data for this week, don't overwrite
+  ST.ejStates = {};
+  DIAS.forEach(function(dia, di) {
+    if (!dia || !dia.ejercicios) return;
+    dia.ejercicios.forEach(function(ej, ei) {
+      var nom = ej.nom || ej.nombre;
+      if (!nom || !ST.histEnt[nom]) return;
+      var semData = ST.histEnt[nom].semanas && ST.histEnt[nom].semanas[String(semActual)];
+      if (!semData) return;
+      var key = di + '_' + ei;
+      var nSets = ej.sets || 3;
+      if (!ST.ejStates[key]) {
+        ST.ejStates[key] = {series: Array.from({length: nSets}, function() { return {kg:'',repsH:'',done:false,rir:''}; }), rest: ej.rest||90, collapsed:false, _sem: semActual};
+      }
+      Object.keys(semData).forEach(function(serKey) {
+        var match = serKey.match(/dia\d+_s(\d+)/);
+        if (!match) return;
+        var si = parseInt(match[1]) - 1;
+        var d = semData[serKey];
+        if (!ST.ejStates[key].series[si]) ST.ejStates[key].series[si] = {kg:'',repsH:'',done:false,rir:''};
+        var ex = ST.ejStates[key].series[si];
+        // ONLY restore done:true — never autocomplete kg, reps or rir
+        // Those must always be entered manually by the user
+        if (d.done === true) ex.done = true;
+      });
+    });
+  });
+}
+
+
+function updateHistEnt(nom, di, si, semana, kg, reps, rir, done) {
+  if (!nom) return;
+  if (!ST.histEnt[nom]) ST.histEnt[nom] = {semanas:{}};
+  var sem = String(semana);
+  if (!ST.histEnt[nom].semanas[sem]) ST.histEnt[nom].semanas[sem] = {};
+  var serKey = 'dia' + di + '_s' + (si+1);
+  ST.histEnt[nom].semanas[sem][serKey] = {
+    kg: String(kg||''),
+    reps: String(reps||''),
+    rir: rir!==null&&rir!==undefined ? String(rir) : '',
+    done: !!done
+  };
+}
+
+function autoGuardarSerie(di, ei, si) {
+  var ej = DIAS[di] && DIAS[di].ejercicios ? DIAS[di].ejercicios[ei] : null;
+  if (!ej) return;
+  var key = di + '_' + ei;
+  var st = ST.ejStates && ST.ejStates[key];
+  if (!st || !st.series || !st.series[si]) return;
+  var s = st.series[si];
+  save(); // persist ejStates immediately to localStorage
+  var bloque_id = ST.p.bloqueId || ST.p.bloqueId || '';
+  if(!bloque_id){console.warn('[Serie] No bloque_id');return;}
+  var semana = ST.semVer || ST.u.semana || 1;
+
+  // Update histEnt so week changes preserve this data
+  updateHistEnt(ej.nom, di, si, semana, s.kg, s.repsH, s.rir, s.done);
+  save(); // persist ejStates immediately
+  clearTimeout(window['_serSave_' + key + '_' + si]);
+  window['_serSave_' + key + '_' + si] = setTimeout(function() {
+    // Only save to BD if user has entered meaningful data
+    if (!parseFloat(s.kg) && !parseInt(s.repsH) && !s.done) return;
+    api('POST', '/api/entreno/registrar-serie', {
+      bloque_id: bloque_id,
+      semana: semana,
+      dia: di,
+      ejercicio: ej.nom,
+      serie: si + 1,
+      kg: parseFloat(s.kg) || 0,
+      reps_reales: parseInt(s.repsH) || 0,
+      rir_real: s.rir !== undefined && s.rir !== '' ? parseInt(s.rir) : (ej.rir || 2),
+      completada: s.done === true
+    }).then(function() {
+      // Update cache
+      var cacheKey = semana + '_' + di;
+      if (!ENT_CACHE[cacheKey]) ENT_CACHE[cacheKey] = {};
+      ENT_CACHE[cacheKey][ej.nom + '_' + (si + 1)] = { kg: s.kg, reps: s.repsH, rir: s.rir, done: s.done };
+    }).catch(function(e) { console.warn('[Serie]', e.message); });
+  }, 300);
+}
+
+// Función legacy - mantener para compatibilidad
+function cargarHistorial() {}
+
+
+// Get date range for a given semana (e.g. "8 sep - 14 sep")
+function getSemanaFechas(semana) {
+  if (!ST.p.fechaInicio) return '';
+  var inicio = new Date(ST.p.fechaInicio);
+  inicio.setHours(0,0,0,0);
+  var lunSem = new Date(inicio);
+  lunSem.setDate(inicio.getDate() + (semana - 1) * 7);
+  var domSem = new Date(lunSem);
+  domSem.setDate(lunSem.getDate() + 6);
+  var meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  var lunStr = lunSem.getDate() + ' ' + meses[lunSem.getMonth()];
+  var domStr = domSem.getDate() + ' ' + meses[domSem.getMonth()];
+  return lunStr + ' – ' + domStr;
+}
+
+async function loadClienteData() {
+  // Snapshot menuGuardado and ejStates from localStorage BEFORE anything modifies them
+  var _menuGuardadoSnapshot = {};
+  var _ejStatesSnapshot = {};
+  try {
+    var _snap = JSON.parse(localStorage.getItem('ef8')||'{}');
+    if (_snap.menuGuardado) _menuGuardadoSnapshot = _snap.menuGuardado;
+    if (_snap.ejStates) { _menuGuardadoSnapshot._ejStates = _snap.ejStates; _ejStatesSnapshot = _snap.ejStates; }
+  } catch(e) {}
+
+  try {
+    // ── 1. Perfil básico del usuario ────────────────────────────────────────
+    const perfil = await api('GET', '/api/clientes/me/perfil');
+    const nom = (perfil.nombre || '').split(' ')[0];
+    const init = nom[0] || 'C';
+    ST.u.nom = nom;
+    ST.u.init = init.toUpperCase();
+    ST.u.tipo = perfil.tipo === '1a1' ? 'uno' : 'programa';
+    ST.u.dob = perfil.fecha_nacimiento ? perfil.fecha_nacimiento.split('T')[0] : '';
+    ST.u.lesiones = perfil.lesiones || '';
+    ST.u.altura = parseFloat(perfil.altura) || 175;
+    // Load pending nutrition changes alert
+    if (perfil.notas && perfil.notas.pendingNutChanges && !perfil.notas.pendingNutChanges.leido) {
+      ST.pendingNutChanges = perfil.notas.pendingNutChanges;
+    } else {
+      ST.pendingNutChanges = null;
+    }
+    ST.pesoInicial = parseFloat(perfil.peso_inicial) || 0;
+
+    // ── 2. Todo el plan en UNA sola llamada ──────────────────────────────────
+    const plan = await api('GET', '/api/entreno/mi-plan');
+
+    // Semana y bloque
+    ST.p.bloqueId = plan.bloque_id || '';
+    ST.p.fechaInicio = plan.fecha_inicio || null;
+    ST.u.semana = plan.semana_actual !== undefined ? plan.semana_actual : 1;
+    // Auto-reset check-in when week changes
+    if (ST.ci && ST.ci.semana !== undefined && ST.ci.semana !== ST.u.semana) {
+      ST.ci = { done: false, open: false, semana: ST.u.semana };
+      save();
+    } else if (ST.ci && ST.ci.semana === undefined) {
+      ST.ci.semana = ST.u.semana;
+      save();
+    }
+    ST.u.semTotal = plan.semanas_bloque || 13;
+    ST.u.inicioBloque = plan.fecha_inicio ? plan.fecha_inicio.split('T')[0] : '';
+    ST.u.diasEnt = plan.dias_entreno || 3;
+
+    // Fase y objetivos
+    ST.p.fase = plan.fase || 'deficit';
+    ST.p.objSemKg = plan.obj_sem_kg != null ? plan.obj_sem_kg : null;
+    ST.objPeso = plan.objetivo_kg ? parseFloat(plan.objetivo_kg) : 0;
+
+    // Macros
+    ST.p.macro = {
+      kcal: plan.macros.kcal || 0,
+      p: plan.macros.p || 0,
+      c: plan.macros.c || 0,
+      g: plan.macros.g || 0
+    };
+    ST.p.comidas = plan.comidas || 3;
+
+    // Rutina
+    ST.p.rutinaCod = plan.rutina_cod || '';
+    ST.p.rutinaDias = (plan.rutina_base && Object.keys(plan.rutina_base).length > 0) ? plan.rutina_base : (plan.rutina_dias || {});
+    ST.p.rutinaSemanas = plan.rutina_semanas || {};
+    // Build DIAS array from plan data
+    buildDIAS(ST.u.semana || 1);
+
+    // Pasos
+    ST.u.pasosObj = plan.pasos_obj || 8000;
+    ST.pasos.obj = ST.u.pasosObj;
+    ST.pasos.obj = ST.u.pasosObj;
+
+    // Clean menuGuardado: remove items that no longer exist in the current plan
+    if (plan.alimentos && ST.menuGuardado) {
+      var CAT_MAP_CLEAN = {prot:'proteinas_magras',prot_g:'proteinas_grasas',hidrat:'hidratos',fat:'grasas',verd:'verduras',fruta:'frutas'};
+      var MEAL_KEYS_CLEAN = ['desayuno','comida','cena','snack','snack_am','snack_pm'];
+      MEAL_KEYS_CLEAN.forEach(function(meal) {
+        var planMeal = plan.alimentos[meal] || [];
+        var planCats = planMeal.map(function(a){return a.cat;});
+        var menuMealSaved = ST.menuGuardado[0] && ST.menuGuardado[0][meal];
+        if (menuMealSaved) {
+          var menuBase = meal==='snack_am'||meal==='snack_pm' ? 'snack' : meal;
+          Object.keys(menuMealSaved).forEach(function(menuCat) {
+            if (menuCat === 'protType') return;
+            // Find which plan cat maps to this menuCat
+            var planCat = Object.keys(CAT_MAP_CLEAN).find(function(k){return CAT_MAP_CLEAN[k]===menuCat;}) || menuCat;
+            // If this category is no longer in the plan, remove it
+            if (planCats.indexOf(planCat) < 0 && planCats.indexOf(menuCat) < 0) {
+              delete menuMealSaved[menuCat];
+            }
+          });
+        }
+      });
+      save();
+    }
+
+    // Menú personalizado — aplicar cantidades del plan al MENU global
+    if (plan.alimentos && Object.keys(plan.alimentos).length > 0) {
+      ST.p.planAlimentos = plan.alimentos;
+      ST.p.alimentos = plan.alimentos; // alias for menu validation
+      aplicarCantidadesPersonalizadas(plan.alimentos);
+    }
+
+    // Medidas y fotos S0 — cargar en revHistorial[0] para que aparezcan en Progreso y Revisión
+    ST.medidasS0 = plan.medidas_s0 || {};
+    const fotosS0 = plan.fotos_s0 || {};
+    if (Object.keys(fotosS0).length > 0) {
+      if (!ST.revHistorial) ST.revHistorial = {};
+      if (!ST.revHistorial[0]) ST.revHistorial[0] = { fotos: {}, medidas: {} };
+      // fotosS0 format from BD: { frente: url, perfil_d: url, perfil_i: url, espalda: url }
+      // App expects: { rev_0: url, rev_1: url, rev_2: url, rev_3: url }
+      const POSE_MAP = { frente: 0, perfil_d: 1, perfil_i: 2, espalda: 3 };
+      Object.entries(fotosS0).forEach(function([pose, url]) {
+        if (!url) return;
+        // Handle both formats: 'frente' and 'rev_0'
+        if (pose.startsWith('rev_')) {
+          ST.revHistorial[0].fotos[pose] = url;
+        } else {
+          const idx = POSE_MAP[pose];
+          if (idx !== undefined) ST.revHistorial[0].fotos['rev_' + idx] = url;
+        }
+      });
+      // Also load medidas S0
+      if (Object.keys(ST.medidasS0).length > 0) {
+        ST.revHistorial[0].medidas = ST.medidasS0;
+      }
+    }
+
+    // ── 3. Pesos desde BD ────────────────────────────────────────────────────
+    try {
+      const pesos = await api('GET', '/api/entreno/pesos');
+      ST.pesos = (pesos || []).map(p => ({ f: p.fecha ? p.fecha.split('T')[0] : p.f, v: parseFloat(p.peso || p.v) }));
+    } catch(e) { ST.pesos = []; }
+
+    // Cargar historial de entreno desde BD
+    cargarHistorial();
+
+    // ── 4. Menú semanal guardado — merge BD into localStorage, don't overwrite
+    try {
+      const menuBD = await api('GET', '/api/entreno/menu-semanal');
+      if (menuBD && menuBD.menu_semanal) {
+        Object.entries(menuBD.menu_semanal).forEach(([day, meals]) => {
+          var dayInt = parseInt(day);
+          // Only restore from BD if localStorage doesn't have this day
+          if (!ST.menuGuardado[dayInt] && !ST.menuGuardado[String(dayInt)]) {
+            ST.menuGuardado[dayInt] = meals;
+          }
+        });
+      }
+    } catch(e) {}
+
+    // Load all revisiones from BD
+    try {
+      const revsBD = await api('GET', '/api/entreno/revisiones/all');
+      if (revsBD && revsBD.length) {
+        if (!ST.revHistorial) ST.revHistorial = {};
+        revsBD.forEach(function(d) { ST.revHistorial[d.semana] = d; });
+        ST._revAllLoaded = true;
+        // Mark rev as done if current revision semana already submitted
+        const tipo = ST.u && ST.u.tipo;
+        const semana = ST.u && ST.u.semana;
+        const revSemsFull = tipo==='programa'?[4,8,12]:[3,7,11];
+        const nextRev = revSemsFull.find(function(rs){return rs>=semana;})||revSemsFull[revSemsFull.length-1];
+        const submittedRev = ST.revHistorial[nextRev];
+        if (submittedRev && submittedRev.fotos && Object.keys(submittedRev.fotos).length > 0) {
+          ST.rev.done = true;
+          ST.rev.fotos = submittedRev.fotos || {};
+          ST.rev.medidas = submittedRev.medidas || {};
+          ST.rev.preguntas = submittedRev.preguntas || {};
+        }
+      }
+    } catch(e) {}
+
+        // Load all revisiones from BD
+    try {
+      const revsBD = await api('GET', '/api/entreno/revisiones/all');
+      if (revsBD && revsBD.length) {
+        if (!ST.revHistorial) ST.revHistorial = {};
+        revsBD.forEach(function(d) { ST.revHistorial[d.semana] = d; });
+        ST._revAllLoaded = true;
+        // Mark rev as done if current revision semana already submitted
+        const tipo = ST.u && ST.u.tipo;
+        const semana = ST.u && ST.u.semana;
+        const revSemsFull = tipo==='programa'?[4,8,12]:[3,7,11];
+        const nextRev = revSemsFull.find(function(rs){return rs>=semana;})||revSemsFull[revSemsFull.length-1];
+        const submittedRev = ST.revHistorial[nextRev];
+        if (submittedRev && submittedRev.fotos && Object.keys(submittedRev.fotos).length > 0) {
+          ST.rev.done = true;
+          ST.rev.fotos = submittedRev.fotos || {};
+          ST.rev.medidas = submittedRev.medidas || {};
+          ST.rev.preguntas = submittedRev.preguntas || {};
+        }
+      }
+    } catch(e) {}
+
+    // Load check-ins from BD
+    try {
+      const cisBD = await api('GET', '/api/entreno/checkins');
+      if (cisBD && cisBD.length) {
+        ST.checkIns = cisBD;
+        // Load current week's check-in into ST.ci if exists
+        const inicioBloque = ST.u.inicioBloque || new Date().toISOString().split('T')[0];
+        const ciActual = cisBD.find(ci => ci.semana_inicio && ci.semana_inicio.startsWith(inicioBloque.substring(0,10)));
+        if (ciActual) {
+          ST.ci = ST.ci || {};
+          ST.ci.diasEnt = ciActual.dias_entreno_real || 0;
+          ST.ci.diasNut = ciActual.dias_nutricion || 0;
+          ST.ci.diasPasos = ciActual.dias_pasos || 0;
+          ST.ci.orgullo = ciActual.orgullos || '';
+          ST.ci.compromiso = ciActual.compromisos || '';
+          ST.ci.sensaciones = ciActual.sensaciones || '';
+          ST.ci.como = ciActual.como_semana || '';
+          ST.ci.adh = ciActual.adherencia || 0;
+          ST.checkInDone = true;
+        }
+      }
+    } catch(e) {}
+
+    // Load check-ins from BD
+    try {
+      const cisBD = await api('GET', '/api/entreno/checkins');
+      if (Array.isArray(cisBD) && cisBD.length) {
+        ST.checkIns = cisBD;
+        const inicioBloque = ST.u.inicioBloque;
+        const ciActual = inicioBloque ? cisBD.find(ci => (ci.semana_inicio||'').substring(0,10) === inicioBloque.substring(0,10)) : cisBD[0];
+        if (ciActual) {
+          ST.ci = ST.ci || {};
+          ST.ci.diasEnt = ciActual.dias_entreno_real || 0;
+          ST.ci.diasNut = ciActual.dias_nutricion || 0;
+          ST.ci.diasPasos = ciActual.dias_pasos || 0;
+          ST.ci.orgullo = ciActual.orgullos || '';
+          ST.ci.compromiso = ciActual.compromisos || '';
+          ST.ci.sensaciones = ciActual.sensaciones || '';
+          ST.ci.como = ciActual.como_semana || '';
+          ST.ci.adh = ciActual.adherencia || 0;
+          ST.checkInDone = true;
+        }
+      }
+    } catch(e) { console.warn('[CI load]', e); }
+
+        // Restore ejStates from BD
+    try {
+      var histBD = await api('GET', '/api/entreno/mi-historial?semana=' + (ST.u.semana || 1));
+      if (histBD && Array.isArray(histBD) && histBD.length) {
+        histBD.forEach(function(row) {
+          var nom = row.ejercicio;
+          var dia = parseInt(row.dia) || 0;
+          var si = (row.serie || 1) - 1;
+          var ejIdx = row.ej_idx != null ? row.ej_idx : null;
+          // Update histEnt
+          if (nom) {
+            if (!ST.histEnt[nom]) ST.histEnt[nom] = {semanas:{}};
+            var sem = String(row.semana || ST.u.semana || 1);
+            if (!ST.histEnt[nom].semanas[sem]) ST.histEnt[nom].semanas[sem] = {};
+            var serKey = 'dia' + dia + '_s' + (si+1);
+            ST.histEnt[nom].semanas[sem][serKey] = {kg: String(row.kg||''), reps: String(row.reps_reales||''), rir: row.rir_real!=null?String(row.rir_real):'', done: !!row.completada};
+          }
+        });
+      }
+    } catch(eHist) { console.warn('[historial]', eHist && eHist.message); }
+
+    // Restore histEnt from BD (for reference weights) — never overwrite ejStates from localStorage
+    try {
+      var semActual = ST.semVer || ST.u.semana || 1;
+      var histBD = await api('GET', '/api/entreno/mi-historial');
+      if (histBD && Array.isArray(histBD) && histBD.length) {
+        // Only populate histEnt — never touch ejStates if localStorage already has it
+        var localEjOK = Object.keys(ST.ejStates||{}).some(function(k){
+          return ST.ejStates[k] && ST.ejStates[k]._sem === semActual;
+        });
+        histBD.forEach(function(row) {
+          var nom = row.ejercicio;
+          var dia = parseInt(row.dia) || 0;
+          var si = (parseInt(row.serie) || 1) - 1;
+          // Always update histEnt for reference weights
+          if (nom) {
+            if (!ST.histEnt[nom]) ST.histEnt[nom] = {semanas:{}};
+            var sem = String(row.semana || semActual);
+            if (!ST.histEnt[nom].semanas[sem]) ST.histEnt[nom].semanas[sem] = {};
+            var serKey = 'dia' + dia + '_s' + (si+1);
+            ST.histEnt[nom].semanas[sem][serKey] = {
+              kg: String(row.kg||''),
+              reps: String(row.reps_reales||''),
+              rir: row.rir_real!=null?String(row.rir_real):'',
+              done: !!row.completada
+            };
+          }
+          // Only restore ejStates from BD if localStorage doesn't have this semana
+          if (!localEjOK && parseInt(row.semana) === semActual) {
+            var ejIdx = -1;
+            if (DIAS && DIAS[dia] && DIAS[dia].ejercicios) {
+              DIAS[dia].ejercicios.forEach(function(ej, i) {
+                if ((ej.nom || ej.nombre) === nom) ejIdx = i;
+              });
+            }
+            if (ejIdx >= 0) {
+              var key = dia + '_' + ejIdx;
+              var ej = DIAS[dia].ejercicios[ejIdx];
+              var nSets = ej.sets || 3;
+              if (!ST.ejStates[key]) {
+                ST.ejStates[key] = {series: Array.from({length: nSets}, function() { return {kg:'',repsH:'',done:false,rir:''}; }), rest: ej.rest||90, collapsed:false, _sem: semActual};
+              }
+              if (!ST.ejStates[key].series[si]) ST.ejStates[key].series[si] = {kg:'',repsH:'',done:false,rir:''};
+              var existing = ST.ejStates[key].series[si];
+              var rowKg = parseFloat(row.kg) || 0;
+              if (rowKg > 0 && !existing.kg) existing.kg = String(rowKg);
+              if (row.reps_reales && row.reps_reales > 0 && !existing.repsH) existing.repsH = String(row.reps_reales);
+              // RIR: never autocomplete from BD
+              if (row.completada) existing.done = true;
+            }
+          }
+        });
+      }
+    } catch(eHist) { console.warn('[hist]', eHist && eHist.message); }
+
+    // Clean menuGuardado: remove categories not in current plan
+    // Runs here so both plan and menuGuardado are fully loaded
+    if (ST.p.planAlimentos && ST.menuGuardado) {
+      var _MEALS_CLEAN = ['desayuno','comida','cena','snack','snack_am','snack_pm','post_entreno','desayuno_extra','comida_extra','cena_extra'];
+      _MEALS_CLEAN.forEach(function(meal) {
+        var baseMeal = meal==='snack_am'||meal==='snack_pm'||meal==='post_entreno'?'snack':
+                       meal==='desayuno_extra'?'desayuno':
+                       meal==='comida_extra'?'comida':
+                       meal==='cena_extra'?'cena':meal;
+        var planMeal = ST.p.planAlimentos[baseMeal] || ST.p.planAlimentos[meal] || [];
+        var planCats = planMeal.map(function(a){return a.cat;});
+        if (!planCats.length) return;
+        Object.keys(ST.menuGuardado).forEach(function(dayIdx) {
+          var saved = ST.menuGuardado[dayIdx] && ST.menuGuardado[dayIdx][meal];
+          if (!saved) return;
+          Object.keys(saved).forEach(function(cat) {
+            if (cat === 'protType') return;
+            if (planCats.indexOf(cat) < 0) {
+              delete saved[cat];
+            }
+          });
+        });
+      });
+    }
+
+    // Restore menuGuardado from snapshot taken at start — preserves user selections
+    try {
+      Object.keys(_menuGuardadoSnapshot).forEach(function(k){
+        if (!ST.menuGuardado[k]) ST.menuGuardado[k] = _menuGuardadoSnapshot[k];
+      });
+    } catch(eMg) {}
+
+    // Before final save: restore ejStates from localStorage snapshot to preserve user data
+    // BD may have overwritten rir/kg with old values during restore
+    if (_menuGuardadoSnapshot && Object.keys(ST.ejStates||{}).length === 0) {
+      // ejStates is empty - keep what we built from BD
+    } else {
+      try {
+        var _lsSnap2 = JSON.parse(localStorage.getItem('ef8')||'{}');
+        if (_lsSnap2.ejStates && Object.keys(_lsSnap2.ejStates).length > 0) {
+          // Merge: localStorage has priority for all fields including rir
+          Object.keys(_lsSnap2.ejStates).forEach(function(k) {
+            if (ST.ejStates[k]) {
+              // For each serie, localStorage values take priority
+              (_lsSnap2.ejStates[k].series||[]).forEach(function(lsSerie, si) {
+                if (ST.ejStates[k].series && ST.ejStates[k].series[si]) {
+                  // rir: always use localStorage value (even if empty)
+                  if (lsSerie.rir !== undefined) ST.ejStates[k].series[si].rir = lsSerie.rir;
+                  // kg/reps: use localStorage if it has a value
+                  if (lsSerie.kg) ST.ejStates[k].series[si].kg = lsSerie.kg;
+                  if (lsSerie.repsH) ST.ejStates[k].series[si].repsH = lsSerie.repsH;
+                  // done: keep true if either has true
+                  if (lsSerie.done) ST.ejStates[k].series[si].done = true;
+                }
+              });
+            }
+          });
+        }
+      } catch(eLs) {}
+    }
+    // Merge localStorage snapshot back into ST.ejStates
+    // This restores rir and other user values that BD restore may have cleared
+    try {
+      if (_ejStatesSnapshot && Object.keys(_ejStatesSnapshot).length > 0) {
+        Object.keys(_ejStatesSnapshot).forEach(function(k) {
+          if (!ST.ejStates[k]) return;
+          var snapSeries = _ejStatesSnapshot[k].series || [];
+          snapSeries.forEach(function(snapS, si) {
+            if (!ST.ejStates[k].series[si]) return;
+            var cur = ST.ejStates[k].series[si];
+            // rir: always restore from snapshot (user value has priority)
+            if (snapS.rir !== undefined) cur.rir = snapS.rir;
+            // kg/reps: restore if snapshot has value and current doesn't
+            if (snapS.kg && !cur.kg) cur.kg = snapS.kg;
+            if (snapS.repsH && !cur.repsH) cur.repsH = snapS.repsH;
+            // done: keep true
+            if (snapS.done) cur.done = true;
+          });
+        });
+      }
+    } catch(eMerge) {}
+    save(); // save all including ejStates
+    render();
+    // Re-render after short delay to ensure DOM is updated with BD data
+    setTimeout(function(){
+      render();
+      // If on entreno screen, also rebuild the current day
+      if(SEC==='entreno' && typeof buildEntHTML==='function') {
+        var ct=document.getElementById('ct');
+        if(ct) ct.innerHTML=buildEntHTML(ST.diaIdx||0);
+      }
+    }, 500);
+  } catch(e) {
+    console.error('loadClienteData error:', e);
+    render();
+  }
+}
+
+
+function showApp(){
+  document.getElementById('lw').style.display='none';
+  document.getElementById('app').classList.add('on');
+  document.getElementById('avbtn').textContent=ST.u.init||'CL';
+  const li=document.getElementById('loginLogoImg')||document.querySelector('.llo img');
+  const tl=document.getElementById('topLogo');
+  if(li&&tl)tl.src=li.src;
+  S('inicio');
+}
+
+// Auto-login si hay token guardado
+window.addEventListener('DOMContentLoaded',async()=>{
+  // Si viene con ?tk= en URL (desde panel "Ver app") usarlo directamente
+  const urlParams=new URLSearchParams(window.location.search);
+  const tkParam=urlParams.get('tk');
+  if(tkParam){
+    _tk=tkParam;
+    _isPreview=true;
+    // NO guardarlo en localStorage — sesión temporal solo para esta pestaña
+    try{
+      await loadClienteData();
+      ST.semVer=ST.u.semana||1;
+      showApp();
+      // Limpiar el token de la URL sin recargar
+      if(window.history&&window.history.replaceState){
+        window.history.replaceState({},'',window.location.pathname);
+      }
+      return;
+    }catch(e){
+      _tk=null;
+    }
+  }
+  // Login normal con token guardado
+  if(_tk){
+    try{
+      await loadClienteData();
+      ST.semVer=ST.u.semana||1;
+      showApp();
+      return;
+    }catch(e){
+      _tk=null;
+      localStorage.removeItem('ef_tk');
+    }
+  }
+});
+
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('lw').style.display!=='none')doLogin();});
+
+// ── TOAST & MODAL ──
+function toast(msg,tipo){const el=document.getElementById('toast');el.textContent=msg;el.className='toast show'+(tipo?' '+tipo:'');setTimeout(()=>el.classList.remove('show'),2800);}
+function openModal(t,c){document.getElementById('modalT').textContent=t;document.getElementById('modalC').innerHTML=c;document.getElementById('modalBg').classList.add('show');}
+function closeModal(){document.getElementById('modalBg').classList.remove('show');}
+
+// ── INICIO ──
+function renderInicio(){
+  const {semana:s,semTotal:st,tipo,inicioBloque}=ST.u;
+  const s0Done=(ST.rev&&ST.rev.s0Done)||false;
+  const s0Banner=(!s0Done&&s<=1)?'<div style="background:linear-gradient(135deg,#FF6B00,#E65A00);border-radius:12px;padding:13px 15px;color:#fff;margin-bottom:11px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="S(\'revision\')"><div style="font-size:26px">📸</div><div style="flex:1"><div style="font-weight:800;font-size:14px;margin-bottom:3px">Pendiente: fotos y medidas de S0</div><div style="font-size:12px;opacity:.85">Súbelas antes de empezar la semana 1. Son tu punto de partida para comparar tu progreso.</div></div><div style="font-size:18px;opacity:.7">→</div></div>':'';
+  const revSems=tipo==='programa'?[4,8,12]:[3,7,11];
+  const nextRev=revSems.find(rs=>rs>=s)||revSems[revSems.length-1];
+  const semsLeft=nextRev-s;
+  // Use last check-in data if available
+  const lastCI = (ST.checkIns && ST.checkIns.length) ? ST.checkIns[0] : null;
+  const adh = lastCI ? (lastCI.adherencia||0)/100 : (ST.adh||0);
+  const adhPct=Math.round(adh*100);
+  const adhCol=adh>=.8?'var(--vd)':adh>=.6?'var(--nr)':'var(--rj)';
+  const ciDiasEnt = lastCI ? lastCI.dias_entreno_real : null;
+  const ciDiasNut = lastCI ? lastCI.dias_nutricion : null;
+  const ciDiasPasos = lastCI ? lastCI.dias_pasos : null;
+  const diasEntObj = ST.u.diasSemana || 4;
+  const todayDow=new Date().getDay();
+  const diaIdx=[6,0,1,2,3,4,5][todayDow]||0;
+  const diaHoy=DIAS[diaIdx];
+
+  // Semanas bloque
+  let semBloq='';
+  for(let i=1;i<=st;i++){
+    const isRev=revSems.includes(i);
+    const cls=i<s?'sw-done':i===s?(isRev?'sw-rev':'sw-cur'):'sw-fut';
+    semBloq+=`<div class="sw ${cls}" title="S${i}${isRev?' ✓ Rev':''}">${i}</div>`;
+  }
+
+  return`
+<div class="banner ${semsLeft<=1?'nr':'az'}" onclick="S('revision')">
+  <div style="font-size:10px;font-weight:700;opacity:.8;margin-bottom:3px">${semsLeft<=1?'⚠️ REVISIÓN URGENTE':'📅 PRÓXIMA REVISIÓN'}</div>
+  <div style="font-size:19px;font-weight:800;margin-bottom:2px">Semana ${nextRev}${semsLeft===0?' · ¡Esta semana!':' · en '+semsLeft+' sem.'}</div>
+  <div style="font-size:12px;opacity:.8">Semana ${s} de ${st} del bloque → Toca para revisar</div>
+</div>
+
+<div class="banner vd" onclick="S('entreno')" style="cursor:pointer">
+  <div style="font-size:10px;font-weight:700;opacity:.8;margin-bottom:3px">HOY TOCA</div>
+  <div style="font-size:17px;font-weight:800;margin-bottom:2px">${diaHoy.rest?'Día de descanso 😴':diaHoy.nom+' — '+diaHoy.tipo}</div>
+  <div style="font-size:12px;opacity:.8">${diaHoy.rest?'Muévete, acumula pasos y cuida la nutrición':'Toca para ver los ejercicios →'}</div>
+</div>
+
+<div class="sgrid">
+  <div class="stat"><div class="stat-v" style="color:var(--az)">S${s}</div><div class="stat-l">Semana bloque</div></div>
+  <div class="stat"><div class="stat-v" style="color:var(--vd)">${adhPct}%</div><div class="stat-l">Adherencia</div></div>
+  <div class="stat"><div class="stat-v" style="color:var(--nr)">${ST.racha}🔥</div><div class="stat-l">Racha días</div></div>
+  <div class="stat"><div class="stat-v" style="color:var(--az2)">${ST.pesos.length?ST.pesos[ST.pesos.length-1].v:'—'}kg</div><div class="stat-l">Peso actual</div></div>
+</div>
+
+<div class="pasos-card">
+  <div style="font-size:10px;font-weight:700;opacity:.75;text-transform:uppercase;margin-bottom:3px">🚶 Objetivo diario de pasos</div>
+  <div class="pasos-n">${ST.pasos.obj.toLocaleString('es')}</div>
+  <div class="pasos-bar"><div class="pasos-fill" style="width:100%"></div></div>
+  <div style="font-size:11px;opacity:.85;margin-top:5px">Mantén este objetivo todos los días</div>
+</div>
+
+<div class="racha-card">
+  <div style="font-size:36px">🔥</div>
+  <div><div style="font-size:19px;font-weight:800">${ST.racha} días de racha</div><div style="font-size:12px;opacity:.8">¡No lo rompas!</div></div>
+</div>
+
+<div class="card">
+  <div class="ch"><h2>📊 Adherencia semana pasada</h2><span class="badge ${adh>=.8?'bvd':'bnr'}">${adhPct}%</span></div>
+  <div class="cb">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+      <div class="maci"><div class="macv" style="color:var(--az);font-size:17px">${ciDiasEnt!==null?ciDiasEnt+'/'+diasEntObj:'—'}</div><div class="macl">Entrenos</div></div>
+      <div class="maci"><div class="macv" style="color:var(--vd);font-size:17px">${ciDiasNut!==null?ciDiasNut+'/7':'—'}</div><div class="macl">Nutrición</div></div>
+      <div class="maci"><div class="macv" style="color:var(--nr);font-size:17px">${ciDiasPasos!==null?ciDiasPasos+'/7':'—'}</div><div class="macl">Pasos</div></div>
+    </div>
+    <div class="pb"><div class="pf" style="width:${adhPct}%;background:${adhCol}"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="ch"><h2>📅 Progreso del bloque</h2><span class="badge baz">S${s}/${st}</span></div>
+  <div class="cb">
+    <div style="font-size:11px;color:var(--t3);margin-bottom:4px">${getSemanaFechas(s)}</div>
+    <div style="font-size:12px;color:var(--t3);margin-bottom:6px">🟢 Completada · 🟠 Actual · 🔵 Revisión · ⬜ Pendiente</div>
+    <div class="semp">${semBloq}</div>
+    <div style="font-size:12px;color:var(--t3);margin-top:6px">${Math.round(s/st*100)}% del bloque completado</div>
+  </div>
+</div>
+
+${renderCI()}`;
+}
+
+// ── CHECK-IN ──
+function ciToggle(){
+  ST.ci.open=!ST.ci.open;save();
+  var card=document.querySelector('[data-ci-card]');
+  if(!card){var ct=document.getElementById('ct');if(ct){var sp=ct.scrollTop;ct.innerHTML=renderInicio();ct.scrollTop=sp;}return;}
+  var body=card.querySelector('[data-ci-body]');
+  var arr=card.querySelector('[data-ci-arr]');
+  if(body)body.style.display=ST.ci.open?'block':'none';
+  if(arr)arr.textContent=ST.ci.open?'▲':'▼';
+}
+function renderCI(){
+  var ci=ST.ci;var tipo=ST.u.tipo;
+  var dp=DIAS.filter(function(d){return!d.rest;}).length||4;
+  var adh=calcAdh();
+  if(ci.done){
+    return '<div class="card" style="margin-bottom:10px"><div class="ch" onclick="ST.ci.open=!ST.ci.open;render()" style="cursor:pointer">'
+      +'<h2>Check-in enviado</h2>'
+      +'<div style="display:flex;align-items:center;gap:8px">'
+        +'<span style="font-size:16px;font-weight:900;color:'+(adh>=80?'var(--vd)':adh>=50?'var(--nr)':'var(--rj)')+'">'+adh+'%</span>'
+        +'<span style="color:var(--t3)">'+(ci.open?'▲':'▼')+'</span>'
+      +'</div></div>'
+      +(ci.open?'<div class="cb"><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">'
+        +'<div style="text-align:center;background:var(--bg);border-radius:8px;padding:10px"><div style="font-size:20px;font-weight:800;color:var(--az)">'+(ci.diasEnt||0)+'/'+dp+'</div><div style="font-size:9px;color:var(--t3)">Entrenos</div></div>'
+        +'<div style="text-align:center;background:var(--bg);border-radius:8px;padding:10px"><div style="font-size:20px;font-weight:800;color:var(--az)">'+(ci.diasNut||0)+'/7</div><div style="font-size:9px;color:var(--t3)">Nutricion</div></div>'
+        +'<div style="text-align:center;background:var(--bg);border-radius:8px;padding:10px"><div style="font-size:20px;font-weight:800;color:var(--az)">'+(ci.diasPasos||0)+'/7</div><div style="font-size:9px;color:var(--t3)">Pasos</div></div>'
+      +'</div><button class="btn bo" style="width:100%" onclick="ST.ci.done=false;ST.ci.open=true;save();render()">Editar respuestas</button></div>':'')
+    +'</div>';
+  }
+  function mkDots(key,val,mx){
+    var s='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">';
+    for(var i=1;i<=mx;i++){
+      s+='<button type="button" data-k="'+key+'" data-v="'+i+'" data-m="'+mx+'" onclick="ciDot(this)" '
+        +'style="width:32px;height:32px;border-radius:50%;border:2.5px solid var(--az);cursor:pointer;background:'+(i<=(val||0)?'var(--az)':'transparent')+'"></button>';
+    }
+    return s+'</div>';
+  }
+  var h='<div class="card" style="margin-bottom:10px">'
+    +'<div class="ch" onclick="ST.ci.open=!ST.ci.open;render()" style="cursor:pointer">'
+      +'<h2>Check-in semanal</h2>'+(ST.checkInDone?'<span class="badge bvd" style="font-size:11px">✓ Enviado</span>':'')+'<span style="color:var(--t3)">'+(ci.open?'▲':'▼')+'</span>'
+    +'</div>';
+  if(!ci.open)return h+'</div>';
+  h+='<div class="cb">';
+  if(tipo==='uno'){
+    h+='<div style="margin-bottom:12px"><div style="font-size:13px;font-weight:600;margin-bottom:6px">¿Cómo fue la semana anterior?</div>'
+      +'<textarea oninput="ST.ci.como=this.value;save()" style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:none;min-height:65px;box-sizing:border-box;outline:none">'+(ci.como||'')+'</textarea></div>';
+  }
+  h+='<div style="background:var(--bg);border-radius:10px;padding:12px;margin-bottom:10px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center">'
+      +'<span style="font-size:12px;font-weight:600">Días de entrenamiento cumplidos</span>'
+      +'<span id="ci-ent-n" style="font-weight:800;color:var(--az)">'+(ci.diasEnt||0)+'/'+dp+'</span></div>'
+    +mkDots('diasEnt',ci.diasEnt||0,dp)+'</div>';
+  h+='<div style="background:var(--bg);border-radius:10px;padding:12px;margin-bottom:10px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center">'
+      +'<span style="font-size:12px;font-weight:600">Días del plan nutricional cumplidos</span>'
+      +'<span id="ci-nut-n" style="font-weight:800;color:var(--az)">'+(ci.diasNut||0)+'/7</span></div>'
+    +mkDots('diasNut',ci.diasNut||0,7)+'</div>';
+  h+='<div style="background:var(--bg);border-radius:10px;padding:12px;margin-bottom:10px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center">'
+      +'<span style="font-size:12px;font-weight:600">Días de pasos cumplidos</span>'
+      +'<span id="ci-pas-n" style="font-weight:800;color:var(--az)">'+(ci.diasPasos||0)+'/7</span></div>'
+    +mkDots('diasPasos',ci.diasPasos||0,7)+'</div>';
+  if(tipo==='uno'){
+    h+='<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">¿De qué te enorgulleces esta semana?</div>'
+      +'<textarea oninput="ST.ci.orgullo=this.value;save()" style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:none;min-height:55px;box-sizing:border-box;outline:none">'+(ci.orgullo||'')+'</textarea></div>'
+    +'<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">¿Compromiso esta semana?</div>'
+      +'<textarea oninput="ST.ci.compromiso=this.value;save()" style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:none;min-height:55px;box-sizing:border-box;outline:none">'+(ci.compromiso||'')+'</textarea></div>'
+    +'<div style="margin-bottom:12px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">¿Sensaciones generales?</div>'
+      +'<textarea oninput="ST.ci.sensaciones=this.value;save()" style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:none;min-height:55px;box-sizing:border-box;outline:none">'+(ci.sensaciones||'')+'</textarea></div>';
+  }
+  h+='<div style="background:var(--az3);border-radius:8px;padding:10px;text-align:center;margin-bottom:12px">'
+    +'<div style="font-size:10px;color:var(--t3)">Adherencia estimada</div>'
+    +'<div style="font-size:28px;font-weight:900;color:var(--az)" id="ci-adh">'+adh+'%</div>'
+  +'</div>'
+  +'<button class="btn bp" style="width:100%;padding:14px;font-size:15px" onclick="enviarCI()">Enviar</button>'
+  +'</div></div>';
+  return h;
+}
+function ciDot(btn){
+  var key=btn.dataset.k,val=parseInt(btn.dataset.v),mx=parseInt(btn.dataset.m);
+  ST.ci[key]=val;save();
+  btn.parentNode.querySelectorAll('button').forEach(function(b){
+    b.style.background=parseInt(b.dataset.v)<=val?'var(--az)':'transparent';
+  });
+  var ids={diasEnt:'ci-ent-n',diasNut:'ci-nut-n',diasPasos:'ci-pas-n'};
+  var el=document.getElementById(ids[key]);if(el)el.textContent=val+'/'+mx;
+  var ae=document.getElementById('ci-adh');if(ae)ae.textContent=calcAdh()+'%';
+}
+function calcAdh(){
+  var ci=ST.ci,dp=DIAS.filter(function(d){return!d.rest;}).length||4;
+  return Math.round(Math.min(1,(ci.diasEnt||0)/dp)*40+Math.min(1,(ci.diasNut||0)/7)*40+Math.min(1,(ci.diasPasos||0)/7)*20);
+}
+
+
+function enviarCI(){
+  ST.ci.adh=calcAdh();ST.ci.done=true;ST.ci.open=false;ST.ci.semana=ST.u.semana;save();
+  var _c=document.querySelector('[data-ci-card]');
+  if(_c){var _t=document.createElement('div');_t.innerHTML=renderCI();_c.replaceWith(_t.firstChild);}
+  else{var _ct=document.getElementById('ct');if(_ct){var _sp=_ct.scrollTop;_ct.innerHTML=renderInicio();_ct.scrollTop=_sp;}}
+  toast('Check-in enviado ✓ — '+ST.ci.adh+'%','vd');
+  if(_tk){api('POST','/api/entreno/checkin',{semana_inicio:ST.u.inicioBloque||new Date().toISOString().split('T')[0],dias_entreno_real:ST.ci.diasEnt||0,dias_nutricion:ST.ci.diasNut||0,dias_pasos:ST.ci.diasPasos||0,orgullos:ST.ci.orgullo||'',compromisos:ST.ci.compromiso||'',sensaciones:ST.ci.sensaciones||'',como_semana:ST.ci.como||'',adherencia:ST.ci.adh||0}).catch(function(e){console.warn('[CI]',e);});}
+}
+
+
+function doLogout(){
+  _tk=null;
+  localStorage.removeItem('ef_tk');
+  localStorage.removeItem('ef8');
+  location.reload();
+}
+
+// ── Generar equivalencias del plan del entrenador ───────────────────────────
+// El entrenador define UN alimento base por categoría/comida con una cantidad.
+// La app calcula los macros de ese alimento base y genera equivalencias
+// de todos los alimentos de esa categoría con la misma carga de macros.
+
+function calcularEquivalencias(planAlimentos) {
+  // planAlimentos: { desayuno: [{nom, cat, cantidad, p100, c100, g100, k100, u}...], ... }
+  // Retorna MENU con cantidades ajustadas por equivalencia
+  var resultado = {};
+
+  // Map cat codes to MENU category keys
+  var CAT_MAP = {
+    'prot': 'proteinas_magras',
+    'prot_g': 'proteinas_grasas',
+    'hidrat': 'hidratos',
+    'fat': 'grasas',
+    'verd': 'verduras',
+    'fruta': 'frutas',
+    'grasas_superavit': 'grasas_superavit'
+  };
+  var CAT_ORDER_FIXED = ['prot','prot_g','hidrat','fat','verd','fruta'];
+  // Fixed display order for food categories
+  var CAT_ORDER_FIXED = ['prot','prot_g','hidrat','fat','verd','fruta'];
+
+  // Meal key mapping (plan uses flat keys, MENU uses same)
+  // Include all possible meal keys including snack variants
+  var MEAL_BASE_MAP = {desayuno_extra:'desayuno',snack_am:'snack',snack_pm:'snack',post_entreno:'snack',comida_extra:'comida',cena_extra:'cena'};
+  var MEAL_KEYS = Object.keys(planAlimentos).map(function(k){ return k; });
+
+  MEAL_KEYS.forEach(function(meal) {
+    var planItems = planAlimentos[meal];
+    var menuKey = meal;
+    if (!MENU[menuKey]) menuKey = MEAL_BASE_MAP[meal] || meal;
+    if (!planItems || !MENU[menuKey]) return;
+    var menuMeal = MENU[menuKey];
+
+    resultado[meal] = { nom: menuMeal.nom };
+
+    // Group plan items by category
+    var planByCat = {};
+    planItems.forEach(function(item) {
+      if (!planByCat[item.cat]) planByCat[item.cat] = item;
+    });
+
+    // For each category in MENU, calculate equivalences
+    CAT_ORDER_FIXED.filter(function(k){
+        // frutas and verduras only show if the trainer assigned them in the plan
+        // k maps via CAT_MAP: fruta->frutas, verd->verduras
+        var menuKey=CAT_MAP[k]||k;
+        if(menuKey==='frutas'){return !!planByCat['fruta'];}
+        if(menuKey==='verduras'){return !!planByCat['verd'];}
+        return menuMeal[menuKey]||planByCat[k];
+      }).concat(Object.keys(menuMeal).filter(function(k){if(k==='frutas')return !!planByCat['fruta'];if(k==='verduras')return !!planByCat['verd'];return CAT_ORDER_FIXED.indexOf(k)<0;})).forEach(function(menuCat) {
+      if (menuCat === 'nom') return;
+      var menuItems = menuMeal[menuCat];
+      if (!Array.isArray(menuItems)) return;
+
+      // Find the plan item for this category
+      // cat code in plan vs MENU key
+      var planItem = null;
+      Object.keys(CAT_MAP).forEach(function(catCode) {
+        if (CAT_MAP[catCode] === menuCat && planByCat[catCode]) {
+          planItem = planByCat[catCode];
+        }
+      });
+
+      if (!planItem) {
+        // Frutas and verduras are always shown as fixed lists if MENU has them
+        if (menuCat === 'verduras' || menuCat === 'frutas') {
+          resultado[meal][menuCat] = menuItems;
+        }
+        return;
+      }
+
+      // Calculate target macros from the trainer's base item
+      var baseCant = planItem.cantidad || 100;
+      var baseP100 = planItem.p100 || 0;
+      var baseC100 = planItem.c100 || 0;
+      var baseG100 = planItem.g100 || 0;
+
+      // Target macros = (base_cantidad / 100) * per100g_value
+      var targetP = (baseCant / 100) * baseP100;
+      var targetC = (baseCant / 100) * baseC100;
+      var targetG = (baseCant / 100) * baseG100;
+
+      // Determine which macro to use for equivalence
+      // prot -> use protein, hidrat -> use carbs, fat/grasas -> use fat
+      var useMacro = 'p';
+      var targetMacro = targetP;
+      if (menuCat === 'hidratos') { useMacro = 'c'; targetMacro = targetC; }
+      else if (menuCat === 'grasas' || menuCat === 'grasas_superavit') { useMacro = 'g'; targetMacro = targetG; }
+      else if (menuCat === 'verduras' || menuCat === 'frutas') {
+        // Use kcal for verduras/frutas
+        resultado[meal][menuCat] = menuItems;
+        return;
+      }
+
+      if (!targetMacro || targetMacro === 0) {
+        resultado[meal][menuCat] = menuItems;
+        return;
+      }
+
+      // Calculate equivalent quantity for each MENU item
+      resultado[meal][menuCat] = menuItems.map(function(mi) {
+        var miCant = mi.cantidad || 100;
+        var isUnit = mi.u && (mi.u.includes('ud') || mi.u.includes('unid'));
+        var per100 = useMacro === 'p' ? (mi.p||0) : useMacro === 'c' ? (mi.c||0) : (mi.g||0);
+
+        var newCant, factor;
+        if (isUnit) {
+          // For unit-based foods: calculate per unit
+          var perUnit = miCant > 0 ? per100 / miCant : 0;
+          if (!perUnit) return mi;
+          var newUnits = Math.max(1, Math.round(targetMacro / perUnit));
+          factor = newUnits / miCant;
+          newCant = newUnits;
+        } else {
+          // For weight-based foods: calculate per 100g
+          var per100g = miCant > 0 ? (per100 / miCant) * 100 : 0;
+          if (!per100g) return mi;
+          newCant = Math.max(5, Math.round((targetMacro / per100g) * 100 / 5) * 5);
+          factor = newCant / miCant;
+        }
+
+        return {
+          nom: mi.nom,
+          cantidad: newCant,
+          u: mi.u,
+          p: Math.round(mi.p * factor * 10) / 10,
+          c: Math.round(mi.c * factor * 10) / 10,
+          g: Math.round(mi.g * factor * 10) / 10,
+          kcal: Math.round(mi.kcal * factor)
+        };
+      });
+    });
+  });
+
+  // Add proteinas_grasas option when plan has both prot + fat (combination equivalence)
+  MEAL_KEYS.forEach(function(meal) {
+    if (!resultado[meal]) return;
+    var planItems = planAlimentos[meal] || [];
+    var planByCat = {};
+    planItems.forEach(function(item) { planByCat[item.cat] = item; });
+
+    var hasProt = planByCat['prot'];
+    var hasFat = planByCat['fat'];
+
+    var menuMealComb = MENU[meal] || MENU[MEAL_BASE_MAP[meal]] || {};
+    if (hasProt && hasFat && menuMealComb.proteinas_grasas) {
+      // Combined kcal = prot kcal + fat kcal
+      var protKcal = (hasProt.cantidad / 100) * hasProt.k100;
+      var fatKcal = (hasFat.cantidad / 100) * hasFat.k100;
+      var totalKcal = protKcal + fatKcal;
+
+      // Calculate equivalences for proteinas_grasas based on total kcal
+      resultado[meal].proteinas_grasas = menuMealComb.proteinas_grasas.map(function(mi) {
+        var miCantBase = mi.cantidad || 100;
+        var isUnit2 = mi.u && (mi.u.includes('ud') || mi.u.includes('unid'));
+        var newCant, factor;
+        if (isUnit2) {
+          var kcalPerUnit = miCantBase > 0 ? mi.kcal / miCantBase : 0;
+          if (!kcalPerUnit) return mi;
+          newCant = Math.max(1, Math.round(totalKcal / kcalPerUnit));
+          factor = newCant / miCantBase;
+        } else {
+          var miKcal100 = mi.kcal > 0 ? (mi.kcal / miCantBase) * 100 : 0;
+          if (!miKcal100) return mi;
+          newCant = Math.max(10, Math.round((totalKcal / miKcal100) * 100 / 5) * 5);
+          factor = newCant / miCantBase;
+        }
+        return {
+          nom: mi.nom,
+          cantidad: newCant,
+          u: mi.u,
+          p: Math.round((mi.p || 0) * factor * 10) / 10,
+          c: Math.round((mi.c || 0) * factor * 10) / 10,
+          g: Math.round((mi.g || 0) * factor * 10) / 10,
+          kcal: Math.round(totalKcal)
+        };
+      });
+    }
+  });
+
+  return resultado;
+}
+
+function aplicarCantidadesPersonalizadas(planAlimentos) {
+  if (!planAlimentos || !Object.keys(planAlimentos).length) return;
+  var equivalencias = calcularEquivalencias(planAlimentos);
+  // Replace MENU categories completely with plan categories (not just update)
+  Object.keys(equivalencias).forEach(function(meal) {
+    if (!MENU[meal]) MENU[meal] = {};
+    // Remove categories not in plan (use all possible MENU keys)
+    var planCats = Object.keys(equivalencias[meal]).filter(function(k){ return k !== 'nom'; });
+    var allCats = Object.keys(MENU[meal]).filter(function(k){ return k !== 'nom'; });
+    allCats.forEach(function(cat) {
+      if (!planCats.includes(cat)) {
+        delete MENU[meal][cat];
+      }
+    });
+    // Apply plan categories
+    Object.keys(equivalencias[meal]).forEach(function(cat) {
+      if (cat === 'nom') return;
+      MENU[meal][cat] = equivalencias[meal][cat];
+    });
+  });
+  ST.menuPersonalizado = true;
+}
+
+
