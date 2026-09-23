@@ -342,11 +342,13 @@ function getSemanaFechas(semana) {
 }
 
 async function loadClienteData() {
-  // Snapshot menuGuardado from localStorage BEFORE anything modifies it
+  // Snapshot menuGuardado and ejStates from localStorage BEFORE anything modifies them
   var _menuGuardadoSnapshot = {};
+  var _ejStatesSnapshot = {};
   try {
     var _snap = JSON.parse(localStorage.getItem('ef8')||'{}');
     if (_snap.menuGuardado) _menuGuardadoSnapshot = _snap.menuGuardado;
+    if (_snap.ejStates) { _menuGuardadoSnapshot._ejStates = _snap.ejStates; _ejStatesSnapshot = _snap.ejStates; }
   } catch(e) {}
 
   try {
@@ -719,7 +721,7 @@ async function loadClienteData() {
     // Restore rir from _menuGuardadoSnapshot equivalent for ejStates
     // Use the snapshot taken at start of loadClienteData
     try {
-      var _ejSnap = _menuGuardadoSnapshot._ejStates;
+      var _ejSnap = _ejStatesSnapshot;
       if (_ejSnap) {
         Object.keys(_ejSnap).forEach(function(k) {
           if (ST.ejStates[k] && _ejSnap[k] && _ejSnap[k].series) {
