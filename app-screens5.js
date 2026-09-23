@@ -226,11 +226,12 @@ function toggleSer(key,si,di){
         api('POST','/api/entreno/registrar-serie',{
           ejercicio:ej.nom||ej.nombre||key,
           dia:String(diaIdx), // always numeric index
-          semana:ST.u.semana||1,
+          semana:ST.semVer||ST.u.semana||1,
           serie:si+1,
           kg:parseFloat(s.kg)||0,
-          reps:parseInt(s.repsH)||0,
-          rir:ej.rir||2
+          reps_reales:parseInt(s.repsH)||null,
+          rir_real:s.rir!==''&&s.rir!==null&&s.rir!==undefined?parseFloat(s.rir):null,
+          completada:true
         }).catch(function(e){console.warn('[serie]',e);});
       }
     }
