@@ -297,6 +297,8 @@ function autoGuardarSerie(di, ei, si) {
   save(); // persist ejStates immediately
   clearTimeout(window['_serSave_' + key + '_' + si]);
   window['_serSave_' + key + '_' + si] = setTimeout(function() {
+    // Only save to BD if user has entered meaningful data
+    if (!parseFloat(s.kg) && !parseInt(s.repsH) && !s.done) return;
     api('POST', '/api/entreno/registrar-serie', {
       bloque_id: bloque_id,
       semana: semana,
