@@ -257,12 +257,8 @@ function restoreEjStatesFromHistEnt(semActual) {
         var d = semData[serKey];
         if (!ST.ejStates[key].series[si]) ST.ejStates[key].series[si] = {kg:'',repsH:'',done:false,rir:''};
         var ex = ST.ejStates[key].series[si];
-        // Only fill gaps — never overwrite existing user data with histEnt data
-        if (d.kg && parseFloat(d.kg) > 0 && (!ex.kg || ex.kg === '0' || ex.kg === '0.00')) ex.kg = String(parseFloat(d.kg));
-        if (d.reps && parseInt(d.reps) > 0 && (!ex.repsH || ex.repsH === '0')) ex.repsH = String(d.reps);
-        // RIR: only fill if empty, never autocomplete
-        if (d.rir != null && d.rir !== '' && d.rir !== '0' && (ex.rir === '' || ex.rir === null || ex.rir === undefined)) ex.rir = String(d.rir);
-        // done: only set true, never false
+        // ONLY restore done:true — never autocomplete kg, reps or rir
+        // Those must always be entered manually by the user
         if (d.done === true) ex.done = true;
       });
     });
