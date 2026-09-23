@@ -718,23 +718,7 @@ async function loadClienteData() {
         }
       } catch(eLs) {}
     }
-    // Restore rir from _menuGuardadoSnapshot equivalent for ejStates
-    // Use the snapshot taken at start of loadClienteData
-    try {
-      var _ejSnap = _ejStatesSnapshot;
-      if (_ejSnap) {
-        Object.keys(_ejSnap).forEach(function(k) {
-          if (ST.ejStates[k] && _ejSnap[k] && _ejSnap[k].series) {
-            _ejSnap[k].series.forEach(function(snapSerie, si) {
-              if (ST.ejStates[k].series && ST.ejStates[k].series[si]) {
-                // rir: always use snapshot value (preserves intentional empty)
-                if (snapSerie.rir !== undefined) ST.ejStates[k].series[si].rir = snapSerie.rir;
-              }
-            });
-          }
-        });
-      }
-    } catch(eRir) {}
+    // RIR comes from localStorage via load() - BD never overwrites it
     save(); // save all including ejStates
     render();
     // Re-render after short delay to ensure DOM is updated with BD data
