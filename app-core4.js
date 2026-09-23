@@ -697,6 +697,7 @@ async function loadClienteData() {
       // ejStates intentionally NOT saved here — only saved by user actions
     }));}catch(e){}
     render();
+    setTimeout(function(){ render(); }, 200);
   } catch(e) {
     console.error('loadClienteData error:', e);
     render();
