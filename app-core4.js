@@ -718,7 +718,27 @@ async function loadClienteData() {
         }
       } catch(eLs) {}
     }
-    // RIR comes from localStorage via load() - BD never overwrites it
+    // Merge localStorage snapshot back into ST.ejStates
+    // This restores rir and other user values that BD restore may have cleared
+    try {
+      if (_ejStatesSnapshot && Object.keys(_ejStatesSnapshot).length > 0) {
+        Object.keys(_ejStatesSnapshot).forEach(function(k) {
+          if (!ST.ejStates[k]) return;
+          var snapSeries = _ejStatesSnapshot[k].series || [];
+          snapSeries.forEach(function(snapS, si) {
+            if (!ST.ejStates[k].series[si]) return;
+            var cur = ST.ejStates[k].series[si];
+            // rir: always restore from snapshot (user value has priority)
+            if (snapS.rir !== undefined) cur.rir = snapS.rir;
+            // kg/reps: restore if snapshot has value and current doesn't
+            if (snapS.kg && !cur.kg) cur.kg = snapS.kg;
+            if (snapS.repsH && !cur.repsH) cur.repsH = snapS.repsH;
+            // done: keep true
+            if (snapS.done) cur.done = true;
+          });
+        });
+      }
+    } catch(eMerge) {}
     save(); // save all including ejStates
     render();
     // Re-render after short delay to ensure DOM is updated with BD data
