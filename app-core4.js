@@ -265,6 +265,21 @@ function restoreEjStatesFromHistEnt(semActual) {
   });
 }
 
+
+function updateHistEnt(nom, di, si, semana, kg, reps, rir, done) {
+  if (!nom) return;
+  if (!ST.histEnt[nom]) ST.histEnt[nom] = {semanas:{}};
+  var sem = String(semana);
+  if (!ST.histEnt[nom].semanas[sem]) ST.histEnt[nom].semanas[sem] = {};
+  var serKey = 'dia' + di + '_s' + (si+1);
+  ST.histEnt[nom].semanas[sem][serKey] = {
+    kg: String(kg||''),
+    reps: String(reps||''),
+    rir: rir!==null&&rir!==undefined ? String(rir) : '',
+    done: !!done
+  };
+}
+
 function autoGuardarSerie(di, ei, si) {
   var ej = DIAS[di] && DIAS[di].ejercicios ? DIAS[di].ejercicios[ei] : null;
   if (!ej) return;
@@ -277,6 +292,8 @@ function autoGuardarSerie(di, ei, si) {
   if(!bloque_id){console.warn('[Serie] No bloque_id');return;}
   var semana = ST.semVer || ST.u.semana || 1;
 
+  // Update histEnt so week changes preserve this data
+  updateHistEnt(ej.nom, di, si, semana, s.kg, s.repsH, s.rir, s.done);
   save(); // persist ejStates immediately
   clearTimeout(window['_serSave_' + key + '_' + si]);
   window['_serSave_' + key + '_' + si] = setTimeout(function() {
