@@ -213,6 +213,8 @@ function toggleSer(key,si,di){
   save();
   if(s.done){
     startTimer(ST.ejStates[key].rest||120);
+    // Flush any pending debounces for this serie before saving
+    clearTimeout(window['_serSave_' + key + '_' + si]);
     // Sync to BD
     if(_tk){
       const parts=key.split('_');
