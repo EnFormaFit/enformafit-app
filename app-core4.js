@@ -313,7 +313,7 @@ function autoGuardarSerie(di, ei, si) {
       if (!ENT_CACHE[cacheKey]) ENT_CACHE[cacheKey] = {};
       ENT_CACHE[cacheKey][ej.nom + '_' + (si + 1)] = { kg: s.kg, reps: s.repsH, rir: s.rir, done: s.done };
     }).catch(function(e) { console.warn('[Serie]', e.message); });
-  }, 800);
+  }, 300);
 }
 
 // Función legacy - mantener para compatibilidad
