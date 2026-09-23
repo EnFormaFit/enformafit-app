@@ -648,7 +648,7 @@ async function loadClienteData() {
               var rowKg = parseFloat(row.kg) || 0;
               if (rowKg > 0 && !existing.kg) existing.kg = String(rowKg);
               if (row.reps_reales && row.reps_reales > 0 && !existing.repsH) existing.repsH = String(row.reps_reales);
-              if (row.rir_real !== null && row.rir_real !== undefined && !existing.rir) existing.rir = String(row.rir_real);
+              // RIR: never autocomplete from BD
               if (row.completada) existing.done = true;
             }
           }
