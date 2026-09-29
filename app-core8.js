@@ -288,6 +288,22 @@ function updateHistEnt(nom, di, si, semana, kg, reps, rir, done) {
   };
 }
 
+function flushPendingSaves() {
+  // Cancel all pending debounces and save immediately to BD
+  Object.keys(window).filter(function(k){ return k.startsWith('_serSave_'); }).forEach(function(k) {
+    clearTimeout(window[k]);
+    // Parse key: _serSave_<ejKey>_<si> -> e.g. _serSave_1_0_0
+    var parts = k.replace('_serSave_','').split('_');
+    if (parts.length >= 3) {
+      var si = parseInt(parts[parts.length-1]);
+      var ei = parseInt(parts[parts.length-2]);
+      var di = parseInt(parts[parts.length-3]);
+      autoGuardarSerie(di, ei, si);
+    }
+    delete window[k];
+  });
+}
+
 function autoGuardarSerie(di, ei, si) {
   var ej = DIAS[di] && DIAS[di].ejercicios ? DIAS[di].ejercicios[ei] : null;
   if (!ej) return;
