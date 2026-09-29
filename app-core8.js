@@ -1101,64 +1101,51 @@ function calcularEquivalencias(planAlimentos) {
         return;
       }
 
-      // Calculate target macros from the trainer's base item
+      // Calculate target kcal from the trainer's base item (equivalences based on total kcal)
       var baseCant = planItem.cantidad || 100;
-      var baseP100 = planItem.p100 || 0;
-      var baseC100 = planItem.c100 || 0;
-      var baseG100 = planItem.g100 || 0;
+      var baseK100 = planItem.k100 || planItem.kcal || 0;
+      var targetKcal = (baseCant / 100) * baseK100;
 
-      // Target macros = (base_cantidad / 100) * per100g_value
-      var targetP = (baseCant / 100) * baseP100;
-      var targetC = (baseCant / 100) * baseC100;
-      var targetG = (baseCant / 100) * baseG100;
-
-      // Determine which macro to use for equivalence
-      // prot -> use protein, hidrat -> use carbs, fat/grasas -> use fat
-      var useMacro = 'p';
-      var targetMacro = targetP;
-      if (menuCat === 'hidratos') { useMacro = 'c'; targetMacro = targetC; }
-      else if (menuCat === 'grasas' || menuCat === 'grasas_superavit') { useMacro = 'g'; targetMacro = targetG; }
-      else if (menuCat === 'verduras' || menuCat === 'frutas') {
-        // Use kcal for verduras/frutas
+      // Verduras and frutas: show as fixed lists
+      if (menuCat === 'verduras' || menuCat === 'frutas') {
         resultado[meal][menuCat] = menuItems;
         return;
       }
 
-      if (!targetMacro || targetMacro === 0) {
+      if (!targetKcal || targetKcal === 0) {
         resultado[meal][menuCat] = menuItems;
         return;
       }
 
-      // Calculate equivalent quantity for each MENU item
+      // Calculate equivalent quantity for each MENU item based on kcal
       resultado[meal][menuCat] = menuItems.map(function(mi) {
-        var miCant = mi.cantidad || 100;
+        var miCantBase = mi.cantidad || 100;
         var isUnit = mi.u && (mi.u.includes('ud') || mi.u.includes('unid'));
-        var per100 = useMacro === 'p' ? (mi.p||0) : useMacro === 'c' ? (mi.c||0) : (mi.g||0);
+        var miKcal = mi.kcal || mi.k || 0;
 
         var newCant, factor;
         if (isUnit) {
-          // For unit-based foods: calculate per unit
-          var perUnit = miCant > 0 ? per100 / miCant : 0;
-          if (!perUnit) return mi;
-          var newUnits = Math.max(1, Math.round(targetMacro / perUnit));
-          factor = newUnits / miCant;
-          newCant = newUnits;
+          // For unit-based foods: kcal per unit
+          var kcalPerUnit = miCantBase > 0 ? miKcal / miCantBase : 0;
+          if (!kcalPerUnit) return mi;
+          newCant = Math.max(1, Math.round(targetKcal / kcalPerUnit));
+          factor = newCant / miCantBase;
         } else {
-          // For weight-based foods: calculate per 100g
-          var per100g = miCant > 0 ? (per100 / miCant) * 100 : 0;
-          if (!per100g) return mi;
-          newCant = Math.max(5, Math.round((targetMacro / per100g) * 100 / 5) * 5);
-          factor = newCant / miCant;
+          // For weight-based foods: newCant = (targetKcal / kcal_per_100g) * 100
+          var miKcal100 = miCantBase > 0 ? (miKcal / miCantBase) * 100 : 0;
+          if (!miKcal100) return mi;
+          newCant = Math.max(5, Math.round((targetKcal / miKcal100) * 100 / 5) * 5);
+          factor = newCant / miCantBase;
         }
 
         return {
           nom: mi.nom,
           cantidad: newCant,
           u: mi.u,
-          p: Math.round(mi.p * factor * 10) / 10,
-          c: Math.round(mi.c * factor * 10) / 10,
-          g: Math.round(mi.g * factor * 10) / 10,
-          kcal: Math.round(mi.kcal * factor)
+          p: Math.round((mi.p || 0) * factor * 10) / 10,
+          c: Math.round((mi.c || 0) * factor * 10) / 10,
+          g: Math.round((mi.g || 0) * factor * 10) / 10,
+          kcal: Math.round(targetKcal)
         };
       });
     });
