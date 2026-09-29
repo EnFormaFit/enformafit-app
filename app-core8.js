@@ -1121,30 +1121,33 @@ function calcularEquivalencias(planAlimentos) {
       resultado[meal][menuCat] = menuItems.map(function(mi) {
         var miCantBase = mi.cantidad || 100;
         var isUnit = mi.u && (mi.u.includes('ud') || mi.u.includes('unid'));
-        var miKcal = mi.kcal || mi.k || 0;
+        // kcal_100 is kcal per 100g (from MENU); kcal is total for the base quantity
+        var miKcal100 = mi.kcal_100 || (mi.kcal && miCantBase > 0 ? (mi.kcal / miCantBase) * 100 : 0) || mi.k || 0;
 
         var newCant, factor;
         if (isUnit) {
-          // For unit-based foods: kcal per unit
-          var kcalPerUnit = miCantBase > 0 ? miKcal / miCantBase : 0;
+          // For unit-based foods: kcal per unit = kcal_100 * cantidad / 100
+          var kcalPerUnit = miKcal100 > 0 ? (miKcal100 * miCantBase / 100) : 0;
           if (!kcalPerUnit) return mi;
           newCant = Math.max(1, Math.round(targetKcal / kcalPerUnit));
           factor = newCant / miCantBase;
         } else {
           // For weight-based foods: newCant = (targetKcal / kcal_per_100g) * 100
-          var miKcal100 = miCantBase > 0 ? (miKcal / miCantBase) * 100 : 0;
           if (!miKcal100) return mi;
           newCant = Math.max(5, Math.round((targetKcal / miKcal100) * 100 / 5) * 5);
           factor = newCant / miCantBase;
         }
 
+        var pFactor = mi.p_100 !== undefined ? (mi.p_100 * newCant / 100) : Math.round((mi.p || 0) * factor * 10) / 10;
+        var cFactor = mi.c_100 !== undefined ? (mi.c_100 * newCant / 100) : Math.round((mi.c || 0) * factor * 10) / 10;
+        var gFactor = mi.g_100 !== undefined ? (mi.g_100 * newCant / 100) : Math.round((mi.g || 0) * factor * 10) / 10;
         return {
           nom: mi.nom,
           cantidad: newCant,
           u: mi.u,
-          p: Math.round((mi.p || 0) * factor * 10) / 10,
-          c: Math.round((mi.c || 0) * factor * 10) / 10,
-          g: Math.round((mi.g || 0) * factor * 10) / 10,
+          p: Math.round(pFactor * 10) / 10,
+          c: Math.round(cFactor * 10) / 10,
+          g: Math.round(gFactor * 10) / 10,
           kcal: Math.round(targetKcal)
         };
       });
