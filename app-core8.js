@@ -762,6 +762,7 @@ async function loadClienteData() {
         });
       }
     } catch(eMerge) {}
+    actualizarCantidadesMenuGuardado();
     save(); // save all including ejStates
     render();
     // Re-render after short delay to ensure DOM is updated with BD data
@@ -1201,6 +1202,53 @@ function calcularEquivalencias(planAlimentos) {
   });
 
   return resultado;
+}
+
+
+// Actualiza las cantidades del menuGuardado con las equivalencias correctas (por kcal)
+// Mantiene el alimento seleccionado pero corrige la cantidad
+function actualizarCantidadesMenuGuardado() {
+  if (!ST.menuGuardado || !MENU) return;
+  var updated = false;
+  Object.keys(ST.menuGuardado).forEach(function(dayIdx) {
+    var dayMenu = ST.menuGuardado[dayIdx];
+    if (!dayMenu) return;
+    Object.keys(dayMenu).forEach(function(meal) {
+      var mealData = dayMenu[meal];
+      if (!mealData) return;
+      var menuMeal = MENU[meal] || MENU['comida'] || {};
+      // For each category in the saved meal
+      ['prot','hidrat','fat','fruta','verd','prot_g'].forEach(function(cat) {
+        var saved = mealData[cat];
+        if (!saved || !saved.nom) return;
+        // Map cat to MENU category
+        var catMap = {prot:'proteinas_magras',prot_g:'proteinas_grasas',hidrat:'hidratos',fat:'grasas',fruta:'frutas',verd:'verduras'};
+        var menuCat = catMap[cat];
+        var menuItems = menuMeal[menuCat];
+        if (!Array.isArray(menuItems)) return;
+        // Find this food in MENU equivalences
+        var menuItem = menuItems.find(function(mi){ return mi.nom === saved.nom; });
+        if (!menuItem) return;
+        // Update quantity and macros if different
+        if (menuItem.cantidad !== saved.cantidad) {
+          updated = true;
+          mealData[cat] = {
+            nom: saved.nom,
+            cantidad: menuItem.cantidad,
+            u: menuItem.u || saved.u,
+            p: menuItem.p || 0,
+            c: menuItem.c || 0,
+            g: menuItem.g || 0,
+            kcal: menuItem.kcal || 0
+          };
+        }
+      });
+    });
+  });
+  if (updated) {
+    save();
+    console.log('[menuGuardado] Cantidades actualizadas con equivalencias correctas');
+  }
 }
 
 function aplicarCantidadesPersonalizadas(planAlimentos) {
