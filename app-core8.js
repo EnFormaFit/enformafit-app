@@ -629,8 +629,12 @@ async function loadClienteData() {
       var histBD = await api('GET', '/api/entreno/mi-historial');
       if (histBD && Array.isArray(histBD) && histBD.length) {
         // Only populate histEnt — never touch ejStates if localStorage already has it
+        // localEjOK: only true if localStorage has data with actual values for this week
         var localEjOK = Object.keys(ST.ejStates||{}).some(function(k){
-          return ST.ejStates[k] && ST.ejStates[k]._sem === semActual;
+          var ej = ST.ejStates[k];
+          if (!ej || ej._sem !== semActual) return false;
+          // Check if any series has actual data (kg or reps or done)
+          return (ej.series||[]).some(function(s){ return s.done || parseFloat(s.kg) > 0 || parseInt(s.repsH) > 0; });
         });
         histBD.forEach(function(row) {
           var nom = row.ejercicio;
