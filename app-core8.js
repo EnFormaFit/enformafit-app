@@ -745,16 +745,11 @@ async function loadClienteData() {
     save(); // save all including ejStates
     render();
     // Re-render after short delay to ensure DOM is updated with BD data
-    // Re-render content area after BD data loads to show correct values
+    // Force full re-render after BD data loads - clear and rebuild
     setTimeout(function(){
       var ct = document.getElementById('ct');
-      if (ct && SEC === 'entreno') {
-        // Force full re-render of entreno screen
-        ct.innerHTML = '';
-        render();
-      } else {
-        render();
-      }
+      if (ct) ct.innerHTML = '';
+      render();
     }, 800);
   } catch(e) {
     console.error('loadClienteData error:', e);
