@@ -1130,8 +1130,10 @@ function calcularEquivalencias(planAlimentos) {
 
         var newCant, factor;
         if (isUnit) {
-          // For unit-based foods: kcal per unit = kcal_100 * cantidad / 100
-          var kcalPerUnit = miKcal100 > 0 ? (miKcal100 * miCantBase / 100) : 0;
+          // For unit-based foods: use kcal directly (not kcal_100 which is per 100g)
+          // mi.kcal = total kcal for mi.cantidad units
+          var miKcalDirect = mi.kcal || 0;
+          var kcalPerUnit = miCantBase > 0 ? miKcalDirect / miCantBase : 0;
           if (!kcalPerUnit) return mi;
           newCant = Math.max(1, Math.round(targetKcal / kcalPerUnit));
           factor = newCant / miCantBase;
