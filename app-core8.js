@@ -1246,14 +1246,14 @@ function actualizarCantidadesMenuGuardado() {
   });
   if (updated) {
     save();
-    // Also update BD for days that were corrected
+    // Also update BD with correct quantities
     if (_tk) {
-      Object.keys(ST.menuGuardado).forEach(function(dayIdx) {
-        api('POST', '/api/entreno/menu-semanal', {
-          dia: parseInt(dayIdx),
-          menu: ST.menuGuardado[dayIdx]
-        }).catch(function(){});
+      // Send full menuGuardado in correct format (exclude non-day keys)
+      var menuToSave = {};
+      Object.keys(ST.menuGuardado).forEach(function(k) {
+        if (!isNaN(parseInt(k))) menuToSave[k] = ST.menuGuardado[k];
       });
+      api('POST', '/api/entreno/menu-semanal', {menu_semanal: menuToSave}).catch(function(){});
     }
   }
 }
