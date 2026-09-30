@@ -785,6 +785,14 @@ function toggleProgSection(sec){
   var ct=document.getElementById('ct');
   if(ct&&SEC==='progreso'){var sp=ct.scrollTop;ct.innerHTML=renderProgreso();ct.scrollTop=sp;}
 }
+
+// Helper: get foto URL supporting both formats (rev_0/rev_1 and frente/espalda/perfil_d/perfil_i)
+var _FOTO_POS_KEYS=['frente','perfil_d','perfil_i','espalda'];
+function getFoto(fotos, pi) {
+  if (!fotos) return null;
+  return fotos['rev_'+pi] || fotos[_FOTO_POS_KEYS[pi]] || null;
+}
+
 function renderProgreso(){
   const pesos=ST.pesos;
   const today=new Date().toISOString().split('T')[0];
@@ -847,10 +855,10 @@ function renderProgreso(){
       let stored=null;
       if(isCur){
         // Current revision: look in ST.rev.fotos
-        stored=ST.rev.fotos['rev_'+pi]||null;
+        stored=getFoto(ST.rev.fotos,pi);
       } else {
         // Past/future: look in ST.revHistorial
-        stored=(ST.revHistorial&&ST.revHistorial[rs]&&ST.revHistorial[rs].fotos&&ST.revHistorial[rs].fotos['rev_'+pi])||null;
+        stored=(ST.revHistorial&&ST.revHistorial[rs]&&getFoto(ST.revHistorial[rs].fotos,pi))||null;
       }
       fotosH+=`<div class="fslot ${locked?'locked':stored?'has':''}" onclick="${locked?'':'triggerPF('+gi+','+pi+')'}">
         ${stored
@@ -1047,7 +1055,7 @@ function renderRevision(){
     content=`<div style="font-size:13px;color:var(--t2);margin-bottom:12px">Sube 4 fotos comparativas: frente, dos perfiles y espalda.</div>`;
     content+=`<div class="rfg">`;
     POSES.forEach((pos,pi)=>{
-      const f=fotos['rev_'+pi];
+      const f=getFoto(fotos,pi);
       content+=`<div class="rfb ${f?'done':''}" style="position:relative" onclick="${f?'':'triggerRF('+pi+')'}">
         ${f
           ?`<img src="${f}"><button onclick="event.stopPropagation();if(confirm('¿Borrar esta foto?')){delete ST.rev.fotos['rev_'+${pi}];save();render();}" style="position:absolute;top:4px;left:4px;background:rgba(220,30,30,.85);border:none;border-radius:50%;width:26px;height:26px;color:#fff;font-size:13px;cursor:pointer;z-index:3">🗑</button><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:600;text-align:center;padding:3px">${pos}</div>`
@@ -1218,7 +1226,7 @@ function verRevAnterior(sem){
     var POSES=['Frente','Perfil der.','Perfil izq.','Espalda'];
     var html='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px">';
     POSES.forEach(function(pos,pi){
-      var f=hist.fotos&&(hist.fotos['rev_'+pi]||hist.fotos['s'+sem+'_'+pi]);
+      var f=hist.fotos&&(getFoto(hist.fotos,pi)||hist.fotos['s'+sem+'_'+pi]);
       html+='<div style="aspect-ratio:3/5;border-radius:8px;overflow:hidden;background:var(--bg);border:1px solid var(--bor)">'+(f?'<img src="'+f+'" style="width:100%;height:100%;object-fit:cover">':'<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:10px;color:var(--t3);padding:4px;text-align:center">'+pos+'</div>')+'</div>';
     });
     html+='</div>';
@@ -1272,7 +1280,7 @@ function renderRevisionEdit(sem){
   var h='<div style="padding:4px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><button class="btn bo bs" onclick="ST._editandoRevSem=null;render()">&#8592; Volver</button><div style="font-weight:700;font-size:15px">Revision S'+sem+'</div></div>';
   h+='<div class="card" style="margin-bottom:12px"><div class="ch"><h2>Fotos</h2></div><div class="cb"><div class="rfg">';
   POSES.forEach(function(pos,pi){
-    var f=hist.fotos&&hist.fotos['rev_'+pi];
+    var f=hist.fotos&&getFoto(hist.fotos,pi);
     h+='<div class="rfb '+(f?'done':'')+'" style="position:relative" onclick="triggerRevHistFoto('+sem+','+pi+')">'
       +(f?'<img src="'+f+'"><button data-sem="'+sem+'" data-pi="'+pi+'" onclick="event.stopPropagation();revHistDelFoto(this)" style="position:absolute;top:4px;left:4px;background:rgba(220,30,30,.85);border:none;border-radius:50%;width:24px;height:24px;color:#fff;font-size:11px;cursor:pointer;z-index:3">&#128465;</button><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);color:#fff;font-size:10px;text-align:center;padding:2px">'+pos+'</div>'
         :'<div style="font-size:24px">&#128247;</div><div style="font-size:10px;color:var(--t3)">'+pos+'</div>')
