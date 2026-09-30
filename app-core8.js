@@ -1244,7 +1244,18 @@ function actualizarCantidadesMenuGuardado() {
       });
     });
   });
-  if (updated) save();
+  if (updated) {
+    save();
+    // Also update BD for days that were corrected
+    if (_tk) {
+      Object.keys(ST.menuGuardado).forEach(function(dayIdx) {
+        api('POST', '/api/entreno/menu-semanal', {
+          dia: parseInt(dayIdx),
+          menu: ST.menuGuardado[dayIdx]
+        }).catch(function(){});
+      });
+    }
+  }
 }
 
 function aplicarCantidadesPersonalizadas(planAlimentos) {
