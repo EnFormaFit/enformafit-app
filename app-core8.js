@@ -463,7 +463,6 @@ async function loadClienteData() {
       ST.p.planAlimentos = plan.alimentos;
       ST.p.alimentos = plan.alimentos; // alias for menu validation
       aplicarCantidadesPersonalizadas(plan.alimentos);
-      actualizarCantidadesMenuGuardado();
     }
 
     // Medidas y fotos S0 — cargar en revHistorial[0] para que aparezcan en Progreso y Revisión
@@ -513,6 +512,8 @@ async function loadClienteData() {
         });
       }
     } catch(e) {}
+    // Correct menuGuardado quantities AFTER BD load (so BD data is also corrected)
+    actualizarCantidadesMenuGuardado();
 
     // Load all revisiones from BD
     try {
