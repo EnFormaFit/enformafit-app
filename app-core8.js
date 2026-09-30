@@ -1059,8 +1059,11 @@ function calcularEquivalencias(planAlimentos) {
 
   MEAL_KEYS.forEach(function(meal) {
     var planItems = planAlimentos[meal];
-    var menuKey = meal;
-    if (!MENU[menuKey]) menuKey = MEAL_BASE_MAP[meal] || meal;
+    // Always use the BASE meal MENU (snack, comida, etc.) for equivalencias
+    // Never use derived meals (snack_am, snack_pm) which may have been modified
+    var menuKey = MEAL_BASE_MAP[meal] || meal;
+    if (!MENU[menuKey] && MEAL_BASE_MAP[meal]) menuKey = MEAL_BASE_MAP[meal];
+    if (!MENU[menuKey]) menuKey = meal;
     if (!planItems || !MENU[menuKey]) return;
     var menuMeal = MENU[menuKey];
 
