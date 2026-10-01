@@ -1,3 +1,4 @@
+// EnFormaFit app-screens v1790840889
 // ── MEAL CONSTANTS ──────────────────────────────────────────────────────────
 var _MEAL_BASE_MAP={desayuno_extra:'desayuno',snack_am:'snack',snack_pm:'snack',post_entreno:'snack',comida_extra:'comida',cena_extra:'cena'};
 var _MEAL_ORDER=['desayuno','comida','cena','snack','desayuno_extra','snack_am','snack_pm','comida_extra','cena_extra','post_entreno'];
@@ -850,7 +851,7 @@ function renderProgreso(){
     const col=locked?'ft-gr':rs===0?'ft-vd':'ft-az';
     const gtit=rs===0?'Inicio':'S'+rs;
     fotosH+=`<div class="fgrp"><div class="fgrp-t ${col}">${gtit}</div>`;
-    POSES.forEach((pos,pi)=>{
+    ['Frente','Perfil D.','Perfil I.','Espalda'].forEach((pos,pi)=>{
       // Look for foto in correct place based on semana
       let stored=null;
       if(isCur){
