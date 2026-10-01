@@ -1095,8 +1095,7 @@ function renderRevision(){
     // Fotos + cuerpo
     content=`<div style="font-size:13px;color:var(--t2);margin-bottom:12px">Sube 4 fotos comparativas: frente, dos perfiles y espalda.</div>`;
     content+=`<div class="rfg">`;
-    POSES.forEach((pos,pi)=>{
-      const f=getFoto(fotos,pi);
+    ['Frente','Perfil D.','Perfil I.','Espalda'].forEach(function(pos,pi){ const f=getFoto(fotos,pi);
       content+=`<div class="rfb ${f?'done':''}" style="position:relative" onclick="${f?'':'triggerRF('+pi+')'}">
         ${f
           ?`<img src="${f}"><button onclick="event.stopPropagation();if(confirm('¿Borrar esta foto?')){delete ST.rev.fotos['rev_'+${pi}];save();render();}" style="position:absolute;top:4px;left:4px;background:rgba(220,30,30,.85);border:none;border-radius:50%;width:26px;height:26px;color:#fff;font-size:13px;cursor:pointer;z-index:3">🗑</button><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:600;text-align:center;padding:3px">${pos}</div>`
