@@ -243,8 +243,8 @@ function cargarRegistrosAnt(semana, dia, callback) {
 function restoreEjStatesFromHistEnt(semActual) {
   if (!ST.histEnt || !DIAS) return;
   // If we already have ejStates for this semana, don't touch them — user data has priority
-  var hasCurrentSem = Object.keys(ST.ejStates||{}).some(function(k){return ST.ejStates[k] && ST.ejStates[k]._sem===semActual;});
-  if (hasCurrentSem) return; // User already has data for this week, don't overwrite
+  // Always run restore to catch RIR that may be missing even if we have data for this week
+  // Individual field checks below prevent overwriting user-entered data
   // Never reset ejStates — just add missing keys from histEnt for this semana
   DIAS.forEach(function(dia, di) {
     if (!dia || !dia.ejercicios) return;
@@ -265,9 +265,13 @@ function restoreEjStatesFromHistEnt(semActual) {
         var d = semData[serKey];
         if (!ST.ejStates[key].series[si]) ST.ejStates[key].series[si] = {kg:'',repsH:'',done:false,rir:''};
         var ex = ST.ejStates[key].series[si];
-        // ONLY restore done:true — never autocomplete kg, reps or rir
-        // Those must always be entered manually by the user
+        // Restore done:true and rir_real from histEnt
+        // kg and reps must always be entered manually - but RIR should persist
         if (d.done === true) ex.done = true;
+        // Restore RIR only if current value is empty
+        if (d.rir_real !== null && d.rir_real !== undefined && (ex.rir === '' || ex.rir === undefined || ex.rir === null)) {
+          ex.rir = String(d.rir_real);
+        }
       });
     });
   });
