@@ -1036,7 +1036,48 @@ function renderRevision(){
   });
   histH+='</div></div>';
 
-  if(done)return histH+`<div class="sent" id="rev-actual"><div><b>✅ Revisión S${nextRev} enviada</b><small>Tu entrenador la revisará en breve</small></div><button class="btn btns btno" onclick="ST.rev.done=false;save();render()">Editar</button></div>`;
+  if(done){
+    // Build summary of sent revision
+    const PREGS=['¿Cómo te sientes esta semana?','¿Cuáles fueron tus mayores éxitos?','¿Cómo te sentiste con ellos?','¿Qué tal los entrenamientos?','¿Qué tal la nutrición?','¿Qué mejorarías?','¿Algo más que quieras compartir?'];
+    const revPregs=ST.rev.preguntas||{};
+    const revFotos=ST.rev.fotos||{};
+    const revMeds=ST.rev.medidas||{};
+    const _FK=['Frente','Perfil D.','Perfil I.','Espalda'];
+    const _FK2=['frente','perfil_d','perfil_i','espalda'];
+    
+    let fotosH='';
+    POSES.forEach(function(pos,pi){
+      const f=getFoto(revFotos,pi);
+      if(f) fotosH+=`<img src="${f}" style="width:70px;height:90px;object-fit:cover;border-radius:6px;margin:2px" onclick="verFoto('${f}')">`;
+    });
+    
+    let medsH='';
+    const MED_LABELS={cintura:'Cintura',pecho:'Pecho',hombros:'Hombros',brazod:'Brazo D',brazoi:'Brazo I',muslod:'Muslo D',musloi:'Muslo I',gemelod:'Gemelo D',gemeloi:'Gemelo I'};
+    Object.keys(revMeds).forEach(function(k){if(revMeds[k])medsH+=`<span style="font-size:11px;margin-right:8px">${MED_LABELS[k]||k}: <b>${revMeds[k]}cm</b></span>`;});
+    
+    let pregsH='';
+    PREGS.forEach(function(q,i){
+      if(revPregs[i]||revPregs[String(i)]) pregsH+=`<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--t3)">${q}</div><div style="font-size:13px">${revPregs[i]||revPregs[String(i)]}</div></div>`;
+    });
+    
+    const showDetail=ST._revDetailOpen;
+    return histH+`<div class="sent" id="rev-actual">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><b>✅ Revisión S${nextRev} enviada</b><br><small style="color:var(--t3)">Tu entrenador la revisará en breve</small></div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btns" onclick="ST._revDetailOpen=!ST._revDetailOpen;save();render()" style="font-size:12px">${showDetail?'▲ Ocultar':'▼ Ver datos'}</button>
+          <button class="btn btns btno" onclick="ST.rev.done=false;save();render()" style="font-size:12px">✏️ Editar</button>
+        </div>
+      </div>
+      ${showDetail?`
+        <div style="margin-top:12px;border-top:1px solid var(--br);padding-top:12px">
+          ${fotosH?`<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">📸 Fotos</div><div style="display:flex;flex-wrap:wrap;gap:4px">${fotosH}</div></div>`:''}
+          ${medsH?`<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">📏 Medidas</div>${medsH}</div>`:''}
+          ${pregsH?`<div><div style="font-size:12px;font-weight:600;margin-bottom:6px">💬 Preguntas</div>${pregsH}</div>`:''}
+        </div>
+      `:''}
+    </div>`;
+  }
 
   // Steps
   const PP=tipo==='programa'?
