@@ -1262,13 +1262,13 @@ function verRevAnterior(sem){
     });
     html+='</div>';
     var meds=hist.medidas||{};
-    var medE=Object.entries(meds);
-    if(medE.length){
+    var MED_ORDER=[['hombros','Hombros'],['pecho','Pecho'],['cintura','Cintura/Abdomen'],['brazod','Brazo D'],['brazoi','Brazo I'],['muslod','Muslo D'],['musloi','Muslo I'],['gemelod','Gemelo D'],['gemeloi','Gemelo I']];
+    var medVals=MED_ORDER.filter(function(m){return meds[m[0]]!==undefined&&meds[m[0]]!==null&&meds[m[0]]!=='';});
+    if(medVals.length){
       html+='<div style="font-weight:700;font-size:13px;margin-bottom:8px">Medidas</div>';
-      medE.forEach(function(e){
-        var nom=e[0];var vals=e[1];
-        var v=typeof vals==='object'?(vals['S'+sem]||vals['s'+sem]||Object.values(vals)[0]||''):vals;
-        if(v)html+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor2);font-size:12px"><span style="color:var(--t2)">'+nom.split('(')[0].trim()+'</span><span style="font-weight:700">'+v+' cm</span></div>';
+      medVals.forEach(function(m){
+        var v=meds[m[0]];
+        html+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor2);font-size:12px"><span style="color:var(--t2)">'+m[1]+'</span><span style="font-weight:700">'+v+' cm</span></div>';
       });
     }
     var pregs=hist.preguntas||{};
