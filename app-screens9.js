@@ -1060,22 +1060,11 @@ function renderRevision(){
       if(revPregs[i]||revPregs[String(i)]) pregsH+=`<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--t3)">${q}</div><div style="font-size:13px">${revPregs[i]||revPregs[String(i)]}</div></div>`;
     });
     
-    const showDetail=ST._revDetailOpen;
     return histH+`<div class="sent" id="rev-actual">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div><b>✅ Revisión S${nextRev} enviada</b><br><small style="color:var(--t3)">Tu entrenador la revisará en breve</small></div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btns" onclick="ST._revDetailOpen=!ST._revDetailOpen;save();render()" style="font-size:12px">${showDetail?'▲ Ocultar':'▼ Ver datos'}</button>
-          <button class="btn btns btno" onclick="ST.rev.done=false;save();render()" style="font-size:12px">✏️ Editar</button>
-        </div>
+        <button class="btn btns btno" onclick="ST.rev.done=false;save();render()" style="font-size:12px">✏️ Editar</button>
       </div>
-      ${showDetail?`
-        <div style="margin-top:12px;border-top:1px solid var(--br);padding-top:12px">
-          ${fotosH?`<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">📸 Fotos</div><div style="display:flex;flex-wrap:wrap;gap:4px">${fotosH}</div></div>`:''}
-          ${medsH?`<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">📏 Medidas</div>${medsH}</div>`:''}
-          ${pregsH?`<div><div style="font-size:12px;font-weight:600;margin-bottom:6px">💬 Preguntas</div>${pregsH}</div>`:''}
-        </div>
-      `:''}
     </div>`;
   }
 
@@ -1284,7 +1273,15 @@ function verRevAnterior(sem){
     var pregE=Object.entries(pregs).filter(function(e){return e[1];});
     if(pregE.length){
       html+='<div style="font-weight:700;font-size:13px;margin:12px 0 8px">Respuestas</div>';
-      pregE.forEach(function(e){html+='<div style="background:var(--bg);border-radius:8px;padding:8px;margin-bottom:6px;font-size:12px;color:var(--t2);border-left:3px solid var(--az2)">'+e[1]+'</div>';});
+      var PREG_TEXTS=['¿Cómo te sientes esta semana?','¿Cuáles fueron tus mayores éxitos?','¿Cómo te sentiste con ellos?','¿Qué tal los entrenamientos?','¿Qué tal la nutrición?','¿Qué mejorarías?','¿Algo más que quieras compartir?'];
+      pregE.forEach(function(e){
+        var qi=parseInt(e[0]);
+        var qText=PREG_TEXTS[qi]||('Pregunta '+(qi+1));
+        html+='<div style="background:var(--bg);border-radius:8px;padding:10px;margin-bottom:8px;border-left:3px solid var(--az2)">'
+          +'<div style="font-size:11px;color:var(--t3);margin-bottom:4px">'+qText+'</div>'
+          +'<div style="font-size:13px;color:var(--t1)">'+e[1]+'</div>'
+          +'</div>';
+      });
     }
     html+='<div style="display:flex;gap:8px;margin-top:14px"><button class="btn btno" style="flex:1" onclick="closeModal()">Cerrar</button><button class="btn btnp" style="flex:1" onclick="closeModal();editarRevAnterior('+sem+')">Editar</button></div>';
     openModal('Revision S'+sem,html);
