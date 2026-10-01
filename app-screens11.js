@@ -1359,7 +1359,7 @@ function renderRevisionEdit(sem){
   var MEDS=[['hombros','Hombros'],['pecho','Pecho'],['brazoi','Brazo izq.'],['brazod','Brazo dcho.'],['cintura','Cintura ombligo'],['musloi','Muslo izq.'],['muslod','Muslo dcho.'],['gemeloi','Gemelo izq.'],['gemelod','Gemelo dcho.']];
   var h='<div style="padding:4px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><button class="btn bo bs" onclick="ST._editandoRevSem=null;render()">&#8592; Volver</button><div style="font-weight:700;font-size:15px">Revision S'+sem+'</div></div>';
   h+='<div class="card" style="margin-bottom:12px"><div class="ch"><h2>Fotos</h2></div><div class="cb"><div class="rfg">';
-  POSES.forEach(function(pos,pi){
+  ['Frente','Perfil D.','Perfil I.','Espalda'].forEach(function(pos,pi){
     var f=hist.fotos&&getFoto(hist.fotos,pi);
     h+='<div class="rfb '+(f?'done':'')+'" style="position:relative" onclick="triggerRevHistFoto('+sem+','+pi+')">'
       +(f?'<img src="'+f+'"><button data-sem="'+sem+'" data-pi="'+pi+'" onclick="event.stopPropagation();revHistDelFoto(this)" style="position:absolute;top:4px;left:4px;background:rgba(220,30,30,.85);border:none;border-radius:50%;width:24px;height:24px;color:#fff;font-size:11px;cursor:pointer;z-index:3">&#128465;</button><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);color:#fff;font-size:10px;text-align:center;padding:2px">'+pos+'</div>'
