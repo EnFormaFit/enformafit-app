@@ -1062,12 +1062,36 @@ function renderRevision(){
       if(revPregs[i]||revPregs[String(i)]) pregsH+=`<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--t3)">${q}</div><div style="font-size:13px">${revPregs[i]||revPregs[String(i)]}</div></div>`;
     });
     
+    // Show sent revision for 1 extra week after revision date
+  // After that, show next pending revision
+  var revDateStr = revFecha(nextRev);
+  var showSentCard = true;
+  if(revDateStr && inicioBloque){
+    // Parse the revision date (format: DD/MM)
+    var parts = revDateStr.split('/');
+    if(parts.length === 2){
+      var revDate = new Date(new Date().getFullYear(), parseInt(parts[1])-1, parseInt(parts[0]));
+      var daysSince = (Date.now() - revDate.getTime()) / (1000*60*60*24);
+      showSentCard = daysSince < 7; // Show for 1 week after revision date
+    }
+  }
+  if(showSentCard){
     return histH+`<div class="sent" id="rev-actual">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div><b>✅ Revisión S${nextRev} enviada</b><br><small style="color:var(--t3)">Tu entrenador la revisará en breve</small></div>
         <button class="btn btns btno" onclick="ST.rev.done=false;save();render()" style="font-size:12px">✏️ Editar</button>
       </div>
     </div>`;
+  }
+  // After 1 week, show next pending revision
+  const nextNextRev = revSems.find(s=>s>nextRev);
+  if(nextNextRev){
+    return histH+`<div class="rev-card" id="rev-actual">
+      <div><b>📋 Revisión Semana ${nextNextRev}</b><br><small style="color:var(--t3)">Pendiente</small></div>
+      <button class="btn btns btnp" onclick="goTo && goTo('rev')">Ir →</button>
+    </div>`;
+  }
+  return histH;
   }
 
   // Steps
