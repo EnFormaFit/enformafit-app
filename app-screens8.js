@@ -1046,7 +1046,7 @@ function renderRevision(){
     const _FK2=['frente','perfil_d','perfil_i','espalda'];
     
     let fotosH='';
-    POSES.forEach(function(pos,pi){
+    ['Frente','Perfil D.','Perfil I.','Espalda'].forEach(function(pos,pi){
       const f=getFoto(revFotos,pi);
       if(f) fotosH+=`<img src="${f}" style="width:70px;height:90px;object-fit:cover;border-radius:6px;margin:2px" onclick="verFoto('${f}')">`;
     });
@@ -1266,7 +1266,7 @@ function verRevAnterior(sem){
     }
     var POSES=['Frente','Perfil der.','Perfil izq.','Espalda'];
     var html='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px">';
-    POSES.forEach(function(pos,pi){
+    ['Frente','Perfil D.','Perfil I.','Espalda'].forEach(function(pos,pi){
       var f=hist.fotos&&(getFoto(hist.fotos,pi)||hist.fotos['s'+sem+'_'+pi]);
       html+='<div style="aspect-ratio:3/5;border-radius:8px;overflow:hidden;background:var(--bg);border:1px solid var(--bor)">'+(f?'<img src="'+f+'" style="width:100%;height:100%;object-fit:cover">':'<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:10px;color:var(--t3);padding:4px;text-align:center">'+pos+'</div>')+'</div>';
     });
