@@ -1286,13 +1286,29 @@ function verRevAnterior(sem){
     });
     html+='</div>';
     var meds=hist.medidas||{};
-    var MED_ORDER=[['hombros','Hombros'],['pecho','Pecho'],['cintura','Cintura/Abdomen'],['brazod','Brazo D'],['brazoi','Brazo I'],['muslod','Muslo D'],['musloi','Muslo I'],['gemelod','Gemelo D'],['gemeloi','Gemelo I']];
-    var medVals=MED_ORDER.filter(function(m){return meds[m[0]]!==undefined&&meds[m[0]]!==null&&meds[m[0]]!=='';});
+    // Support both app format (pecho:107) and panel format (Pecho:{S0:107})
+    var MED_ORDER=[
+      ['hombros','Hombros','Hombros'],
+      ['pecho','Pecho','Pecho'],
+      ['cintura','Cintura','Cintura ombligo'],
+      ['brazod','Brazo D','Brazo dcho.'],
+      ['brazoi','Brazo I','Brazo izq.'],
+      ['muslod','Muslo D','Muslo dcho.'],
+      ['musloi','Muslo I','Muslo izq.'],
+      ['gemelod','Gemelo D','Gemelo dcho.'],
+      ['gemeloi','Gemelo I','Gemelo izq.']
+    ];
+    var medVals=[];
+    MED_ORDER.forEach(function(m){
+      var raw=meds[m[0]]||meds[m[2]]||meds[m[1]];
+      if(raw===undefined||raw===null||raw==='')return;
+      var v=typeof raw==='object'?(raw['S'+sem]||raw['s'+sem]||Object.values(raw)[0]||''):raw;
+      if(v)medVals.push([m[1],v]);
+    });
     if(medVals.length){
       html+='<div style="font-weight:700;font-size:13px;margin-bottom:8px">Medidas</div>';
       medVals.forEach(function(m){
-        var v=meds[m[0]];
-        html+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor2);font-size:12px"><span style="color:var(--t2)">'+m[1]+'</span><span style="font-weight:700">'+v+' cm</span></div>';
+        html+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor2);font-size:12px"><span style="color:var(--t2)">'+m[0]+'</span><span style="font-weight:700">'+m[1]+' cm</span></div>';
       });
     }
     var pregs=hist.preguntas||{};
