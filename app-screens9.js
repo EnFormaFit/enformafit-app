@@ -1017,10 +1017,12 @@ function renderRevision(){
   let histH='<div class="card" style="margin-bottom:12px"><div class="ch"><h2>📋 Revisiones del bloque</h2></div><div class="cb" style="padding:0">';
   const allRevSems=[0,...revSems];
   allRevSems.forEach(rs=>{
-    const isPast=rs<nextRev;
-    const isCur=rs===nextRev;
+    const hasData=ST.revHistorial&&ST.revHistorial[rs]&&
+      (Object.keys(ST.revHistorial[rs].fotos||{}).length>0||Object.keys(ST.revHistorial[rs].medidas||{}).length>0);
+    // If revision has data it's always "past" (completada) regardless of nextRev
+    const isPast=rs<nextRev||(rs===nextRev&&hasData&&ST.rev.done);
+    const isCur=rs===nextRev&&!isPast;
     const isFut=rs>nextRev;
-    const hasData=ST.revHistorial&&ST.revHistorial[rs];
     const ico=isPast?'✅':isCur?'⏳':'🔒';
     const col=isCur?'var(--nr)':isPast?'var(--vd)':'var(--t3)';
     const txt=isPast?(hasData?'Completada · Toca para ver/editar':'Pasada · Sin datos'):isCur?'Pendiente':'Próxima';
