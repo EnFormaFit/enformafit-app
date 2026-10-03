@@ -1223,10 +1223,11 @@ async function _doEnviarRev(){
             pose:_POSES_ARR[i],
             semana:nextRev
           });
-          if(res.url)fotoUrls['rev_'+i]=res.url;
+          if(res&&res.url&&res.url.startsWith('http'))fotoUrls['rev_'+i]=res.url;
         }catch(e){
           console.warn('[Cloudinary] Error subiendo foto',i,e);
-          fotoUrls['rev_'+i]=b64; // fallback to base64
+          // Don't use base64 fallback - too large for DB and causes silent failures
+          // User will need to re-upload this photo
         }
       }
     }
@@ -1246,7 +1247,9 @@ async function _doEnviarRev(){
       render();
     } catch(e) {
       console.error('[BD] Revision save error:',e);
-      toast('Error al guardar revisión. Inténtalo de nuevo.','rj');
+      const errMsg = e && e.message ? e.message : 'Error desconocido';
+      console.error('[BD] Revision error detail:', errMsg);
+      toast('Error al guardar. Inténtalo de nuevo. ('+errMsg+')','rj');
       // Don't set done=true - user can retry
     }
   } else {
