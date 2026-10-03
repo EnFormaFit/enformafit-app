@@ -555,9 +555,6 @@ async function loadClienteData() {
       }
     } catch(e) {}
 
-        // Load all revisiones from BD
-
-
     // Load check-ins from BD
     try {
       const cisBD = await api('GET', '/api/entreno/checkins');
