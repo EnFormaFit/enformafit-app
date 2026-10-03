@@ -996,7 +996,14 @@ function renderRevision(){
   const {semana,tipo,inicioBloque}=ST.u;
   const semTotal=tipo==='programa'?13:12;
   const revSems=tipo==='programa'?[4,8,12]:[3,7,11];
-  const nextRev=revSems.find(rs=>rs>=semana)||revSems[revSems.length-1];
+  // nextRev with 2-week window: if client is in week after revision, still show it
+  // e.g. 1a1 revisions at S3,S7,S11: if semana=4, still show S3 as fillable
+  const nextRevStrict=revSems.find(rs=>rs>=semana)||revSems[revSems.length-1];
+  const prevRev=revSems[revSems.indexOf(nextRevStrict)-1]; // revision before current
+  // If client is 1 week past a revision AND hasn't submitted it yet, show that revision
+  const nextRev=(prevRev&&semana===nextRevStrict&&semana>prevRev&&!ST.rev.done&&
+    !(ST.revHistorial&&ST.revHistorial[prevRev]&&Object.keys(ST.revHistorial[prevRev].medidas||{}).length>0))
+    ? prevRev : nextRevStrict;
   const {done,fotos,medidas,preguntas}=ST.rev;
   const step=ST.rev.step||0;
 
