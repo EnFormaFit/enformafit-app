@@ -1187,8 +1187,11 @@ function enviarRev(){
   var medidas=ST.rev.medidas||{};
   var preguntas=ST.rev.preguntas||{};
   var tipo=ST.u.tipo;
-  var nFotos=Object.keys(fotos).filter(function(k){return k.startsWith('rev_');}).length;
-  var nMeds=Object.keys(medidas).filter(function(k){return medidas[k];}).length;
+  // Count fotos in both formats: rev_0/rev_1 and frente/perfil_d/etc
+  var _FKEYS_V=['frente','perfil_d','perfil_i','espalda'];
+  var nFotos=0;
+  for(var _fi=0;_fi<4;_fi++){if(fotos['rev_'+_fi]||fotos[_FKEYS_V[_fi]])nFotos++;}
+  var nMeds=Object.keys(medidas).filter(function(k){return medidas[k]!==''&&medidas[k]!==null&&medidas[k]!==undefined;}).length;
   var PP=tipo==='programa'?5:7;
   var nPregs=Object.values(preguntas).filter(function(v){return v&&v.trim();}).length;
   // All required
@@ -1213,7 +1216,7 @@ async function _doEnviarRev(){
     const fotoUrls={};
     const fotosB64=ST.rev.fotos||{};
     const _FKEYS=['frente','perfil_d','perfil_i','espalda'];
-    const _POSES_ARR=['Frente','Perfil D.','Perfil I.','Espalda'];
+    const _POSES_ARR=['frente','perfil_d','perfil_i','espalda']; // Safe names for Cloudinary
     for(let i=0;i<4;i++){
       // Support both formats: rev_0 and frente/perfil_d/etc
       const b64=fotosB64['rev_'+i]||fotosB64[_FKEYS[i]];
