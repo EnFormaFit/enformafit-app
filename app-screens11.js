@@ -1196,7 +1196,7 @@ function enviarRev(){
   _doEnviarRev();
 }
 async function _doEnviarRev(){
-  ST.rev.done=true;
+  // Don't mark as done until API confirms save
   const {semana,tipo}=ST.u;
   const revSems=tipo==='programa'?[4,8,12]:[3,7,11];
   const nextRev=revSems.find(s=>s>=semana)||revSems[revSems.length-1];
@@ -1210,13 +1210,16 @@ async function _doEnviarRev(){
     const POSES=['frente','perfil_d','perfil_i','espalda'];
     const fotoUrls={};
     const fotosB64=ST.rev.fotos||{};
+    const _FKEYS=['frente','perfil_d','perfil_i','espalda'];
+    const _POSES_ARR=['Frente','Perfil D.','Perfil I.','Espalda'];
     for(let i=0;i<4;i++){
-      const b64=fotosB64['rev_'+i];
+      // Support both formats: rev_0 and frente/perfil_d/etc
+      const b64=fotosB64['rev_'+i]||fotosB64[_FKEYS[i]];
       if(b64){
         try{
           const res=await api('POST','/api/entreno/upload-foto',{
             foto_b64:b64,
-            pose:POSES[i],
+            pose:_POSES_ARR[i],
             semana:nextRev
           });
           if(res.url)fotoUrls['rev_'+i]=res.url;
@@ -1226,19 +1229,25 @@ async function _doEnviarRev(){
         }
       }
     }
-    // Save revision with photo URLs
-    api('POST','/api/entreno/revision',{
-      semana:nextRev,
-      medidas:ST.rev.medidas||{},
-      preguntas:ST.rev.preguntas||{},
-      fotos:fotoUrls,
-      estado:'revisada'
-    }).then(function(){
+    // Save revision - only mark done=true on success
+    try {
+      await api('POST','/api/entreno/revision',{
+        semana:nextRev,
+        medidas:ST.rev.medidas||{},
+        preguntas:ST.rev.preguntas||{},
+        fotos:fotoUrls,
+        estado:'revisada'
+      });
+      ST.rev.done=true;
+      save();
       toast('Revisión S'+nextRev+' enviada ✓','vd');
-      console.log('[BD] Revision S'+nextRev+' saved with photos');
-    }).catch(function(e){
-      console.warn('[BD] Revision save error:',e);
-    });
+      console.log('[BD] Revision S'+nextRev+' saved OK');
+      render();
+    } catch(e) {
+      console.error('[BD] Revision save error:',e);
+      toast('Error al guardar revisión. Inténtalo de nuevo.','rj');
+      // Don't set done=true - user can retry
+    }
   } else {
     toast('Revisión S'+nextRev+' guardada ✓','vd');
   }
