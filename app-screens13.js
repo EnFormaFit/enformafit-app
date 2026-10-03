@@ -1081,11 +1081,7 @@ function renderRevision(){
   if(showSentCard){
     return histH+`<div class="sent" id="rev-actual">
       <div style="margin-bottom:10px"><b>✅ Revisión S${nextRev} enviada</b><br><small style="color:var(--t3)">Tu entrenador la revisará en breve</small></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btns" onclick="ST.rev.done=false;ST.rev.step=0;save();render()" style="font-size:12px">📸 Editar fotos</button>
-        <button class="btn btns" onclick="ST.rev.done=false;ST.rev.step=1;save();render()" style="font-size:12px">📏 Editar medidas</button>
-        <button class="btn btns" onclick="ST.rev.done=false;ST.rev.step=2;save();render()" style="font-size:12px">💬 Editar preguntas</button>
-      </div>
+      <button class="btn btns btno" onclick="ST.rev.done=false;save();render()" style="font-size:12px">✏️ Editar</button>
     </div>`;
   }
   // After 1 week, show next pending revision
@@ -1353,11 +1349,10 @@ function verRevAnterior(sem){
           +'</div>';
       });
     }
-    html+='<div style="margin-top:14px"><div style="display:flex;gap:6px;margin-bottom:8px">'
-      +'<button class="btn btns" style="flex:1;font-size:11px" onclick="closeModal();editarRevStep('+sem+',0)">📸 Fotos</button>'
-      +'<button class="btn btns" style="flex:1;font-size:11px" onclick="closeModal();editarRevStep('+sem+',1)">📏 Medidas</button>'
-      +'<button class="btn btns" style="flex:1;font-size:11px" onclick="closeModal();editarRevStep('+sem+',2)">💬 Preguntas</button>'
-      +'</div><button class="btn btno" style="width:100%" onclick="closeModal()">Cerrar</button></div>';
+    html+='<div style="display:flex;gap:8px;margin-top:14px">'
+      +'<button class="btn btno" style="flex:1" onclick="closeModal()">Cerrar</button>'
+      +'<button class="btn btnp" style="flex:1" onclick="closeModal();editarRevAnterior('+sem+')">✏️ Editar</button>'
+      +'</div>';
     openModal('Revision S'+sem,html);
   }
   if(_tk){
