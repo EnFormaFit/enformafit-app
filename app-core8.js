@@ -524,7 +524,21 @@ async function loadClienteData() {
       const revsBD = await api('GET', '/api/entreno/revisiones/all');
       if (revsBD && revsBD.length) {
         if (!ST.revHistorial) ST.revHistorial = {};
-        revsBD.forEach(function(d) { ST.revHistorial[d.semana] = d; });
+        // Smart merge: BD is authoritative but preserve local fotos if BD has empty fotos
+        revsBD.forEach(function(d) {
+          var existing = ST.revHistorial[d.semana] || {};
+          var bdFotos = d.fotos || {};
+          var localFotos = existing.fotos || {};
+          // Use BD fotos if they exist, otherwise keep local fotos
+          var mergedFotos = Object.keys(bdFotos).length > 0 ? bdFotos : localFotos;
+          ST.revHistorial[d.semana] = {
+            semana: d.semana,
+            medidas: d.medidas || existing.medidas || {},
+            preguntas: d.preguntas || existing.preguntas || {},
+            fotos: mergedFotos,
+            fecha: d.fecha || existing.fecha
+          };
+        });
         ST._revAllLoaded = true;
         // Mark rev as done if current revision semana already submitted
         const tipo = ST.u && ST.u.tipo;
@@ -532,7 +546,7 @@ async function loadClienteData() {
         const revSemsFull = tipo==='programa'?[4,8,12]:[3,7,11];
         const nextRev = revSemsFull.find(function(rs){return rs>=semana;})||revSemsFull[revSemsFull.length-1];
         const submittedRev = ST.revHistorial[nextRev];
-        if (submittedRev && submittedRev.fotos && Object.keys(submittedRev.fotos).length > 0) {
+        if (submittedRev && (Object.keys(submittedRev.fotos||{}).length > 0 || Object.keys(submittedRev.medidas||{}).length > 0)) {
           ST.rev.done = true;
           ST.rev.fotos = submittedRev.fotos || {};
           ST.rev.medidas = submittedRev.medidas || {};
