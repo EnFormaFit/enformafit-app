@@ -556,26 +556,7 @@ async function loadClienteData() {
     } catch(e) {}
 
         // Load all revisiones from BD
-    try {
-      const revsBD = await api('GET', '/api/entreno/revisiones/all');
-      if (revsBD && revsBD.length) {
-        if (!ST.revHistorial) ST.revHistorial = {};
-        revsBD.forEach(function(d) { ST.revHistorial[d.semana] = d; });
-        ST._revAllLoaded = true;
-        // Mark rev as done if current revision semana already submitted
-        const tipo = ST.u && ST.u.tipo;
-        const semana = ST.u && ST.u.semana;
-        const revSemsFull = tipo==='programa'?[4,8,12]:[3,7,11];
-        const nextRev = revSemsFull.find(function(rs){return rs>=semana;})||revSemsFull[revSemsFull.length-1];
-        const submittedRev = ST.revHistorial[nextRev];
-        if (submittedRev && submittedRev.fotos && Object.keys(submittedRev.fotos).length > 0) {
-          ST.rev.done = true;
-          ST.rev.fotos = submittedRev.fotos || {};
-          ST.rev.medidas = submittedRev.medidas || {};
-          ST.rev.preguntas = submittedRev.preguntas || {};
-        }
-      }
-    } catch(e) {}
+
 
     // Load check-ins from BD
     try {
