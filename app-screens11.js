@@ -1078,9 +1078,11 @@ function renderRevision(){
   }
   if(showSentCard){
     return histH+`<div class="sent" id="rev-actual">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div><b>✅ Revisión S${nextRev} enviada</b><br><small style="color:var(--t3)">Tu entrenador la revisará en breve</small></div>
-        <button class="btn btns btno" onclick="ST.rev.done=false;save();render()" style="font-size:12px">✏️ Editar</button>
+      <div style="margin-bottom:10px"><b>✅ Revisión S${nextRev} enviada</b><br><small style="color:var(--t3)">Tu entrenador la revisará en breve</small></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btns" onclick="ST.rev.done=false;ST.rev.step=0;save();render()" style="font-size:12px">📸 Editar fotos</button>
+        <button class="btn btns" onclick="ST.rev.done=false;ST.rev.step=1;save();render()" style="font-size:12px">📏 Editar medidas</button>
+        <button class="btn btns" onclick="ST.rev.done=false;ST.rev.step=2;save();render()" style="font-size:12px">💬 Editar preguntas</button>
       </div>
     </div>`;
   }
