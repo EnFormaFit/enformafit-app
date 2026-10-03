@@ -1337,7 +1337,14 @@ function verRevAnterior(sem){
           +'</div>';
       });
     }
-    html+='<div style="display:flex;gap:8px;margin-top:14px"><button class="btn btno" style="flex:1" onclick="closeModal()">Cerrar</button><button class="btn btnp" style="flex:1" onclick="closeModal();editarRevAnterior('+sem+')">Editar</button></div>';
+    html+='<div style="margin-top:14px">';
+    html+='<div style="display:flex;gap:6px;margin-bottom:8px">';
+    html+='<button class="btn btns" style="flex:1;font-size:11px" onclick="closeModal();ST._editandoRevSem='+sem+';ST.rev.step=0;if(ST.revHistorial&&ST.revHistorial['+sem+']){ST.rev.fotos=Object.assign({},ST.revHistorial['+sem+'].fotos||{});ST.rev.medidas=Object.assign({},ST.revHistorial['+sem+'].medidas||{});ST.rev.preguntas=Object.assign({},ST.revHistorial['+sem+'].preguntas||{});}save();S(\"revision\")">📸 Fotos</button>';
+    html+='<button class="btn btns" style="flex:1;font-size:11px" onclick="closeModal();ST._editandoRevSem='+sem+';ST.rev.step=1;if(ST.revHistorial&&ST.revHistorial['+sem+']){ST.rev.fotos=Object.assign({},ST.revHistorial['+sem+'].fotos||{});ST.rev.medidas=Object.assign({},ST.revHistorial['+sem+'].medidas||{});ST.rev.preguntas=Object.assign({},ST.revHistorial['+sem+'].preguntas||{});}save();S(\"revision\")">📏 Medidas</button>';
+    html+='<button class="btn btns" style="flex:1;font-size:11px" onclick="closeModal();ST._editandoRevSem='+sem+';ST.rev.step=2;if(ST.revHistorial&&ST.revHistorial['+sem+']){ST.rev.fotos=Object.assign({},ST.revHistorial['+sem+'].fotos||{});ST.rev.medidas=Object.assign({},ST.revHistorial['+sem+'].medidas||{});ST.rev.preguntas=Object.assign({},ST.revHistorial['+sem+'].preguntas||{});}save();S(\"revision\")">💬 Preguntas</button>';
+    html+='</div>';
+    html+='<button class="btn btno" style="width:100%" onclick="closeModal()">Cerrar</button>';
+    html+='</div>';
     openModal('Revision S'+sem,html);
   }
   if(_tk){
