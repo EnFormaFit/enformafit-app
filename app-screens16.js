@@ -1419,6 +1419,20 @@ function renderRevisionEdit(sem){
     });
   }
   h+='</div></div>';
+  // Preguntas section
+  var _PP=ST.u&&ST.u.tipo==='programa'?
+    ['¿Cómo te sientes esta semana?','¿Cuáles fueron tus mayores éxitos?','¿Cómo te sentiste con ellos?','¿Qué tal los entrenamientos?','¿Qué tal la nutrición?']:
+    ['¿Cómo te sientes esta semana?','¿Cuáles fueron tus mayores éxitos?','¿Cómo te sentiste con ellos?','¿Qué tal los entrenamientos?','¿Qué tal la nutrición?','¿Qué mejorarías?','¿Algo más que quieras compartir?'];
+  h+='<div class="card" style="margin-bottom:12px"><div class="ch"><h2>💬 Respuestas</h2></div><div class="cb">';
+  _PP.forEach(function(q,i){
+    var val=hist.preguntas&&(hist.preguntas[i]||hist.preguntas[String(i)])||'';
+    h+='<div style="margin-bottom:12px">'
+      +'<div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:4px">'+(i+1)+'. '+q+'</div>'
+      +'<textarea class="preqa" placeholder="Tu respuesta..." oninput="if(!ST.revHistorial['+sem+'])ST.revHistorial['+sem+']={medidas:{},fotos:{},preguntas:{}};ST.revHistorial['+sem+'].preguntas['+i+']=this.value;save()" style="width:100%;min-height:60px;font-size:13px">'+val+'</textarea>'
+      +'</div>';
+  });
+  h+='</div></div>';
+
   h+='<button class="btn bp" style="width:100%;padding:14px" onclick="guardarRevAnterior('+sem+')">Guardar y volver</button></div>';
   return h;
 }
