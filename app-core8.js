@@ -845,6 +845,14 @@ function renderInicio(){
   const {semana:s,semTotal:st,tipo,inicioBloque}=ST.u;
   const s0Done=(ST.rev&&ST.rev.s0Done)||false;
   const s0Banner=(!s0Done&&s<=1)?'<div style="background:linear-gradient(135deg,#FF6B00,#E65A00);border-radius:12px;padding:13px 15px;color:#fff;margin-bottom:11px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="S(\'revision\')"><div style="font-size:26px">📸</div><div style="flex:1"><div style="font-weight:800;font-size:14px;margin-bottom:3px">Pendiente: fotos y medidas de S0</div><div style="font-size:12px;opacity:.85">Súbelas antes de empezar la semana 1. Son tu punto de partida para comparar tu progreso.</div></div><div style="font-size:18px;opacity:.7">→</div></div>':'';
+  // Banner check-in: domingo 19h → martes 23:59, desaparece si ya enviado esta semana
+  const _now=new Date();
+  const _dow=_now.getDay();
+  const _hour=_now.getHours();
+  const _enVentanaCI=(!ST.checkInDone)&&((_dow===0&&_hour>=19)||_dow===1||_dow===2);
+  const ciBanner=_enVentanaCI
+    ?'<div onclick="S(\'inicio\')" style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:12px;padding:13px 15px;color:#fff;margin-bottom:11px;display:flex;align-items:center;gap:12px;cursor:pointer"><div style="font-size:26px">⏰</div><div style="flex:1"><div style="font-weight:800;font-size:14px;margin-bottom:2px">¡Rellena tu check-in semanal!</div><div style="font-size:12px;opacity:.9">Cuéntame cómo fue tu semana. Solo tarda 2 minutos.</div></div><div style="font-size:18px">→</div></div>'
+    :'';
   const revSems=tipo==='programa'?[4,8,12]:[3,7,11];
   const nextRev=revSems.find(rs=>rs>=s)||revSems[revSems.length-1];
   const semsLeft=nextRev-s;
@@ -870,6 +878,7 @@ function renderInicio(){
   }
 
   return`
+${ciBanner}
 <div class="banner ${semsLeft<=1?'nr':'az'}" onclick="S('revision')">
   <div style="font-size:10px;font-weight:700;opacity:.8;margin-bottom:3px">${semsLeft<=1?'⚠️ REVISIÓN URGENTE':'📅 PRÓXIMA REVISIÓN'}</div>
   <div style="font-size:19px;font-weight:800;margin-bottom:2px">Semana ${nextRev}${semsLeft===0?' · ¡Esta semana!':' · en '+semsLeft+' sem.'}</div>
