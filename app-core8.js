@@ -364,6 +364,17 @@ function getSemanaFechas(semana) {
   return lunStr + ' – ' + domStr;
 }
 
+
+// Get monday of current week (for check-in matching)
+function getLunesActual() {
+  var hoy = new Date();
+  var dia = hoy.getDay(); // 0=dom, 1=lun...6=sab
+  var diff = (dia === 0) ? -6 : 1 - dia; // adjust to monday
+  var lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() + diff);
+  return lunes.toISOString().split('T')[0];
+}
+
 async function loadClienteData() {
   // Snapshot menuGuardado and ejStates from localStorage BEFORE anything modifies them
   var _menuGuardadoSnapshot = {};
@@ -561,8 +572,8 @@ async function loadClienteData() {
       if (cisBD && cisBD.length) {
         ST.checkIns = cisBD;
         // Load current week's check-in into ST.ci if exists
-        const inicioBloque = ST.u.inicioBloque || new Date().toISOString().split('T')[0];
-        const ciActual = cisBD.find(ci => ci.semana_inicio && ci.semana_inicio.startsWith(inicioBloque.substring(0,10)));
+        const _lunesActual1 = getLunesActual();
+        const ciActual = cisBD.find(ci => ci.semana_inicio && ci.semana_inicio.substring(0,10) === _lunesActual1);
         if (ciActual) {
           ST.ci = ST.ci || {};
           ST.ci.diasEnt = ciActual.dias_entreno_real || 0;
@@ -583,8 +594,8 @@ async function loadClienteData() {
       const cisBD = await api('GET', '/api/entreno/checkins');
       if (Array.isArray(cisBD) && cisBD.length) {
         ST.checkIns = cisBD;
-        const inicioBloque = ST.u.inicioBloque;
-        const ciActual = inicioBloque ? cisBD.find(ci => (ci.semana_inicio||'').substring(0,10) === inicioBloque.substring(0,10)) : cisBD[0];
+        const _lunesActual2 = getLunesActual();
+        const ciActual = cisBD.find(ci => (ci.semana_inicio||'').substring(0,10) === _lunesActual2);
         if (ciActual) {
           ST.ci = ST.ci || {};
           ST.ci.diasEnt = ciActual.dias_entreno_real || 0;
