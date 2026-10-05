@@ -1025,7 +1025,7 @@ function enviarCI(){
   if(_c){var _t=document.createElement('div');_t.innerHTML=renderCI();_c.replaceWith(_t.firstChild);}
   else{var _ct=document.getElementById('ct');if(_ct){var _sp=_ct.scrollTop;_ct.innerHTML=renderInicio();_ct.scrollTop=_sp;}}
   toast('Check-in enviado ✓ — '+ST.ci.adh+'%','vd');
-  if(_tk){api('POST','/api/entreno/checkin',{semana_inicio:ST.u.inicioBloque||new Date().toISOString().split('T')[0],dias_entreno_real:ST.ci.diasEnt||0,dias_nutricion:ST.ci.diasNut||0,dias_pasos:ST.ci.diasPasos||0,orgullos:ST.ci.orgullo||'',compromisos:ST.ci.compromiso||'',sensaciones:ST.ci.sensaciones||'',como_semana:ST.ci.como||'',adherencia:ST.ci.adh||0}).catch(function(e){console.warn('[CI]',e);});}
+  if(_tk){api('POST','/api/entreno/checkin',{semana_inicio:getLunesActual(),dias_entreno_real:ST.ci.diasEnt||0,dias_nutricion:ST.ci.diasNut||0,dias_pasos:ST.ci.diasPasos||0,orgullos:ST.ci.orgullo||'',compromisos:ST.ci.compromiso||'',sensaciones:ST.ci.sensaciones||'',como_semana:ST.ci.como||'',adherencia:ST.ci.adh||0}).catch(function(e){console.warn('[CI]',e);});}
 }
 
 
