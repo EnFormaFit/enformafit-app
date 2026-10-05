@@ -1001,6 +1001,24 @@ function renderCI(){
   +'</div>'
   +'<button class="btn bp" style="width:100%;padding:14px;font-size:15px" onclick="enviarCI()">Enviar</button>'
   +'</div></div>';
+
+  // Historial de check-ins anteriores
+  var _cis = ST.checkIns || [];
+  var _lunesHoy = getLunesActual();
+  var _cisAnt = _cis.filter(function(r){ return (r.semana_inicio||'').substring(0,10) !== _lunesHoy; });
+  if(_cisAnt.length > 0){
+    h += '<div class="card" style="margin-bottom:10px"><div class="ch"><h2>📊 Historial check-ins</h2></div><div class="cb">';
+    var _ne = ST.u.diasSemana || 4;
+    _cisAnt.slice(0,8).forEach(function(r){
+      var dE=r.dias_entreno_real||0, dN=r.dias_nutricion||0, dP=r.dias_pasos||0;
+      var a=Math.round(Math.min(1,dE/_ne)*40+Math.min(1,dN/7)*40+Math.min(1,dP/7)*20);
+      var col=a>=80?'var(--vd)':a>=50?'var(--nr)':'var(--rj)';
+      var fecha=r.semana_inicio?new Date(r.semana_inicio).toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}):'?';
+      h+='<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bor2)">'        +'<div style="font-size:11px;color:var(--t3);min-width:36px">'+fecha+'</div>'        +'<div style="flex:1;background:var(--bor);border-radius:3px;height:6px">'          +'<div style="background:'+col+';height:6px;border-radius:3px;width:'+a+'%"></div>'        +'</div>'        +'<div style="font-size:12px;font-weight:700;color:'+col+';min-width:32px;text-align:right">'+a+'%</div>'      +'</div>';
+    });
+    h += '</div></div>';
+  }
+
   return h;
 }
 function ciDot(btn){
