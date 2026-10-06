@@ -851,7 +851,7 @@ function renderInicio(){
   const _hour=_now.getHours();
   const _enVentanaCI=(!ST.checkInDone)&&((_dow===0&&_hour>=19)||_dow===1||_dow===2);
   const ciBanner=_enVentanaCI
-    ?'<div onclick="S(\'inicio\')" style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:12px;padding:13px 15px;color:#fff;margin-bottom:11px;display:flex;align-items:center;gap:12px;cursor:pointer"><div style="font-size:26px">⏰</div><div style="flex:1"><div style="font-weight:800;font-size:14px;margin-bottom:2px">¡Rellena tu check-in semanal!</div><div style="font-size:12px;opacity:.9">Cuéntame cómo fue tu semana. Solo tarda 2 minutos.</div></div><div style="font-size:18px">→</div></div>'
+    ?'<div onclick="setTimeout(function(){var el=document.getElementById(\'ci-card\');if(el)el.scrollIntoView({behavior:\'smooth\'});},100)" style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:12px;padding:13px 15px;color:#fff;margin-bottom:11px;display:flex;align-items:center;gap:12px;cursor:pointer"><div style="font-size:26px">⏰</div><div style="flex:1"><div style="font-weight:800;font-size:14px;margin-bottom:2px">¡Rellena tu check-in semanal!</div><div style="font-size:12px;opacity:.9">Cuéntame cómo fue tu semana. Solo tarda 2 minutos.</div></div><div style="font-size:18px">→</div></div>'
     :'';
   const revSems=tipo==='programa'?[4,8,12]:[3,7,11];
   const nextRev=revSems.find(rs=>rs>=s)||revSems[revSems.length-1];
@@ -971,7 +971,7 @@ function renderCI(){
     }
     return s+'</div>';
   }
-  var h='<div class="card" style="margin-bottom:10px">'
+  var h='<div class="card" id="ci-card" style="margin-bottom:10px">'
     +'<div class="ch" onclick="ST.ci.open=!ST.ci.open;render()" style="cursor:pointer">'
       +'<h2>Check-in semanal</h2>'+(ST.checkInDone?'<span class="badge bvd" style="font-size:11px">✓ Enviado</span>':'')+'<span style="color:var(--t3)">'+(ci.open?'▲':'▼')+'</span>'
     +'</div>';
