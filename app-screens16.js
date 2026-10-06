@@ -1592,7 +1592,7 @@ function renderPerfil(){
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
           <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
             <div style="font-size:24px;font-weight:800;color:var(--az)">${pesoAct}kg</div>
-            <div style="font-size:10px;color:var(--t3)">${_nDias7>1?'Media 7 días':'Peso actual'}</div>
+            <div style="font-size:10px;color:var(--t3)">${_nDias7>1?'Media 7 días':_nDias7===1?'Peso actual':'Peso último'}</div>
           </div>
           <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
             <div style="font-size:24px;font-weight:800;color:var(--vd)">${objPeso}kg</div>
