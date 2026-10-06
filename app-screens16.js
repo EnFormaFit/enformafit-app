@@ -408,7 +408,7 @@ function renderMenuPlegado(di,g){
     out+=`<div class="meal-col">
       <div class="meal-col-h" onclick="ST['mopen_${di}_${mi}']=!ST['mopen_${di}_${mi}'];document.getElementById('ct').innerHTML=renderNutricion()">
         <div>
-          <div class="meal-col-title">${ICONS[meal]} ${md.nom}</div>
+          <div class="meal-col-title">${ICONS[meal]} ${md.nom||_MEAL_NAMES[meal]||meal}</div>
           ${!isOpen&&alims.length?`<div class="meal-col-sub">${alims.map(a=>a.nom+(a.cant?` ${Math.round(a.cant)}${a.u}`:'')+(':'===a.u[-1]?'':'')).join(' · ')}</div>`:''}
         </div>
         <span style="color:var(--t3)">${isOpen?'▲':'▼'}</span>
