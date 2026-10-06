@@ -416,7 +416,6 @@ async function loadClienteData() {
     ST.u.lesiones = perfil.lesiones || '';
     ST.u.altura = parseFloat(perfil.altura) || 175;
     ST.u.diasSemana = parseInt(perfil.dias_entreno) || 0;
-    ST.u.diasSemana = parseInt(perfil.dias_semana) || 0;
     // Load pending nutrition changes alert
     if (perfil.notas && perfil.notas.pendingNutChanges && !perfil.notas.pendingNutChanges.leido) {
       ST.pendingNutChanges = perfil.notas.pendingNutChanges;
@@ -1064,7 +1063,7 @@ function ciDot(btn){
 function calcAdh(){
   var ci=ST.ci;
   // Use diasSemana from user profile (set by entrenador) not from rutina
-  var dp=ST.u&&ST.u.diasSemana?ST.u.diasSemana:(DIAS.filter(function(d){return!d.rest;}).length||4);
+  var dp=(ST.u&&ST.u.diasSemana&&ST.u.diasSemana>0)?ST.u.diasSemana:4;
   return Math.round(Math.min(1,(ci.diasEnt||0)/dp)*40+Math.min(1,(ci.diasNut||0)/7)*40+Math.min(1,(ci.diasPasos||0)/7)*20);
 }
 
