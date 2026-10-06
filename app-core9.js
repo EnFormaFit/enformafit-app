@@ -1060,7 +1060,9 @@ function ciDot(btn){
   var ae=document.getElementById('ci-adh');if(ae)ae.textContent=calcAdh()+'%';
 }
 function calcAdh(){
-  var ci=ST.ci,dp=DIAS.filter(function(d){return!d.rest;}).length||4;
+  var ci=ST.ci;
+  // Use diasSemana from user profile (set by entrenador) not from rutina
+  var dp=ST.u&&ST.u.diasSemana?ST.u.diasSemana:(DIAS.filter(function(d){return!d.rest;}).length||4);
   return Math.round(Math.min(1,(ci.diasEnt||0)/dp)*40+Math.min(1,(ci.diasNut||0)/7)*40+Math.min(1,(ci.diasPasos||0)/7)*20);
 }
 
