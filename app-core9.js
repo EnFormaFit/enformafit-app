@@ -415,6 +415,7 @@ async function loadClienteData() {
     ST.u.dob = perfil.fecha_nacimiento ? perfil.fecha_nacimiento.split('T')[0] : '';
     ST.u.lesiones = perfil.lesiones || '';
     ST.u.altura = parseFloat(perfil.altura) || 175;
+    ST.u.diasSemana = parseInt(perfil.dias_semana) || 0;
     // Load pending nutrition changes alert
     if (perfil.notas && perfil.notas.pendingNutChanges && !perfil.notas.pendingNutChanges.leido) {
       ST.pendingNutChanges = perfil.notas.pendingNutChanges;
