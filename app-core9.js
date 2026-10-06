@@ -366,14 +366,20 @@ function getSemanaFechas(semana) {
 }
 
 
-// Get monday of current week (for check-in matching)
+// Get the monday that this week's check-in refers to
+// sun/mon/tue → previous monday (check-in describes week just ended)
+// wed-sat → current monday (check-in describes current week)
 function getLunesActual() {
   var hoy = new Date();
-  var dia = hoy.getDay(); // 0=dom, 1=lun...6=sab
-  var diff = (dia === 0) ? -6 : 1 - dia; // adjust to monday
-  var lunes = new Date(hoy);
-  lunes.setDate(hoy.getDate() + diff);
-  return lunes.toISOString().split('T')[0];
+  var dia = hoy.getDay(); // 0=dom,1=lun,2=mar,3=mie...
+  var diffToMon = (dia === 0) ? -6 : 1 - dia;
+  var lunesActual = new Date(hoy);
+  lunesActual.setDate(hoy.getDate() + diffToMon);
+  // On sun/mon/tue: CI refers to PREVIOUS week
+  if (dia === 0 || dia === 1 || dia === 2) {
+    lunesActual.setDate(lunesActual.getDate() - 7);
+  }
+  return lunesActual.toISOString().split('T')[0];
 }
 
 async function loadClienteData() {
