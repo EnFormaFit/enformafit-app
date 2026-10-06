@@ -967,7 +967,7 @@ function ciToggle(){
 }
 function renderCI(){
   var ci=ST.ci;var tipo=ST.u.tipo;
-  var dp=DIAS.filter(function(d){return!d.rest;}).length||4;
+  var dp=(ST.u&&ST.u.diasSemana&&ST.u.diasSemana>0)?ST.u.diasSemana:4;
   var adh=calcAdh();
   if(ci.done){
     return '<div class="card" style="margin-bottom:10px"><div class="ch" onclick="ciToggle()" style="cursor:pointer">'
