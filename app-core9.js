@@ -366,19 +366,32 @@ function getSemanaFechas(semana) {
 }
 
 
-// Get the monday that the check-in describes
-// A check-in always describes the PREVIOUS week (lunes actual - 7 días)
-// e.g. filled any day of week 5-11/oct → describes week of 28/sep
+// Get the semana_inicio for the current check-in
+// The "week" runs sunday to saturday:
+//   - Sunday: check-in describes the week whose monday is NEXT day (tomorrow)
+//   - Mon-Sat: check-in describes the week whose monday was LAST monday
+// semana_inicio = that monday - 7 days (the monday of the week being described)
+//
+// Examples:
+//   Sun 4/oct  → lunes_ref=5/oct  → semana_inicio=28/sep ✅
+//   Mon 5/oct  → lunes_ref=5/oct  → semana_inicio=28/sep ✅
+//   Sat 10/oct → lunes_ref=5/oct  → semana_inicio=28/sep ✅
+//   Sun 11/oct → lunes_ref=12/oct → semana_inicio=5/oct  ✅
 function getLunesActual() {
   var hoy = new Date();
   var dia = hoy.getDay(); // 0=dom,1=lun...6=sab
-  var diffToMon = (dia === 0) ? -6 : 1 - dia;
-  var lunesEstaSemana = new Date(hoy);
-  lunesEstaSemana.setDate(hoy.getDate() + diffToMon);
-  // Always describe previous week
-  var lunesSemanaDescrita = new Date(lunesEstaSemana);
-  lunesSemanaDescrita.setDate(lunesEstaSemana.getDate() - 7);
-  return lunesSemanaDescrita.toISOString().split('T')[0];
+  var lunesRef = new Date(hoy);
+  if (dia === 0) {
+    // Sunday: next monday is the reference
+    lunesRef.setDate(hoy.getDate() + 1);
+  } else {
+    // Mon-Sat: last monday is the reference
+    lunesRef.setDate(hoy.getDate() - (dia - 1));
+  }
+  // semana_inicio = lunes of the described week = lunesRef - 7
+  var semanaInicio = new Date(lunesRef);
+  semanaInicio.setDate(lunesRef.getDate() - 7);
+  return semanaInicio.toISOString().split('T')[0];
 }
 
 async function loadClienteData() {
