@@ -951,7 +951,7 @@ function renderCI(){
   var dp=DIAS.filter(function(d){return!d.rest;}).length||4;
   var adh=calcAdh();
   if(ci.done){
-    return '<div class="card" style="margin-bottom:10px"><div class="ch" onclick="ST.ci.open=!ST.ci.open;render()" style="cursor:pointer">'
+    return '<div class="card" style="margin-bottom:10px"><div class="ch" onclick="ciToggle()" style="cursor:pointer">'
       +'<h2>Check-in enviado</h2>'
       +'<div style="display:flex;align-items:center;gap:8px">'
         +'<span style="font-size:16px;font-weight:900;color:'+(adh>=80?'var(--vd)':adh>=50?'var(--nr)':'var(--rj)')+'">'+adh+'%</span>'
@@ -973,7 +973,7 @@ function renderCI(){
     return s+'</div>';
   }
   var h='<div class="card" id="ci-card" style="margin-bottom:10px">'
-    +'<div class="ch" onclick="ST.ci.open=!ST.ci.open;render()" style="cursor:pointer">'
+    +'<div class="ch" onclick="ciToggle()" style="cursor:pointer">'
       +'<h2>Check-in semanal</h2>'+(ST.checkInDone?'<span class="badge bvd" style="font-size:11px">✓ Enviado</span>':'')+'<span style="color:var(--t3)">'+(ci.open?'▲':'▼')+'</span>'
     +'</div>';
   if(!ci.open)return h+'</div>';
