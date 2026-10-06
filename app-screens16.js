@@ -1542,7 +1542,16 @@ function renderPerfil(){
   const u=ST.u;
   const macro=ST.p.macro;
   const edad=u.dob?Math.floor((new Date()-new Date(u.dob))/31557600000):'—';
-  const pesoAct=ST.pesos&&ST.pesos.length?ST.pesos[ST.pesos.length-1].v:(ST.pesoInicial||'—');
+  // Media de pesos de los últimos 7 días
+  var _pesoAct='—';
+  if(ST.pesos&&ST.pesos.length){
+    var _ultimos=ST.pesos.slice(-7); // últimos 7 registros
+    var _suma=_ultimos.reduce(function(a,p){return a+(parseFloat(p.v)||0);},0);
+    _pesoAct=Math.round((_suma/_ultimos.length)*10)/10;
+  } else if(ST.pesoInicial){
+    _pesoAct=ST.pesoInicial;
+  }
+  const pesoAct=_pesoAct;
   const objPeso=ST.objPeso||'—';
   const altura=u.altura||'—';
   const diasEnt=u.diasEnt||DIAS.filter(d=>!d.rest).length||4;
@@ -1571,7 +1580,7 @@ function renderPerfil(){
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
           <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
             <div style="font-size:24px;font-weight:800;color:var(--az)">${pesoAct}kg</div>
-            <div style="font-size:10px;color:var(--t3)">Peso actual</div>
+            <div style="font-size:10px;color:var(--t3)">${(_pesoAct!=='—'&&ST.pesos&&ST.pesos.length>1)?'Media '+Math.min(7,ST.pesos.length)+' días':'Peso actual'}</div>
           </div>
           <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
             <div style="font-size:24px;font-weight:800;color:var(--vd)">${objPeso}kg</div>
