@@ -812,7 +812,7 @@ function renderProgreso(){
   const ultp=pesos.length?pesos[pesos.length-1].v:0;
   const cambio=pesos.length>1?ultp-pesos[0].v:0;
   const left=ultp?ultp-ST.objPeso:0;
-  const semsTotal=Math.ceil(Math.abs(ST.pesoInicial-ST.objPeso)/ST.bajanSem);
+  const semsTotal=ST.bajanSem&&ST.bajanSem>0?Math.ceil(Math.abs(ST.pesoInicial-ST.objPeso)/ST.bajanSem):'—';
   const semsTransc=pesos.length?Math.ceil(pesos.length/3):0;
 
   // Gráfico SVG
