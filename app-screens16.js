@@ -1542,12 +1542,24 @@ function renderPerfil(){
   const u=ST.u;
   const macro=ST.p.macro;
   const edad=u.dob?Math.floor((new Date()-new Date(u.dob))/31557600000):'—';
-  // Media de pesos de los últimos 7 días
+  // Media de pesos de los últimos 7 días naturales
   var _pesoAct='—';
+  var _nDias7=0;
   if(ST.pesos&&ST.pesos.length){
-    var _ultimos=ST.pesos.slice(-7); // últimos 7 registros
-    var _suma=_ultimos.reduce(function(a,p){return a+(parseFloat(p.v)||0);},0);
-    _pesoAct=Math.round((_suma/_ultimos.length)*10)/10;
+    var _hace7=new Date();_hace7.setDate(_hace7.getDate()-7);_hace7.setHours(0,0,0,0);
+    var _ultimos7=ST.pesos.filter(function(p){
+      var d=new Date(p.fecha||p.d||p.date||'');
+      return d>=_hace7;
+    });
+    if(_ultimos7.length){
+      var _suma7=_ultimos7.reduce(function(a,p){return a+(parseFloat(p.v)||0);},0);
+      _pesoAct=Math.round((_suma7/_ultimos7.length)*10)/10;
+      _nDias7=_ultimos7.length;
+    } else {
+      // Sin pesos en últimos 7 días — usar el más reciente disponible
+      _pesoAct=ST.pesos[ST.pesos.length-1].v;
+      _nDias7=0;
+    }
   } else if(ST.pesoInicial){
     _pesoAct=ST.pesoInicial;
   }
@@ -1580,7 +1592,7 @@ function renderPerfil(){
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
           <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
             <div style="font-size:24px;font-weight:800;color:var(--az)">${pesoAct}kg</div>
-            <div style="font-size:10px;color:var(--t3)">${(_pesoAct!=='—'&&ST.pesos&&ST.pesos.length>1)?'Media '+Math.min(7,ST.pesos.length)+' días':'Peso actual'}</div>
+            <div style="font-size:10px;color:var(--t3)">${_nDias7>1?'Media 7 días':'Peso actual'}</div>
           </div>
           <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
             <div style="font-size:24px;font-weight:800;color:var(--vd)">${objPeso}kg</div>
