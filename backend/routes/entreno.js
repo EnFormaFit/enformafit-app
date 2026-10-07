@@ -196,6 +196,7 @@ router.get('/checkins/pendientes', entrenador, async (req, res) => {
 });
 
 // ENTRENADOR: ver todos los check-ins de la semana actual
+// Devuelve el check-in más reciente de cada cliente 1:1 que haya enviado en los últimos 14 días
 router.get('/checkins/semana-actual', entrenador, async (req, res) => {
   try {
     // Semana actual: lunes más reciente
@@ -209,14 +210,23 @@ router.get('/checkins/semana-actual', entrenador, async (req, res) => {
     }
     const semanaInicio = new Date(lunesRef);
     semanaInicio.setDate(lunesRef.getDate() - 7);
-    const semStr = semanaInicio.toISOString().split('T')[0];
+    // Ventana: desde semana_inicio - 7 días hasta semana_inicio + 7 días
+    const desde = new Date(semanaInicio);
+    desde.setDate(desde.getDate() - 7);
+    const hasta = new Date(semanaInicio);
+    hasta.setDate(hasta.getDate() + 7);
+    const desdeStr = desde.toISOString().split('T')[0];
+    const hastaStr = hasta.toISOString().split('T')[0];
 
+    // Obtener el check-in más reciente de cada cliente 1:1 dentro de la ventana
     const { rows } = await db.query(
-      `SELECT ci.* FROM checkins ci
+      `SELECT DISTINCT ON (ci.cliente_id) ci.*
+       FROM checkins ci
        JOIN clientes c ON c.id = ci.cliente_id
-       WHERE ci.semana_inicio = $1 AND c.tipo = '1a1'
-       ORDER BY ci.created_at ASC`,
-      [semStr]
+       WHERE ci.semana_inicio BETWEEN $1 AND $2
+         AND c.tipo IN ('1a1','uno')
+       ORDER BY ci.cliente_id, ci.semana_inicio DESC, ci.created_at DESC`,
+      [desdeStr, hastaStr]
     );
     res.json(rows);
   } catch (err) {
