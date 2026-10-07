@@ -195,4 +195,64 @@ router.get('/checkins/pendientes', entrenador, async (req, res) => {
   }
 });
 
+// ENTRENADOR: ver todos los check-ins de la semana actual
+router.get('/checkins/semana-actual', entrenador, async (req, res) => {
+  try {
+    // Semana actual: lunes más reciente
+    const hoy = new Date();
+    const dia = hoy.getDay(); // 0=dom, 1=lun...
+    const lunesRef = new Date(hoy);
+    if (dia === 0) {
+      lunesRef.setDate(hoy.getDate() + 1);
+    } else {
+      lunesRef.setDate(hoy.getDate() - (dia - 1));
+    }
+    const semanaInicio = new Date(lunesRef);
+    semanaInicio.setDate(lunesRef.getDate() - 7);
+    const semStr = semanaInicio.toISOString().split('T')[0];
+
+    const { rows } = await db.query(
+      `SELECT ci.* FROM checkins ci
+       JOIN clientes c ON c.id = ci.cliente_id
+       WHERE ci.semana_inicio = $1 AND c.tipo = '1a1'
+       ORDER BY ci.created_at ASC`,
+      [semStr]
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ENTRENADOR: corregir semana_inicio de checkins de un cliente (restar 7 días)
+router.post('/checkins/:clienteId/fix-semana', entrenador, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `UPDATE checkins
+       SET semana_inicio = (semana_inicio::date - interval '7 days')::date
+       WHERE cliente_id = $1
+       RETURNING id, semana_inicio`,
+      [req.params.clienteId]
+    );
+    res.json({ fixed: rows.length, rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ENTRENADOR: ver todos los check-ins de un cliente (historial)
+router.get('/checkins/:clienteId', entrenador, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT * FROM checkins
+       WHERE cliente_id = $1
+       ORDER BY semana_inicio DESC`,
+      [req.params.clienteId]
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
