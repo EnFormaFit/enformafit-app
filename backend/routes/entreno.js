@@ -199,22 +199,13 @@ router.get('/checkins/pendientes', entrenador, async (req, res) => {
 // Devuelve el check-in más reciente de cada cliente 1:1 que haya enviado en los últimos 14 días
 router.get('/checkins/semana-actual', entrenador, async (req, res) => {
   try {
-    // Semana actual: lunes más reciente
+    // Ventana: los últimos 14 días hasta hoy+1
+    // Coge check-ins de la semana pasada y la semana actual sin importar el día exacto
     const hoy = new Date();
-    const dia = hoy.getDay(); // 0=dom, 1=lun...
-    const lunesRef = new Date(hoy);
-    if (dia === 0) {
-      lunesRef.setDate(hoy.getDate() + 1);
-    } else {
-      lunesRef.setDate(hoy.getDate() - (dia - 1));
-    }
-    const semanaInicio = new Date(lunesRef);
-    semanaInicio.setDate(lunesRef.getDate() - 7);
-    // Ventana: desde semana_inicio - 7 días hasta semana_inicio + 7 días
-    const desde = new Date(semanaInicio);
-    desde.setDate(desde.getDate() - 7);
-    const hasta = new Date(semanaInicio);
-    hasta.setDate(hasta.getDate() + 7);
+    const hasta = new Date(hoy);
+    hasta.setDate(hoy.getDate() + 1); // incluir hoy aunque sea lunes
+    const desde = new Date(hoy);
+    desde.setDate(hoy.getDate() - 14);
     const desdeStr = desde.toISOString().split('T')[0];
     const hastaStr = hasta.toISOString().split('T')[0];
 
@@ -227,6 +218,25 @@ router.get('/checkins/semana-actual', entrenador, async (req, res) => {
          AND c.tipo IN ('1a1','uno')
        ORDER BY ci.cliente_id, ci.semana_inicio DESC, ci.created_at DESC`,
       [desdeStr, hastaStr]
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ENTRENADOR: debug — ver todos los check-ins recientes con nombre de cliente
+router.get('/checkins/debug-recientes', entrenador, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT ci.id, ci.cliente_id, c.nombre, c.tipo,
+              ci.semana_inicio, ci.dias_entreno_real, ci.dias_nutricion, ci.dias_pasos,
+              ci.created_at
+       FROM checkins ci
+       JOIN clientes c ON c.id = ci.cliente_id
+       WHERE ci.created_at > NOW() - INTERVAL '21 days'
+       ORDER BY ci.created_at DESC
+       LIMIT 60`
     );
     res.json(rows);
   } catch (err) {
