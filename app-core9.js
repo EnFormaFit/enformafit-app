@@ -980,7 +980,11 @@ function renderCI(){
         +'<div style="text-align:center;background:var(--bg);border-radius:8px;padding:10px"><div style="font-size:20px;font-weight:800;color:var(--az)">'+(ci.diasEnt||0)+'/'+dp+'</div><div style="font-size:9px;color:var(--t3)">Entrenos</div></div>'
         +'<div style="text-align:center;background:var(--bg);border-radius:8px;padding:10px"><div style="font-size:20px;font-weight:800;color:var(--az)">'+(ci.diasNut||0)+'/7</div><div style="font-size:9px;color:var(--t3)">Nutricion</div></div>'
         +'<div style="text-align:center;background:var(--bg);border-radius:8px;padding:10px"><div style="font-size:20px;font-weight:800;color:var(--az)">'+(ci.diasPasos||0)+'/7</div><div style="font-size:9px;color:var(--t3)">Pasos</div></div>'
-      +'</div><button class="btn bo" style="width:100%" onclick="ST.ci.done=false;ST.ci.open=true;save();render()">Editar respuestas</button></div>':'')
+      +'</div>'
+      +([['¿Cómo fue la semana?',ci.como],['¿De qué te enorgulleces?',ci.orgullo],['Compromiso',ci.compromiso],['Sensaciones',ci.sensaciones]].filter(function(p){return p[1];}).map(function(p){
+        return '<div style="background:var(--bg);border-radius:8px;padding:10px;margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:var(--t3);margin-bottom:4px">'+p[0].toUpperCase()+'</div><div style="font-size:13px;color:var(--t1)">'+p[1]+'</div></div>';
+      }).join(''))
+      +'<button class="btn bo" style="width:100%;margin-top:4px" onclick="ST.ci.done=false;ST.ci.open=true;save();render()">Editar respuestas</button></div>':'')
     +'</div>';
   }
   function mkDots(key,val,mx){
@@ -1071,7 +1075,7 @@ function calcAdh(){
 
 
 function enviarCI(){
-  ST.ci.adh=calcAdh();ST.ci.done=true;ST.ci.open=false;ST.ci.semana=ST.u.semana;save();
+  ST.ci.adh=calcAdh();ST.ci.done=true;ST.ci.open=false;ST.ci.semana=ST.u.semana;ST.checkInDone=true;save();
   var _c=document.querySelector('[data-ci-card]');
   if(_c){var _t=document.createElement('div');_t.innerHTML=renderCI();_c.replaceWith(_t.firstChild);}
   else{var _ct=document.getElementById('ct');if(_ct){var _sp=_ct.scrollTop;_ct.innerHTML=renderInicio();_ct.scrollTop=_sp;}}
