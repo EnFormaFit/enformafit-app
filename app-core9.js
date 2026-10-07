@@ -431,11 +431,16 @@ async function loadClienteData() {
     ST.p.bloqueId = plan.bloque_id || '';
     ST.p.fechaInicio = plan.fecha_inicio || null;
     ST.u.semana = plan.semana_actual !== undefined ? plan.semana_actual : 1;
-    // Auto-reset check-in when week changes
-    if (ST.ci && ST.ci.semana !== undefined && ST.ci.semana !== ST.u.semana) {
-      ST.ci = { done: false, open: false, semana: ST.u.semana };
+    // Auto-reset check-in when calendar week changes (every Sunday a new window opens)
+    var _lunesCI = getLunesActual();
+    if (ST.ci && ST.ci.lunesRef && ST.ci.lunesRef !== _lunesCI) {
+      // Nueva semana calendario → limpiar check-in para que puedan rellenar el nuevo
+      ST.ci = { done: false, open: false, semana: ST.u.semana, lunesRef: _lunesCI };
+      ST.checkInDone = false;
       save();
-    } else if (ST.ci && ST.ci.semana === undefined) {
+    } else if (ST.ci && !ST.ci.lunesRef) {
+      // Primera vez → guardar referencia sin resetear
+      ST.ci.lunesRef = _lunesCI;
       ST.ci.semana = ST.u.semana;
       save();
     }
@@ -1075,7 +1080,7 @@ function calcAdh(){
 
 
 function enviarCI(){
-  ST.ci.adh=calcAdh();ST.ci.done=true;ST.ci.open=false;ST.ci.semana=ST.u.semana;ST.checkInDone=true;save();
+  ST.ci.adh=calcAdh();ST.ci.done=true;ST.ci.open=false;ST.ci.semana=ST.u.semana;ST.ci.lunesRef=getLunesActual();ST.checkInDone=true;save();
   var _c=document.querySelector('[data-ci-card]');
   if(_c){var _t=document.createElement('div');_t.innerHTML=renderCI();_c.replaceWith(_t.firstChild);}
   else{var _ct=document.getElementById('ct');if(_ct){var _sp=_ct.scrollTop;_ct.innerHTML=renderInicio();_ct.scrollTop=_sp;}}
