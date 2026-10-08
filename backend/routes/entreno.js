@@ -114,6 +114,19 @@ router.post('/revision', cliente, async (req, res) => {
   }
 });
 
+// ENTRENADOR: ver todas las revisiones de un cliente
+router.get('/revisiones/:clienteId', entrenador, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT * FROM revisiones WHERE cliente_id=$1 ORDER BY semana ASC`,
+      [req.params.clienteId]
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ENTRENADOR: ver revisiones pendientes
 router.get('/revisiones/pendientes', entrenador, async (req, res) => {
   try {
