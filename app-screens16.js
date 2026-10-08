@@ -1246,6 +1246,7 @@ async function _doEnviarRev(){
     // Save revision - only mark done=true on success
     try {
       await api('POST','/api/entreno/revision',{
+        bloque_id:ST.p.bloqueId||null,
         semana:nextRev,
         medidas:ST.rev.medidas||{},
         preguntas:ST.rev.preguntas||{},
@@ -1520,7 +1521,7 @@ async function guardarRevAnterior(sem){
     // Merge uploaded URLs back
     if(Object.keys(fotoUrls).length)hist.fotos=fotoUrls;
     save();
-    api('POST','/api/entreno/revision',{semana:sem,medidas:hist.medidas||{},preguntas:hist.preguntas||{},fotos:hist.fotos||{},estado:'revisada'}).then(function(){
+    api('POST','/api/entreno/revision',{bloque_id:ST.p.bloqueId||null,semana:sem,medidas:hist.medidas||{},preguntas:hist.preguntas||{},fotos:hist.fotos||{},estado:'revisada'}).then(function(){
       toast('Revision S'+sem+' guardada ✓','vd');
       ST._editandoRevSem=null;render();
     }).catch(function(e){toast('Error: '+e.message,'rj');});
