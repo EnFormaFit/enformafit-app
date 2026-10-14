@@ -4,6 +4,90 @@ const router = require('express').Router();
 const db     = require('../db');
 const { cliente, entrenador } = require('../middleware/auth');
 
+// ── CLIENTE: plan completo (rutina + macros + semana) ────────────────────────
+router.get('/mi-plan', cliente, async (req, res) => {
+  try {
+    const clienteId = req.user.id;
+
+    // Bloque activo + rutina
+    const { rows: [bloque] } = await db.query(
+      `SELECT b.*, r.ejercicios, r.nombre as rutina_nombre,
+              c.kcal_asignadas, c.objetivo, c.dias_entreno, c.comidas,
+              c.fecha_inicio as cliente_fecha_inicio, c.semanas_bloque,
+              c.peso_inicial, c.altura
+       FROM bloques b
+       JOIN rutinas r ON r.cod = b.rutina_cod
+       JOIN clientes c ON c.id = b.cliente_id
+       WHERE b.cliente_id=$1 AND b.visible_cliente=true AND b.estado='activo'
+       ORDER BY b.created_at DESC LIMIT 1`,
+      [clienteId]
+    );
+    if (!bloque) return res.status(404).json({ error: 'No hay plan activo' });
+
+    // Calcular semana actual a partir de fecha_inicio del bloque
+    let semana_actual = 1;
+    if (bloque.fecha_inicio) {
+      const inicio = new Date(bloque.fecha_inicio);
+      const hoy = new Date();
+      inicio.setHours(0,0,0,0);
+      hoy.setHours(0,0,0,0);
+      const diffDias = Math.floor((hoy - inicio) / (1000 * 60 * 60 * 24));
+      semana_actual = Math.max(1, Math.floor(diffDias / 7) + 1);
+    }
+
+    // Plan de nutrición activo
+    const { rows: [planNut] } = await db.query(
+      `SELECT kcal_total, proteina_g, carbos_g, grasas_g, distribucion, comidas as plan_comidas
+       FROM planes_nutricion
+       WHERE bloque_id=$1 AND activo=true
+       ORDER BY created_at DESC LIMIT 1`,
+      [bloque.id]
+    );
+
+    // Pesos recientes
+    const { rows: pesos } = await db.query(
+      `SELECT fecha, peso FROM peso_diario
+       WHERE cliente_id=$1
+       ORDER BY fecha DESC LIMIT 90`,
+      [clienteId]
+    );
+
+    res.json({
+      // Bloque
+      bloque_id: bloque.id,
+      fecha_inicio: bloque.fecha_inicio,
+      semanas_bloque: bloque.semanas || bloque.semanas_bloque || 13,
+      semana_actual,
+      rutina_cod: bloque.rutina_cod,
+      rutina_base: bloque.ejercicios,
+      rutina_dias: bloque.ejercicios,
+      rutina_semanas: {},
+      dias_entreno: bloque.dias_entreno || 3,
+      // Macros
+      macros: {
+        kcal: planNut ? planNut.kcal_total : (bloque.kcal_asignadas || 0),
+        p: planNut ? planNut.proteina_g : 0,
+        c: planNut ? planNut.carbos_g : 0,
+        g: planNut ? planNut.grasas_g : 0,
+      },
+      comidas: bloque.comidas || 3,
+      // Objetivo
+      fase: bloque.objetivo === 'def' ? 'deficit' : bloque.objetivo === 'sup' ? 'superavit' : 'mantenimiento',
+      objetivo_kg: null,
+      obj_sem_kg: null,
+      pasos_obj: 8000,
+      // Pesos
+      pesos: pesos.map(p => ({ f: p.fecha ? p.fecha.toISOString().split('T')[0] : '', v: parseFloat(p.peso) })),
+      // Extras vacíos que la app puede usar
+      alimentos: {},
+      medidas_s0: {},
+      fotos_s0: {},
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── CLIENTE: ver rutina del bloque activo ─────────────────────────────────────
 router.get('/mi-rutina', cliente, async (req, res) => {
   try {
@@ -87,6 +171,90 @@ router.get('/peso', cliente, async (req, res) => {
     q += ' ORDER BY fecha DESC LIMIT 90';
     const { rows } = await db.query(q, params);
     res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── CLIENTE: alias /pesos (plural) ───────────────────────────────────────────
+router.get('/pesos', cliente, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT fecha, peso FROM peso_diario WHERE cliente_id=$1 ORDER BY fecha DESC LIMIT 90`,
+      [req.user.id]
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── CLIENTE: historial de entreno de una semana ───────────────────────────────
+router.get('/mi-historial', cliente, async (req, res) => {
+  try {
+    const { semana, dia } = req.query;
+    // Bloque activo
+    const { rows: [bloque] } = await db.query(
+      `SELECT id FROM bloques WHERE cliente_id=$1 AND visible_cliente=true AND estado='activo'
+       ORDER BY created_at DESC LIMIT 1`,
+      [req.user.id]
+    );
+    if (!bloque) return res.json([]);
+    let q = `SELECT * FROM registro_entreno WHERE bloque_id=$1 AND cliente_id=$2`;
+    const params = [bloque.id, req.user.id];
+    if (semana) { params.push(semana); q += ` AND semana=$${params.length}`; }
+    if (dia !== undefined) { params.push(dia); q += ` AND dia=$${params.length}`; }
+    q += ' ORDER BY dia, ejercicio, serie';
+    const { rows } = await db.query(q, params);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── CLIENTE: todas sus revisiones ────────────────────────────────────────────
+router.get('/revisiones/all', cliente, async (req, res) => {
+  try {
+    const { rows: [bloque] } = await db.query(
+      `SELECT id FROM bloques WHERE cliente_id=$1 AND visible_cliente=true AND estado='activo'
+       ORDER BY created_at DESC LIMIT 1`,
+      [req.user.id]
+    );
+    if (!bloque) return res.json([]);
+    const { rows } = await db.query(
+      `SELECT * FROM revisiones WHERE bloque_id=$1 AND cliente_id=$2 ORDER BY semana ASC`,
+      [bloque.id, req.user.id]
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── CLIENTE: sus check-ins ────────────────────────────────────────────────────
+router.get('/checkins', cliente, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT * FROM checkins WHERE cliente_id=$1 ORDER BY semana_inicio DESC LIMIT 20`,
+      [req.user.id]
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── CLIENTE: menú semanal guardado ────────────────────────────────────────────
+router.get('/menu-semanal', cliente, async (req, res) => {
+  try {
+    const hoy = new Date().toISOString().split('T')[0];
+    const { rows: [menu] } = await db.query(
+      `SELECT * FROM menus_semanales WHERE cliente_id=$1 AND semana_inicio <= $2
+       ORDER BY semana_inicio DESC LIMIT 1`,
+      [req.user.id, hoy]
+    );
+    if (!menu) return res.json({ menu_semanal: {} });
+    res.json({ menu_semanal: menu.configuracion || {} });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
