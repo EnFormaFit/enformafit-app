@@ -1,6 +1,6 @@
 // app-core9 v1791270130
 // ── STATE ──
-const APP_VER='v8.4';
+const APP_VER='v8.5';
 const ST={
   u:{nom:'',init:'',plan:'',semana:1,semTotal:12,tipo:'programa',
      altura:175,peso:80,dob:'',objetivo:75,lesiones:'',
