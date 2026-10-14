@@ -17,7 +17,7 @@ router.get('/mi-rutina', cliente, async (req, res) => {
       [clienteId]
     );
     if (!bloque) return res.status(404).json({ error: 'No hay plan activo' });
-    res.json(bloque);
+    res.json({ ...bloque, rutina_base: bloque.ejercicios });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
