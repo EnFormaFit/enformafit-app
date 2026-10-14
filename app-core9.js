@@ -318,7 +318,7 @@ function autoGuardarSerie(di, ei, si) {
   var s = st.series[si];
   save(); // persist ejStates immediately to localStorage
   var bloque_id = ST.p.bloqueId || ST.p.bloqueId || '';
-  if(!bloque_id){console.warn('[Serie] No bloque_id');return;}
+  if(!bloque_id){if(typeof toast==='function')toast('⚠️ Error al guardar serie: recarga la app','rj');console.warn('[Serie] No bloque_id');return;}
   var semana = ST.semVer || ST.u.semana || 1;
 
   // Update histEnt so week changes preserve this data
