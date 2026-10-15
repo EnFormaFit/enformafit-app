@@ -70,6 +70,38 @@ router.post('/', entrenador, async (req, res) => {
   }
 });
 
+// ── Rutas fijas ANTES de /:id — si van después Express las captura como parámetro ──
+// ── CLIENTE: ver su propio perfil ────────────────────────────────────────────
+router.get('/me/perfil', cliente, async (req, res) => {
+  try {
+    const clienteId = req.user.role === 'cliente' ? req.user.id : req.query.id;
+    const { rows: [cli] } = await db.query(
+      `SELECT id,nombre,email,tipo,estado,fecha_inicio,kcal_asignadas,rutina_actual,
+              dias_entreno,nivel,objetivo,comidas,semanas_revision
+       FROM clientes WHERE id=$1`,
+      [clienteId]
+    );
+    if (!cli) return res.status(404).json({ error: 'No encontrado' });
+    res.json(cli);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── ENTRENADOR: aprobar masivamente todos los bloques activos ─────────────────
+router.post('/aprobar-todos-bloques', entrenador, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `UPDATE bloques SET visible_cliente=true, aprobado_por='entrenador', aprobado_at=NOW()
+       WHERE estado='activo' AND visible_cliente=false
+       RETURNING id, cliente_id, numero_bloque`
+    );
+    res.json({ actualizados: rows.length, bloques: rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── ENTRENADOR: ver cliente ───────────────────────────────────────────────────
 router.get('/:id', entrenador, async (req, res) => {
   try {
@@ -244,54 +276,6 @@ router.get('/:id/siguiente-rutina', entrenador, async (req, res) => {
   try {
     const sugerencia = await sugerirSiguienteRutina(req.params.id);
     res.json(sugerencia || { mensaje: 'No hay sugerencia disponible, asignar manualmente' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ── ENTRENADOR: ver bloque activo de un cliente (para el botón publicar del panel) ──────────
-router.get('/:id/bloque-activo', entrenador, async (req, res) => {
-  try {
-    const { rows: [bloque] } = await db.query(
-      `SELECT id, numero_bloque, rutina_cod, fecha_inicio, fecha_fin, estado, visible_cliente
-       FROM bloques WHERE cliente_id=$1 AND estado='activo'
-       ORDER BY created_at DESC LIMIT 1`,
-      [req.params.id]
-    );
-    if (!bloque) return res.status(404).json({ error: 'No hay bloque activo para este cliente' });
-    res.json(bloque);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ── ENTRENADOR: aprobar masivamente todos los bloques activos (fix de emergencia) ──────────
-// Útil cuando los bloques se crearon con visible_cliente=false y los clientes no pueden ver su plan
-router.post('/aprobar-todos-bloques', entrenador, async (req, res) => {
-  try {
-    const { rows } = await db.query(
-      `UPDATE bloques SET visible_cliente=true, aprobado_por='entrenador', aprobado_at=NOW()
-       WHERE estado='activo' AND visible_cliente=false
-       RETURNING id, cliente_id, numero_bloque`
-    );
-    res.json({ actualizados: rows.length, bloques: rows });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ── CLIENTE: ver su propio perfil y plan ──────────────────────────────────────
-router.get('/me/perfil', cliente, async (req, res) => {
-  try {
-    const clienteId = req.user.role === 'cliente' ? req.user.id : req.query.id;
-    const { rows: [cli] } = await db.query(
-      `SELECT id,nombre,email,tipo,estado,fecha_inicio,kcal_asignadas,rutina_actual,
-              dias_entreno,nivel,objetivo,comidas,semanas_revision
-       FROM clientes WHERE id=$1`,
-      [clienteId]
-    );
-    if (!cli) return res.status(404).json({ error: 'No encontrado' });
-    res.json(cli);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
