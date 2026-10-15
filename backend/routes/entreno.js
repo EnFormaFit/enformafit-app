@@ -283,8 +283,31 @@ router.post('/upload-foto', cliente, async (req, res) => {
 // CLIENTE: subir revisión
 router.post('/revision', cliente, async (req, res) => {
   try {
-    const { bloque_id, semana, peso, medidas, preguntas, fotos } = req.body;
+    const { bloque_id: bloqueIdFromClient, semana, peso, medidas, preguntas, fotos } = req.body;
     const clienteId = req.user.id;
+
+    // Resolución del bloque_id: el frontend puede enviar uno válido, pero si no lo tiene
+    // (cliente sin plan activo visible, o error de inicialización) lo buscamos en el servidor.
+    // Esto resuelve el fallo de TODOS los clientes Programa: si su bloque no está aprobado
+    // o visible, el frontend envía null y la inserción fallaba con NOT NULL constraint.
+    let bloque_id = bloqueIdFromClient || null;
+
+    if (!bloque_id) {
+      // Buscar el bloque activo del cliente (visible o no — al menos que exista uno activo)
+      const { rows: [bloqueActivo] } = await db.query(
+        `SELECT id FROM bloques WHERE cliente_id=$1 AND estado='activo'
+         ORDER BY created_at DESC LIMIT 1`,
+        [clienteId]
+      );
+      if (bloqueActivo) {
+        bloque_id = bloqueActivo.id;
+      } else {
+        // No existe ningún bloque activo para este cliente — no se puede guardar la revisión
+        return res.status(400).json({
+          error: 'No tienes un plan activo. Contacta con tu entrenador para activar tu plan.'
+        });
+      }
+    }
 
     // fotos viene como objeto { 'rev_0': url, 'rev_1': url, ... }
     // Guardamos como array ordenado [frente, perfil_d, perfil_i, espalda]
@@ -292,7 +315,7 @@ router.post('/revision', cliente, async (req, res) => {
       ? ['rev_0','rev_1','rev_2','rev_3'].map(k => fotos[k] || null).filter(Boolean)
       : [];
 
-    // Upsert: actualizar si ya existe revisión para este cliente+semana, insertar si no
+    // Upsert: actualizar si ya existe revisión para este cliente+semana+bloque, insertar si no
     const { rows: [existing] } = await db.query(
       `SELECT id FROM revisiones WHERE cliente_id=$1 AND semana=$2 AND bloque_id=$3 LIMIT 1`,
       [clienteId, semana, bloque_id]
@@ -320,7 +343,23 @@ router.post('/revision', cliente, async (req, res) => {
   }
 });
 
-// ENTRENADOR: ver todas las revisiones de un cliente
+// ENTRENADOR: ver revisiones pendientes — DEBE ir antes de /:clienteId para que Express no lo confunda
+router.get('/revisiones/pendientes', entrenador, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT r.*, c.nombre, c.tipo
+       FROM revisiones r
+       JOIN clientes c ON c.id = r.cliente_id
+       WHERE r.estado = 'subida'
+       ORDER BY r.fecha_subida ASC`
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ENTRENADOR: ver todas las revisiones de un cliente — va DESPUÉS de /pendientes para evitar shadowing
 router.get('/revisiones/:clienteId', entrenador, async (req, res) => {
   try {
     const { rows } = await db.query(
@@ -333,17 +372,51 @@ router.get('/revisiones/:clienteId', entrenador, async (req, res) => {
   }
 });
 
-// ENTRENADOR: ver revisiones pendientes
-router.get('/revisiones/pendientes', entrenador, async (req, res) => {
+// CLIENTE: ver una revisión específica por semana (usada por editarRevAnterior en el frontend)
+router.get('/revision/:semana', cliente, async (req, res) => {
   try {
-    const { rows } = await db.query(
-      `SELECT r.*, c.nombre, c.tipo
-       FROM revisiones r
-       JOIN clientes c ON c.id = r.cliente_id
-       WHERE r.estado = 'subida'
-       ORDER BY r.fecha_subida ASC`
+    const clienteId = req.user.id;
+    const semana = parseInt(req.params.semana);
+
+    // Buscar el bloque activo del cliente
+    const { rows: [bloque] } = await db.query(
+      `SELECT id FROM bloques WHERE cliente_id=$1 AND visible_cliente=true AND estado='activo'
+       ORDER BY created_at DESC LIMIT 1`,
+      [clienteId]
     );
-    res.json(rows);
+
+    let rev = null;
+    if (bloque) {
+      const { rows: [found] } = await db.query(
+        `SELECT * FROM revisiones WHERE cliente_id=$1 AND semana=$2 AND bloque_id=$3 LIMIT 1`,
+        [clienteId, semana, bloque.id]
+      );
+      rev = found || null;
+    }
+
+    if (!rev) {
+      // Si no hay bloque activo o no hay revisión, buscar por cliente+semana directamente
+      const { rows: [any] } = await db.query(
+        `SELECT * FROM revisiones WHERE cliente_id=$1 AND semana=$2 ORDER BY created_at DESC LIMIT 1`,
+        [clienteId, semana]
+      );
+      rev = any || null;
+    }
+
+    if (!rev) return res.status(404).json({ error: 'Revisión no encontrada' });
+
+    // Formatear fotos_urls como objeto { rev_0, rev_1, ... } para compatibilidad con el frontend
+    const fotosObj = {};
+    if (rev.fotos_urls && Array.isArray(rev.fotos_urls)) {
+      rev.fotos_urls.forEach((url, i) => { if (url) fotosObj['rev_' + i] = url; });
+    }
+
+    res.json({
+      ...rev,
+      fotos: fotosObj,
+      medidas: typeof rev.medidas === 'string' ? JSON.parse(rev.medidas) : (rev.medidas || {}),
+      preguntas: typeof rev.preguntas === 'string' ? JSON.parse(rev.preguntas) : (rev.preguntas || {}),
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
