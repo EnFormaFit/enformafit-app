@@ -135,12 +135,12 @@ router.post('/:id/generar-plan', entrenador, async (req, res) => {
     const fFin    = new Date(fInicio);
     fFin.setDate(fFin.getDate() + cli.semanas_bloque * 7);
 
-    // 4. Crear bloque (pendiente de aprobación)
+    // 4. Crear bloque — visible al cliente desde el primer momento
     const { rows: [bloque] } = await db.query(
       `INSERT INTO bloques
          (cliente_id, numero_bloque, rutina_cod, kcal_inicio, fecha_inicio, fecha_fin,
-          semanas, estado, visible_cliente)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,'activo',false)
+          semanas, estado, visible_cliente, aprobado_por, aprobado_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,'activo',true,'entrenador',NOW())
        RETURNING *`,
       [cli.id, numBloque, rutinaCod, plan.kcal_total, fInicio, fFin, cli.semanas_bloque]
     );
