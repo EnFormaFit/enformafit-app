@@ -1219,60 +1219,34 @@ async function _doEnviarRev(){
   save();render();toast('Subiendo fotos y guardando revisión...','');
 
   if(_tk){
-    // Save revision data first (without photos) — ensures data is safe even if photo upload fails
+    // Build fotos object to save with revision — include base64 directly
+    const fotosB64=ST.rev.fotos||{};
+    const _FKEYS=['frente','perfil_d','perfil_i','espalda'];
+    const fotosToSave={};
+    for(let i=0;i<4;i++){
+      const b64=fotosB64['rev_'+i]||fotosB64[_FKEYS[i]];
+      if(b64)fotosToSave['rev_'+i]=b64;
+    }
+    // Save revision with fotos in one call
     try {
       await api('POST','/api/entreno/revision',{
         bloque_id:ST.p.bloqueId||null,
         semana:nextRev,
         medidas:ST.rev.medidas||{},
         preguntas:ST.rev.preguntas||{},
-        fotos:{},
+        fotos:fotosToSave,
         estado:'revisada'
       });
       ST.rev.done=true;
       save();
-      toast('Revisión S'+nextRev+' enviada ✓ Subiendo fotos...','vd');
-      console.log('[BD] Revision S'+nextRev+' saved OK');
+      toast('Revisión S'+nextRev+' enviada ✓','vd');
+      console.log('[BD] Revision S'+nextRev+' saved with fotos');
       render();
     } catch(e) {
       console.error('[BD] Revision save error:',e);
       const errMsg = e && e.message ? e.message : 'Error desconocido';
       toast('Error al guardar. Inténtalo de nuevo. ('+errMsg+')','rj');
-      return; // Don't proceed to photo upload if revision save failed
-    }
-    // Upload photos to Cloudinary after saving revision (non-blocking)
-    const fotoUrls={};
-    const fotosB64=ST.rev.fotos||{};
-    const _FKEYS=['frente','perfil_d','perfil_i','espalda'];
-    const _POSES_ARR=['frente','perfil_d','perfil_i','espalda'];
-    for(let i=0;i<4;i++){
-      const b64=fotosB64['rev_'+i]||fotosB64[_FKEYS[i]];
-      if(b64){
-        try{
-          const res=await api('POST','/api/entreno/upload-foto',{
-            foto_b64:b64,
-            pose:_POSES_ARR[i],
-            semana:nextRev
-          });
-          if(res&&res.url&&res.url.startsWith('http'))fotoUrls['rev_'+i]=res.url;
-        }catch(e){
-          console.warn('[Cloudinary] Error subiendo foto',i,e);
-        }
-      }
-    }
-    // Update revision with photo URLs if any uploaded successfully
-    if(Object.keys(fotoUrls).length){
-      try{
-        await api('POST','/api/entreno/revision',{
-          bloque_id:ST.p.bloqueId||null,
-          semana:nextRev,
-          medidas:ST.rev.medidas||{},
-          preguntas:ST.rev.preguntas||{},
-          fotos:fotoUrls,
-          estado:'revisada'
-        });
-        toast('Fotos subidas ✓','vd');
-      }catch(e){console.warn('[BD] Error actualizando fotos:',e);}
+      return;
     }
   } else {
     toast('Revisión S'+nextRev+' guardada ✓','vd');

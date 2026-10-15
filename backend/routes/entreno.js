@@ -262,20 +262,58 @@ router.get('/menu-semanal', cliente, async (req, res) => {
 
 // ── REVISIONES ────────────────────────────────────────────────────────────────
 
+// CLIENTE: upload de foto de revisión (recibe base64, la guarda en BD como URL data)
+// El frontend llama a este endpoint por cada foto antes de llamar a POST /revision
+router.post('/upload-foto', cliente, async (req, res) => {
+  try {
+    const { foto_b64, pose, semana } = req.body;
+    if (!foto_b64) return res.status(400).json({ error: 'foto_b64 requerida' });
+    // Validar que es una imagen base64 válida
+    if (!foto_b64.startsWith('data:image/')) {
+      return res.status(400).json({ error: 'Formato inválido: se esperaba data:image/...' });
+    }
+    // Devolvemos la base64 como "url" — se almacenará en fotos_urls de revisiones
+    // En el futuro se puede reemplazar por un upload a S3/Cloudinary sin cambiar el frontend
+    res.json({ url: foto_b64, pose, semana });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // CLIENTE: subir revisión
 router.post('/revision', cliente, async (req, res) => {
   try {
-    const { bloque_id, semana, peso, medidas, preguntas } = req.body;
+    const { bloque_id, semana, peso, medidas, preguntas, fotos } = req.body;
     const clienteId = req.user.id;
 
-    const { rows: [rev] } = await db.query(
-      `INSERT INTO revisiones (bloque_id, cliente_id, semana, peso, medidas, preguntas, estado, fecha_subida)
-       VALUES ($1,$2,$3,$4,$5,$6,'subida',NOW())
-       ON CONFLICT (bloque_id, semana) DO UPDATE
-         SET peso=$4, medidas=$5, preguntas=$6, estado='subida', fecha_subida=NOW()
-       RETURNING *`,
-      [bloque_id, clienteId, semana, peso, JSON.stringify(medidas), JSON.stringify(preguntas)]
+    // fotos viene como objeto { 'rev_0': url, 'rev_1': url, ... }
+    // Guardamos como array ordenado [frente, perfil_d, perfil_i, espalda]
+    const fotosArray = fotos
+      ? ['rev_0','rev_1','rev_2','rev_3'].map(k => fotos[k] || null).filter(Boolean)
+      : [];
+
+    // Upsert: actualizar si ya existe revisión para este cliente+semana, insertar si no
+    const { rows: [existing] } = await db.query(
+      `SELECT id FROM revisiones WHERE cliente_id=$1 AND semana=$2 AND bloque_id=$3 LIMIT 1`,
+      [clienteId, semana, bloque_id]
     );
+
+    let rev;
+    if (existing) {
+      const { rows: [updated] } = await db.query(
+        `UPDATE revisiones SET peso=$1, medidas=$2, preguntas=$3, fotos_urls=$4, estado='subida', fecha_subida=NOW()
+         WHERE id=$5 RETURNING *`,
+        [peso, JSON.stringify(medidas), JSON.stringify(preguntas), fotosArray, existing.id]
+      );
+      rev = updated;
+    } else {
+      const { rows: [inserted] } = await db.query(
+        `INSERT INTO revisiones (bloque_id, cliente_id, semana, peso, medidas, preguntas, fotos_urls, estado, fecha_subida)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,'subida',NOW()) RETURNING *`,
+        [bloque_id, clienteId, semana, peso, JSON.stringify(medidas), JSON.stringify(preguntas), fotosArray]
+      );
+      rev = inserted;
+    }
     res.json(rev);
   } catch (err) {
     res.status(500).json({ error: err.message });
