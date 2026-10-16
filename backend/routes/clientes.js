@@ -13,6 +13,7 @@ router.get('/', entrenador, async (req, res) => {
     const { tipo, estado } = req.query;
     let q = `SELECT id, nombre, email, tipo, estado, fecha_inicio,
                     kcal_asignadas, rutina_actual, dias_entreno, nivel,
+                    semanas_revision,
                     created_at
              FROM clientes WHERE 1=1`;
     const params = [];
