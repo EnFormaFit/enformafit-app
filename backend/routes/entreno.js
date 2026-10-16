@@ -52,6 +52,13 @@ router.get('/mi-plan', cliente, async (req, res) => {
       [clienteId]
     );
 
+    // S0 desde revisiones (fuente de verdad)
+    const { rows: [revS0] } = await db.query(
+      `SELECT medidas, fotos_urls FROM revisiones
+       WHERE bloque_id=$1 AND semana=0 LIMIT 1`,
+      [bloque.id]
+    );
+
     res.json({
       // Bloque
       bloque_id: bloque.id,
@@ -80,8 +87,8 @@ router.get('/mi-plan', cliente, async (req, res) => {
       pesos: pesos.map(p => ({ f: p.fecha ? p.fecha.toISOString().split('T')[0] : '', v: parseFloat(p.peso) })),
       // Extras vacíos que la app puede usar
       alimentos: {},
-      medidas_s0: {},
-      fotos_s0: {},
+      medidas_s0: revS0 ? normalizarMedidas(revS0.medidas) : {},
+      fotos_s0: {},  // fotos_urls todavía null; fotos en localStorage
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

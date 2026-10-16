@@ -52,10 +52,8 @@ function load(){try{
   if(d.menuGuardado)ST.menuGuardado=d.menuGuardado;
   if(d.pesos&&d.pesos.length)ST.pesos=d.pesos;
   if(d.rev)Object.assign(ST.rev,d.rev);
-  if(d.revHistorial)ST.revHistorial=d.revHistorial;
+  // revHistorial y medidasIni se cargan desde BD en loadClienteData — NO restaurar desde localStorage
   if(d._editandoRevSem!=null)ST._editandoRevSem=d._editandoRevSem;
-  if(d.revHistorial)ST.revHistorial=d.revHistorial;
-  if(d.medidasIni)ST.medidasIni=d.medidasIni;
   if(d.ci)Object.assign(ST.ci,d.ci);
   if(d.ejStates)ST.ejStates=d.ejStates;
   if(d.histEnt)Object.assign(ST.histEnt,d.histEnt);
@@ -253,15 +251,68 @@ async function loadClienteData(){
       }
     }catch(e){}
 
-    // 5. Merge localStorage para datos offline
+    // 5. Historial de revisiones desde BD (fuente de verdad — sobreescribe localStorage)
+    try{
+      const revsAPI=await api('GET','/api/entreno/revisiones/all');
+      if(revsAPI&&revsAPI.length){
+        const newHist={};
+        revsAPI.forEach(r=>{
+          // Normalizar medidas: pueden venir en 3 formatos distintos
+          const meds={};
+          if(r.medidas&&typeof r.medidas==='object'){
+            Object.entries(r.medidas).forEach(([k,v])=>{
+              if(v===null||v===undefined)return;
+              if(typeof v==='object'){const n=parseFloat(Object.values(v)[0]);if(!isNaN(n))meds[k]=n;}
+              else{const n=parseFloat(v);if(!isNaN(n))meds[k]=n;}
+            });
+          }
+          // Normalizar fotos: pueden venir como array o como objeto {rev_0:...}
+          const fotos={};
+          if(Array.isArray(r.fotos_urls)){
+            r.fotos_urls.forEach((f,i)=>{if(f)fotos['rev_'+i]=f;});
+          } else if(r.fotos_urls&&typeof r.fotos_urls==='object'){
+            Object.assign(fotos,r.fotos_urls);
+          }
+          newHist[r.semana]={
+            medidas:meds,
+            fotos:fotos,
+            preguntas:r.preguntas||{},
+            estado:r.estado||'subida',
+            fecha:r.fecha_subida?r.fecha_subida.split('T')[0]:'',
+          };
+        });
+        if(Object.keys(newHist).length>0){
+          ST.revHistorial=newHist;
+          // medidasIni = medidas de S0 si existen
+          if(newHist[0]&&Object.keys(newHist[0].medidas).length>0)
+            ST.medidasIni=newHist[0].medidas;
+          // Marcar revisión actual como done si ya fue subida
+          const tipo=ST.u.tipo;
+          const revSems=tipo==='programa'?[4,8,12]:[3,7,11];
+          const semActual=ST.u.semana||1;
+          const nextRevStrict=revSems.find(s=>s>=semActual)||revSems[revSems.length-1];
+          if(newHist[nextRevStrict]&&Object.keys(newHist[nextRevStrict].medidas).length>0){
+            ST.rev.done=true;
+            // Restaurar datos de la revisión actual desde BD
+            ST.rev.medidas=newHist[nextRevStrict].medidas;
+            ST.rev.fotos=newHist[nextRevStrict].fotos;
+            ST.rev.preguntas=newHist[nextRevStrict].preguntas||{};
+          }
+        }
+      }
+    }catch(e){console.warn('[APP] Error cargando revisiones:',e.message);}
+
+    // 6. Merge localStorage para datos offline (NO restaurar revHistorial ni medidasIni — vienen de BD)
     try{
       const cached=localStorage.getItem('ef8');
       if(cached){
         const c=JSON.parse(cached);
         if(c.ejStates)ST.ejStates=c.ejStates;
-        if(c.rev&&!ST.rev?.done)ST.rev=c.rev;
+        // rev: solo restaurar desde localStorage si BD no tiene revisión actual marcada
+        if(c.rev&&!ST.rev.done)ST.rev=c.rev;
         if(c.ci&&!ST.ci?.done)ST.ci=c.ci;
         if(c.listaCheck)ST.listaCheck=c.listaCheck;
+        // NUNCA restaurar revHistorial ni medidasIni desde localStorage
       }
     }catch(e){}
 
