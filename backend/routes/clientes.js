@@ -11,15 +11,28 @@ const { asignarRutina, sugerirSiguienteRutina, programarNotificacionesRevision }
 router.get('/', entrenador, async (req, res) => {
   try {
     const { tipo, estado } = req.query;
-    let q = `SELECT id, nombre, email, tipo, estado, fecha_inicio,
-                    kcal_asignadas, rutina_actual, dias_entreno, nivel,
-                    semanas_revision,
-                    created_at
-             FROM clientes WHERE 1=1`;
+    // LEFT JOIN con bloque activo para obtener fecha_inicio del bloque y calcular semana_actual
+    let q = `SELECT c.id, c.nombre, c.email, c.tipo, c.estado, c.fecha_inicio,
+                    c.kcal_asignadas, c.rutina_actual, c.dias_entreno, c.nivel,
+                    c.semanas_revision,
+                    c.created_at,
+                    b.fecha_inicio AS bloque_fecha_inicio,
+                    CASE
+                      WHEN b.fecha_inicio IS NOT NULL THEN
+                        GREATEST(1, FLOOR(EXTRACT(EPOCH FROM (NOW() - b.fecha_inicio)) / 604800)::int + 1)
+                      ELSE NULL
+                    END AS semana_actual
+             FROM clientes c
+             LEFT JOIN LATERAL (
+               SELECT fecha_inicio FROM bloques
+               WHERE cliente_id = c.id AND estado = 'activo' AND visible_cliente = true
+               ORDER BY created_at DESC LIMIT 1
+             ) b ON true
+             WHERE 1=1`;
     const params = [];
-    if (tipo)   { params.push(tipo);   q += ` AND tipo = $${params.length}`; }
-    if (estado) { params.push(estado); q += ` AND estado = $${params.length}`; }
-    q += ' ORDER BY created_at DESC';
+    if (tipo)   { params.push(tipo);   q += ` AND c.tipo = $${params.length}`; }
+    if (estado) { params.push(estado); q += ` AND c.estado = $${params.length}`; }
+    q += ' ORDER BY c.created_at DESC';
 
     const { rows } = await db.query(q, params);
     res.json(rows);
@@ -50,7 +63,7 @@ router.post('/', entrenador, async (req, res) => {
 
     // Semanas de revisión según tipo
     const semRev = semanas_revision ||
-      (tipo === '1a1' ? [3, 7, 11] : [4, 9]);
+      ((tipo === '1a1' || tipo === 'uno') ? [3, 7, 11] : [4, 8, 12]);
 
     const { rows } = await db.query(
       `INSERT INTO clientes
@@ -277,6 +290,56 @@ router.get('/:id/siguiente-rutina', entrenador, async (req, res) => {
   try {
     const sugerencia = await sugerirSiguienteRutina(req.params.id);
     res.json(sugerencia || { mensaje: 'No hay sugerencia disponible, asignar manualmente' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── ENTRENADOR: corregir semanas_revision en todos los clientes ───────────────
+// Endpoint de mantenimiento: fija semanas_revision incorrectas en BD
+router.post('/fix-semanas-revision', entrenador, async (req, res) => {
+  try {
+    // Fix 1: 1a1/uno con [4,8,12] → [3,7,11]
+    const fix1 = await db.query(`
+      UPDATE clientes
+      SET semanas_revision = ARRAY[3,7,11]
+      WHERE (tipo = '1a1' OR tipo = 'uno')
+        AND semanas_revision = ARRAY[4,8,12]::int[]
+      RETURNING id, nombre, tipo, semanas_revision
+    `);
+
+    // Fix 2: programa con [4,9] (bug en creación antigua) → [4,8,12]
+    const fix2 = await db.query(`
+      UPDATE clientes
+      SET semanas_revision = ARRAY[4,8,12]
+      WHERE tipo = 'programa'
+        AND semanas_revision = ARRAY[4,9]::int[]
+      RETURNING id, nombre, tipo, semanas_revision
+    `);
+
+    // Fix 3: NULL → asignar según tipo
+    const fix3 = await db.query(`
+      UPDATE clientes
+      SET semanas_revision = CASE
+        WHEN tipo = '1a1' OR tipo = 'uno' THEN ARRAY[3,7,11]
+        ELSE ARRAY[4,8,12]
+      END
+      WHERE semanas_revision IS NULL
+      RETURNING id, nombre, tipo, semanas_revision
+    `);
+
+    // Estado final de todos
+    const { rows: estado } = await db.query(`
+      SELECT id, nombre, email, tipo, semanas_revision
+      FROM clientes ORDER BY nombre
+    `);
+
+    res.json({
+      fix1: { count: fix1.rowCount, rows: fix1.rows },
+      fix2: { count: fix2.rowCount, rows: fix2.rows },
+      fix3: { count: fix3.rowCount, rows: fix3.rows },
+      estado_final: estado,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
