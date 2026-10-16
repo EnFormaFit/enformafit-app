@@ -499,6 +499,78 @@ router.post('/revision', cliente, async (req, res) => {
   }
 });
 
+// ENTRENADOR: guardar/editar medidas de un cliente desde el panel
+// El panel llama a esto con { cliente_id, semana, medidas (JSON string), estado }
+router.post('/revision-cliente', entrenador, async (req, res) => {
+  try {
+    const { cliente_id, semana, medidas, preguntas, fotos, estado } = req.body;
+    if (!cliente_id || semana === undefined) {
+      return res.status(400).json({ error: 'cliente_id y semana son obligatorios' });
+    }
+    const semanaInt = parseInt(semana);
+
+    // Resolver bloque activo del cliente
+    const { rows: [bloque] } = await db.query(
+      `SELECT id FROM bloques WHERE cliente_id=$1 AND estado='activo'
+       ORDER BY created_at DESC LIMIT 1`,
+      [cliente_id]
+    );
+    if (!bloque) return res.status(400).json({ error: 'El cliente no tiene un plan activo' });
+    const bloque_id = bloque.id;
+
+    // Normalizar medidas — pueden venir como JSON string o como objeto
+    let medidasObj = medidas;
+    if (typeof medidas === 'string') {
+      try { medidasObj = JSON.parse(medidas); } catch(e) { medidasObj = {}; }
+    }
+    const medidasNorm = normalizarMedidas(medidasObj || {});
+
+    // Preparar fotos como array si vienen
+    let fotosArray = null;
+    if (fotos && typeof fotos === 'object') {
+      fotosArray = ['rev_0','rev_1','rev_2','rev_3'].map(k => fotos[k] || null);
+      if (fotosArray.every(f => !f)) fotosArray = null;
+    }
+
+    // Upsert: si ya existe la revisión, actualizar solo lo que viene
+    const { rows: [existing] } = await db.query(
+      `SELECT id, medidas, fotos_urls, preguntas, peso FROM revisiones
+       WHERE cliente_id=$1 AND semana=$2 AND bloque_id=$3 LIMIT 1`,
+      [cliente_id, semanaInt, bloque_id]
+    );
+
+    let rev;
+    if (existing) {
+      const fotosToSave   = fotosArray !== null ? fotosArray : existing.fotos_urls;
+      const medidasToSave = Object.keys(medidasNorm).length > 0 ? medidasNorm
+        : (typeof existing.medidas === 'string' ? JSON.parse(existing.medidas) : existing.medidas || {});
+      const preguntasToSave = (preguntas && typeof preguntas === 'object') ? preguntas
+        : (typeof existing.preguntas === 'string' ? JSON.parse(existing.preguntas) : existing.preguntas || {});
+
+      const { rows: [updated] } = await db.query(
+        `UPDATE revisiones
+         SET medidas=$1, preguntas=$2, fotos_urls=$3, estado=$4, fecha_subida=NOW()
+         WHERE id=$5 RETURNING *`,
+        [JSON.stringify(medidasToSave), JSON.stringify(preguntasToSave), fotosToSave,
+         estado || 'revisada', existing.id]
+      );
+      rev = updated;
+    } else {
+      const { rows: [inserted] } = await db.query(
+        `INSERT INTO revisiones (bloque_id, cliente_id, semana, medidas, preguntas, fotos_urls, estado, fecha_subida)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,NOW()) RETURNING *`,
+        [bloque_id, cliente_id, semanaInt, JSON.stringify(medidasNorm),
+         JSON.stringify(preguntas || {}), fotosArray, estado || 'revisada']
+      );
+      rev = inserted;
+    }
+    res.json(rev);
+  } catch (err) {
+    console.error('[revision-cliente]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ENTRENADOR: backup completo de todas las revisiones — DEBE ir antes de /:clienteId para que Express no lo confunda con un UUID
 router.get('/revisiones/backup-all', entrenador, async (req, res) => {
   try {
