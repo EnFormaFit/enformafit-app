@@ -1090,7 +1090,6 @@ function renderRevision(){
       <div class="cb">
         <div style="font-size:15px;font-weight:700;color:var(--vd);margin-bottom:8px">✅ Revisión S${nextRev} enviada</div>
         ${fotosH?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${fotosH}</div>`:''}
-        ${medsH?`<div style="margin-bottom:8px">${medsH}</div>`:''}
         <small style="color:var(--t3);display:block;margin-bottom:10px">Tu entrenador la revisará en breve</small>
         <button class="btn btns btno" onclick="editarRevAnterior(${nextRev})" style="font-size:12px">✏️ Ver / Editar</button>
       </div>
