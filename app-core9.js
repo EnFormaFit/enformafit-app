@@ -367,17 +367,18 @@ function getSemanaFechas(semana) {
 
 
 // Get the semana_inicio for the current check-in
-// The "week" runs sunday to saturday:
-//   - Sunday: check-in is for the week starting NEXT monday
-//   - Mon-Sat: check-in is for the week starting LAST monday
-// semana_inicio = that monday (lunesRef directly)
+// The check-in window opens Sunday ≥19h and covers Mon-Sat of that week.
+// semana_inicio stored in BD = lunesRef - 7 (lunes of the PREVIOUS week)
+// This is the legacy storage format — all existing BD rows use it.
 //
-// Examples:
-//   Sun 11/oct → lunes_ref=12/oct → semana_inicio=12/oct ✅
-//   Mon 12/oct → lunes_ref=12/oct → semana_inicio=12/oct ✅
-//   Fri 16/oct → lunes_ref=12/oct → semana_inicio=12/oct ✅
-//   Sat 17/oct → lunes_ref=12/oct → semana_inicio=12/oct ✅
-//   Sun 18/oct → lunes_ref=19/oct → semana_inicio=19/oct ✅
+// Display label: semana_inicio + 7 days → shows the monday of the actual week
+//
+// Examples (storage value / display label):
+//   Sun 11/oct → lunesRef=12/oct → semana_inicio=5/oct  (shows "sem 12/10") ✅
+//   Mon 12/oct → lunesRef=12/oct → semana_inicio=5/oct  (shows "sem 12/10") ✅
+//   Fri 16/oct → lunesRef=12/oct → semana_inicio=5/oct  (shows "sem 12/10") ✅
+//   Sat 17/oct → lunesRef=12/oct → semana_inicio=5/oct  (shows "sem 12/10") ✅
+//   Sun 18/oct → lunesRef=19/oct → semana_inicio=12/oct (shows "sem 19/10") ✅
 function getLunesActual() {
   var hoy = new Date();
   var dia = hoy.getDay(); // 0=dom,1=lun...6=sab
@@ -389,8 +390,19 @@ function getLunesActual() {
     // Mon-Sat: last monday is the reference
     lunesRef.setDate(hoy.getDate() - (dia - 1));
   }
-  // semana_inicio = lunesRef directly
-  return lunesRef.toISOString().split('T')[0];
+  // semana_inicio = lunesRef - 7 (legacy BD format, do not change)
+  var semanaInicio = new Date(lunesRef);
+  semanaInicio.setDate(lunesRef.getDate() - 7);
+  return semanaInicio.toISOString().split('T')[0];
+}
+
+// Returns the display label for a semana_inicio value (adds 7 days)
+// Use this everywhere a date is shown to the user
+function labelFechaCi(semana_inicio) {
+  if (!semana_inicio) return '?';
+  var d = new Date(semana_inicio);
+  d.setDate(d.getDate() + 7);
+  return 'sem ' + d.toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit'});
 }
 
 async function loadClienteData() {
@@ -1060,9 +1072,8 @@ function renderCI(){
       var dE=r.dias_entreno_real||0, dN=r.dias_nutricion||0, dP=r.dias_pasos||0;
       var a=Math.round(Math.min(1,dE/_ne)*40+Math.min(1,dN/7)*40+Math.min(1,dP/7)*20);
       var col=a>=80?'var(--vd)':a>=50?'var(--nr)':'var(--rj)';
-      // Mostrar "sem DD/MM" basado en semana_inicio (lunes de esa semana)
-      var _fd=r.semana_inicio?new Date(r.semana_inicio):null;
-      var fecha=_fd?'sem '+_fd.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}):'?';
+      // Mostrar "sem DD/MM" — semana_inicio + 7 días = lunes de la semana real
+      var fecha=labelFechaCi(r.semana_inicio);
       h+='<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bor2)">'        +'<div style="font-size:11px;color:var(--t3);min-width:36px">'+fecha+'</div>'        +'<div style="flex:1;background:var(--bor);border-radius:3px;height:6px">'          +'<div style="background:'+col+';height:6px;border-radius:3px;width:'+a+'%"></div>'        +'</div>'        +'<div style="font-size:12px;font-weight:700;color:'+col+';min-width:32px;text-align:right">'+a+'%</div>'      +'</div>';
     });
     h += '</div></div>';
