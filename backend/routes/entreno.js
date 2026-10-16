@@ -343,6 +343,21 @@ router.post('/revision', cliente, async (req, res) => {
   }
 });
 
+// ENTRENADOR: backup completo de todas las revisiones — DEBE ir antes de /:clienteId para que Express no lo confunda con un UUID
+router.get('/revisiones/backup-all', entrenador, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT r.*, c.nombre, c.tipo
+       FROM revisiones r
+       JOIN clientes c ON c.id = r.cliente_id
+       ORDER BY c.nombre ASC, r.semana ASC`
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ENTRENADOR: ver revisiones pendientes — DEBE ir antes de /:clienteId para que Express no lo confunda
 router.get('/revisiones/pendientes', entrenador, async (req, res) => {
   try {
@@ -447,20 +462,6 @@ router.patch('/revision/:id/feedback', entrenador, async (req, res) => {
   }
 });
 
-// ENTRENADOR: backup completo de todas las revisiones (todas las semanas, todos los clientes)
-router.get('/revisiones/backup-all', entrenador, async (req, res) => {
-  try {
-    const { rows } = await db.query(
-      `SELECT r.*, c.nombre, c.tipo
-       FROM revisiones r
-       JOIN clientes c ON c.id = r.cliente_id
-       ORDER BY c.nombre ASC, r.semana ASC`
-    );
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 // ── CHECK-IN SEMANAL (1:1) ────────────────────────────────────────────────────
 router.post('/checkin', cliente, async (req, res) => {
