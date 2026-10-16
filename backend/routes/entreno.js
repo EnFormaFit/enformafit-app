@@ -7,10 +7,11 @@ const cloudinary = require('cloudinary').v2;
 
 // Configurar Cloudinary (credenciales desde variables de entorno Railway)
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'k4pqppx7',
-  api_key:    process.env.CLOUDINARY_API_KEY    || '721928791542319',
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+console.log('[cloudinary] config → cloud_name:', process.env.CLOUDINARY_CLOUD_NAME, '| api_key:', process.env.CLOUDINARY_API_KEY, '| secret_set:', !!process.env.CLOUDINARY_API_SECRET);
 
 // ── CLIENTE: plan completo (rutina + macros + semana) ────────────────────────
 router.get('/mi-plan', cliente, async (req, res) => {
@@ -367,12 +368,14 @@ router.post('/upload-foto', cliente, async (req, res) => {
     // Subir a Cloudinary si está configurado
     if (process.env.CLOUDINARY_API_SECRET) {
       const folder = `enformafit/revisiones/cliente_${req.user.id}/s${semana||0}`;
+      console.log('[upload-foto] intentando subir a Cloudinary, folder:', folder, '| foto size (chars):', foto_b64.length);
       const result = await cloudinary.uploader.upload(foto_b64, {
         folder,
         resource_type: 'image',
         // Comprimir y limitar tamaño para ahorrar espacio
         transformation: [{ width: 1200, crop: 'limit', quality: 'auto:good' }],
       });
+      console.log('[upload-foto] OK → url:', result.secure_url);
       return res.json({ url: result.secure_url, pose, semana });
     }
 
@@ -380,8 +383,8 @@ router.post('/upload-foto', cliente, async (req, res) => {
     console.warn('[upload-foto] CLOUDINARY_API_SECRET no configurado — foto NO subida');
     res.status(503).json({ error: 'Almacenamiento de fotos no configurado. Contacta con soporte.' });
   } catch (err) {
-    console.error('[upload-foto] Error:', err.message);
-    res.status(500).json({ error: err.message });
+    console.error('[upload-foto] Error completo:', err);
+    res.status(500).json({ error: err.message || 'Error subiendo foto' });
   }
 });
 
