@@ -737,19 +737,20 @@ router.patch('/revision/:id/feedback', entrenador, async (req, res) => {
 router.post('/checkin', cliente, async (req, res) => {
   try {
     const { semana_inicio, dias_entreno_real, dias_nutricion, dias_pasos,
-            orgullos, compromisos, sensaciones } = req.body;
+            orgullos, compromisos, sensaciones, como_semana, adherencia } = req.body;
 
     const { rows: [ci] } = await db.query(
       `INSERT INTO checkins
          (cliente_id, semana_inicio, dias_entreno_real, dias_nutricion, dias_pasos,
-          orgullos, compromisos, sensaciones)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+          orgullos, compromisos, sensaciones, como_semana, adherencia)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
        ON CONFLICT (cliente_id, semana_inicio) DO UPDATE
          SET dias_entreno_real=$3, dias_nutricion=$4, dias_pasos=$5,
-             orgullos=$6, compromisos=$7, sensaciones=$8
+             orgullos=$6, compromisos=$7, sensaciones=$8,
+             como_semana=$9, adherencia=$10
        RETURNING *`,
       [req.user.id, semana_inicio, dias_entreno_real, dias_nutricion, dias_pasos,
-       orgullos, compromisos, sensaciones]
+       orgullos, compromisos, sensaciones, como_semana, adherencia || 0]
     );
     res.json(ci);
   } catch (err) {
@@ -777,13 +778,13 @@ router.get('/checkins/pendientes', entrenador, async (req, res) => {
 // Devuelve el check-in más reciente de cada cliente 1:1 que haya enviado en los últimos 14 días
 router.get('/checkins/semana-actual', entrenador, async (req, res) => {
   try {
-    // Ventana: los últimos 14 días hasta hoy+1
-    // Coge check-ins de la semana pasada y la semana actual sin importar el día exacto
+    // Ventana: los últimos 7 días hasta hoy+1
+    // Solo muestra check-ins de esta semana actual (semana_inicio >= hoy-7)
     const hoy = new Date();
     const hasta = new Date(hoy);
     hasta.setDate(hoy.getDate() + 1); // incluir hoy aunque sea lunes
     const desde = new Date(hoy);
-    desde.setDate(hoy.getDate() - 14);
+    desde.setDate(hoy.getDate() - 7);
     const desdeStr = desde.toISOString().split('T')[0];
     const hastaStr = hasta.toISOString().split('T')[0];
 

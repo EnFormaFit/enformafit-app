@@ -880,11 +880,12 @@ function renderInicio(){
   const {semana:s,semTotal:st,tipo,inicioBloque}=ST.u;
   const s0Done=(ST.rev&&ST.rev.s0Done)||false;
   const s0Banner=(!s0Done&&s<=1)?'<div style="background:linear-gradient(135deg,#FF6B00,#E65A00);border-radius:12px;padding:13px 15px;color:#fff;margin-bottom:11px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="S(\'revision\')"><div style="font-size:26px">📸</div><div style="flex:1"><div style="font-weight:800;font-size:14px;margin-bottom:3px">Pendiente: fotos y medidas de S0</div><div style="font-size:12px;opacity:.85">Súbelas antes de empezar la semana 1. Son tu punto de partida para comparar tu progreso.</div></div><div style="font-size:18px;opacity:.7">→</div></div>':'';
-  // Banner check-in: domingo 19h → martes 23:59, desaparece si ya enviado esta semana
+  // Banner check-in: domingo 19h → sábado 23:59, desaparece si ya enviado esta semana
   const _now=new Date();
   const _dow=_now.getDay();
   const _hour=_now.getHours();
-  const _enVentanaCI=(!ST.checkInDone)&&((_dow===0&&_hour>=19)||_dow===1||_dow===2);
+  // Ventana amplia: dom≥19h, lun, mar, mié, jue, vie, sáb (toda la semana desde el domingo)
+  const _enVentanaCI=(!ST.checkInDone)&&((_dow===0&&_hour>=19)||(_dow>=1&&_dow<=6));
   const ciBanner=_enVentanaCI
     ?'<div onclick="ST.ci.open=true;save();var _ct=document.getElementById(\'ct\');var _sp=_ct?_ct.scrollTop:0;render();if(_ct)_ct.scrollTop=_sp;setTimeout(function(){var el=document.getElementById(\'ci-card\');if(el)el.scrollIntoView({behavior:\'smooth\'});},80)" style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:12px;padding:13px 15px;color:#fff;margin-bottom:11px;display:flex;align-items:center;gap:12px;cursor:pointer"><div style="font-size:26px">⏰</div><div style="flex:1"><div style="font-weight:800;font-size:14px;margin-bottom:2px">¡Rellena tu check-in semanal!</div><div style="font-size:12px;opacity:.9">Cuéntame cómo fue tu semana. Solo tarda 2 minutos.</div></div><div style="font-size:18px">→</div></div>'
     :'';
