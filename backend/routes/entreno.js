@@ -262,6 +262,83 @@ router.get('/menu-semanal', cliente, async (req, res) => {
 
 // ── REVISIONES ────────────────────────────────────────────────────────────────
 
+// ── Helpers de revisiones ────────────────────────────────────────────────────
+
+/**
+ * Calcula la fecha del sábado de la semana de revisión Sn para un bloque.
+ * fecha_inicio es el lunes de la semana 1 (o cualquier fecha de inicio del bloque).
+ *
+ * S0  = sábado ANTES del inicio del bloque (sábado de la semana previa al lunes inicio)
+ * Sn  = sábado de la semana n a partir del inicio
+ *       inicio + (n-1)*7 días, luego avanzar al próximo sábado
+ */
+function calcRevisionDate(fecha_inicio, semana) {
+  const d = new Date(fecha_inicio);
+  d.setHours(12, 0, 0, 0); // mediodía para evitar problemas de DST
+  if (semana === 0) {
+    // S0 = sábado de la semana anterior al inicio
+    // Si inicio es lunes (dow=1), retrocedemos 2 días para llegar al sábado anterior
+    const dow = d.getDay(); // 0=dom, 1=lun, ..., 6=sáb
+    const diasHastaSabPrevio = dow === 0 ? -1 : -(dow + 1); // días a restar para llegar al sáb previo
+    d.setDate(d.getDate() + diasHastaSabPrevio);
+  } else {
+    // Sn: movernos a la semana n-1 desde inicio (semana 1 = inicio)
+    d.setDate(d.getDate() + (semana - 1) * 7);
+    // Ahora avanzar al sábado de esa semana
+    const dow = d.getDay();
+    const diasHastaSab = (6 - dow + 7) % 7;
+    d.setDate(d.getDate() + diasHastaSab);
+  }
+  return d;
+}
+
+/**
+ * Comprueba si la fecha actual está dentro de la ventana para subir la revisión Sn.
+ * Ventana: miércoles de la semana de revisión → domingo de la semana siguiente.
+ * El sábado de revisión está en el medio de esa ventana.
+ *
+ * Ejemplo: revisión S3 cae sábado 18/10
+ *   → Puede subirse desde miércoles 15/10 (3 días antes del sáb) hasta domingo 26/10 (8 días después del sáb)
+ */
+function estaEnVentanaRevision(fecha_inicio, semana) {
+  const sabado = calcRevisionDate(fecha_inicio, semana);
+  // Miércoles previo = sábado - 3 días
+  const inicioVentana = new Date(sabado);
+  inicioVentana.setDate(sabado.getDate() - 3);
+  inicioVentana.setHours(0, 0, 0, 0);
+  // Domingo siguiente = sábado + 8 días (domingo de la semana siguiente al sábado)
+  const finVentana = new Date(sabado);
+  finVentana.setDate(sabado.getDate() + 8);
+  finVentana.setHours(23, 59, 59, 999);
+  const ahora = new Date();
+  return ahora >= inicioVentana && ahora <= finVentana;
+}
+
+/**
+ * Normaliza medidas al formato plano { clave: numero }
+ * Acepta los 3 formatos que existen en BD:
+ *   1. { pecho: 107 }         → plano número   ✓
+ *   2. { pecho: "107" }       → plano string    → parseFloat
+ *   3. { pecho: { S3: 107 } } → nested semana   → extrae el valor
+ */
+function normalizarMedidas(medidas) {
+  if (!medidas || typeof medidas !== 'object') return {};
+  const out = {};
+  for (const [k, v] of Object.entries(medidas)) {
+    if (v === null || v === undefined) continue;
+    if (typeof v === 'object') {
+      // Nested: { S0: 107 } o similar — coger el primer valor numérico
+      const vals = Object.values(v);
+      const n = parseFloat(vals[0]);
+      if (!isNaN(n)) out[k] = n;
+    } else {
+      const n = parseFloat(v);
+      if (!isNaN(n)) out[k] = n;
+    }
+  }
+  return out;
+}
+
 // CLIENTE: upload de foto de revisión (recibe base64, la guarda en BD como URL data)
 // El frontend llama a este endpoint por cada foto antes de llamar a POST /revision
 router.post('/upload-foto', cliente, async (req, res) => {
@@ -280,60 +357,111 @@ router.post('/upload-foto', cliente, async (req, res) => {
   }
 });
 
-// CLIENTE: subir revisión
+// CLIENTE: subir o actualizar revisión
+// Soporta edición de revisiones pasadas (semana < semana_actual) y S0.
+// Valida ventana de tiempo para revisiones distintas de S0.
+// Hace upsert: si ya existe fila → actualiza SOLO los campos enviados (no machaca lo que no viene).
 router.post('/revision', cliente, async (req, res) => {
   try {
     const { bloque_id: bloqueIdFromClient, semana, peso, medidas, preguntas, fotos } = req.body;
     const clienteId = req.user.id;
 
-    // Resolución del bloque_id: el frontend puede enviar uno válido, pero si no lo tiene
-    // (cliente sin plan activo visible, o error de inicialización) lo buscamos en el servidor.
-    // Esto resuelve el fallo de TODOS los clientes Programa: si su bloque no está aprobado
-    // o visible, el frontend envía null y la inserción fallaba con NOT NULL constraint.
+    // ── 1. Resolver bloque_id ────────────────────────────────────────────────
     let bloque_id = bloqueIdFromClient || null;
+    let fecha_inicio_bloque = null;
 
     if (!bloque_id) {
-      // Buscar el bloque activo del cliente (visible o no — al menos que exista uno activo)
       const { rows: [bloqueActivo] } = await db.query(
-        `SELECT id FROM bloques WHERE cliente_id=$1 AND estado='activo'
+        `SELECT id, fecha_inicio FROM bloques WHERE cliente_id=$1 AND estado='activo'
          ORDER BY created_at DESC LIMIT 1`,
         [clienteId]
       );
       if (bloqueActivo) {
         bloque_id = bloqueActivo.id;
+        fecha_inicio_bloque = bloqueActivo.fecha_inicio;
       } else {
-        // No existe ningún bloque activo para este cliente — no se puede guardar la revisión
         return res.status(400).json({
           error: 'No tienes un plan activo. Contacta con tu entrenador para activar tu plan.'
         });
       }
+    } else {
+      // Obtener fecha_inicio del bloque proporcionado
+      const { rows: [b] } = await db.query(
+        `SELECT fecha_inicio FROM bloques WHERE id=$1`, [bloque_id]
+      );
+      if (b) fecha_inicio_bloque = b.fecha_inicio;
     }
 
-    // fotos viene como objeto { 'rev_0': url, 'rev_1': url, ... }
-    // Guardamos como array ordenado [frente, perfil_d, perfil_i, espalda]
-    const fotosArray = fotos
-      ? ['rev_0','rev_1','rev_2','rev_3'].map(k => fotos[k] || null).filter(Boolean)
-      : [];
+    // ── 2. Validar ventana de tiempo (solo para revisiones no-S0) ────────────
+    // S0 siempre se puede subir (es la inicial, puede cargarse en cualquier momento)
+    // Para S3, S7, S11, S4, S8, S12: solo dentro de la ventana
+    const semanaInt = parseInt(semana);
+    if (semanaInt > 0 && fecha_inicio_bloque) {
+      if (!estaEnVentanaRevision(fecha_inicio_bloque, semanaInt)) {
+        const sabado = calcRevisionDate(fecha_inicio_bloque, semanaInt);
+        const sabStr = sabado.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+        // Calcular inicio y fin de ventana para informar al cliente
+        const ini = new Date(sabado); ini.setDate(sabado.getDate() - 3); ini.setHours(0,0,0,0);
+        const fin = new Date(sabado); fin.setDate(sabado.getDate() + 8); fin.setHours(23,59,59,999);
+        const iniStr = ini.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+        const finStr = fin.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+        return res.status(403).json({
+          error: `Revisión S${semanaInt} fuera de ventana. La fecha es ${sabStr}. Puedes subirla entre el ${iniStr} y el ${finStr}.`,
+          codigo: 'FUERA_VENTANA',
+          sabado: sabado.toISOString().split('T')[0],
+          ventana_inicio: ini.toISOString().split('T')[0],
+          ventana_fin: fin.toISOString().split('T')[0],
+        });
+      }
+    }
 
-    // Upsert: actualizar si ya existe revisión para este cliente+semana+bloque, insertar si no
+    // ── 3. Normalizar medidas al formato plano ───────────────────────────────
+    const medidasNorm = normalizarMedidas(medidas);
+
+    // ── 4. Preparar fotos como array ─────────────────────────────────────────
+    // fotos viene como objeto { 'rev_0': url, 'rev_1': url, ... }
+    // Guardamos como array de 4 posiciones [frente, perfil_d, perfil_i, espalda]
+    // Si viene null/undefined para una posición, guardamos null (no filtramos)
+    // para no perder posiciones existentes en el array
+    let fotosArray = null;
+    if (fotos && typeof fotos === 'object') {
+      fotosArray = ['rev_0','rev_1','rev_2','rev_3'].map(k => fotos[k] || null);
+      // Si todas son null, no tiene sentido guardar un array vacío
+      if (fotosArray.every(f => !f)) fotosArray = null;
+    }
+
+    // ── 5. Upsert inteligente ─────────────────────────────────────────────────
+    // Buscar revisión existente
     const { rows: [existing] } = await db.query(
-      `SELECT id FROM revisiones WHERE cliente_id=$1 AND semana=$2 AND bloque_id=$3 LIMIT 1`,
-      [clienteId, semana, bloque_id]
+      `SELECT id, medidas, fotos_urls, preguntas, peso FROM revisiones
+       WHERE cliente_id=$1 AND semana=$2 AND bloque_id=$3 LIMIT 1`,
+      [clienteId, semanaInt, bloque_id]
     );
 
     let rev;
     if (existing) {
+      // UPDATE: solo actualizar los campos que vienen en la petición
+      // Si fotos es null → mantener las fotos que ya había en BD
+      const fotosToSave = fotosArray !== null ? fotosArray : existing.fotos_urls;
+      const medidasToSave = Object.keys(medidasNorm).length > 0 ? medidasNorm :
+        (typeof existing.medidas === 'string' ? JSON.parse(existing.medidas) : existing.medidas || {});
+      const preguntasToSave = (preguntas && typeof preguntas === 'object') ? preguntas :
+        (typeof existing.preguntas === 'string' ? JSON.parse(existing.preguntas) : existing.preguntas || {});
+      const pesoToSave = (peso !== null && peso !== undefined) ? peso : existing.peso;
+
       const { rows: [updated] } = await db.query(
-        `UPDATE revisiones SET peso=$1, medidas=$2, preguntas=$3, fotos_urls=$4, estado='subida', fecha_subida=NOW()
+        `UPDATE revisiones
+         SET peso=$1, medidas=$2, preguntas=$3, fotos_urls=$4, estado='subida', fecha_subida=NOW()
          WHERE id=$5 RETURNING *`,
-        [peso, JSON.stringify(medidas), JSON.stringify(preguntas), fotosArray, existing.id]
+        [pesoToSave, JSON.stringify(medidasToSave), JSON.stringify(preguntasToSave), fotosToSave, existing.id]
       );
       rev = updated;
     } else {
       const { rows: [inserted] } = await db.query(
         `INSERT INTO revisiones (bloque_id, cliente_id, semana, peso, medidas, preguntas, fotos_urls, estado, fecha_subida)
          VALUES ($1,$2,$3,$4,$5,$6,$7,'subida',NOW()) RETURNING *`,
-        [bloque_id, clienteId, semana, peso, JSON.stringify(medidas), JSON.stringify(preguntas), fotosArray]
+        [bloque_id, clienteId, semanaInt, peso, JSON.stringify(medidasNorm),
+         JSON.stringify(preguntas || {}), fotosArray]
       );
       rev = inserted;
     }
@@ -374,7 +502,44 @@ router.get('/revisiones/pendientes', entrenador, async (req, res) => {
   }
 });
 
-// ENTRENADOR: ver todas las revisiones de un cliente — va DESPUÉS de /pendientes para evitar shadowing
+// CLIENTE: info de ventanas de revisión para el bloque activo — DEBE ir antes de /:clienteId
+// Devuelve para cada semana de revisión: fecha_sabado, ventana_inicio, ventana_fin, en_ventana
+router.get('/revisiones/ventanas', cliente, async (req, res) => {
+  try {
+    const clienteId = req.user.id;
+    const { rows: [bloque] } = await db.query(
+      `SELECT id, fecha_inicio FROM bloques WHERE cliente_id=$1 AND estado='activo'
+       ORDER BY created_at DESC LIMIT 1`,
+      [clienteId]
+    );
+    if (!bloque || !bloque.fecha_inicio) {
+      return res.json({ ventanas: {} });
+    }
+
+    const { rows: [cli] } = await db.query(`SELECT tipo FROM clientes WHERE id=$1`, [clienteId]);
+    const tipo = cli ? cli.tipo : '1a1';
+    const revSems = tipo === 'programa' ? [0, 4, 8, 12] : [0, 3, 7, 11];
+
+    const ventanas = {};
+    for (const sem of revSems) {
+      const sabado = calcRevisionDate(bloque.fecha_inicio, sem);
+      const ini = new Date(sabado); ini.setDate(sabado.getDate() - 3); ini.setHours(0,0,0,0);
+      const fin = new Date(sabado); fin.setDate(sabado.getDate() + 8); fin.setHours(23,59,59,999);
+      const ahora = new Date();
+      ventanas[sem] = {
+        sabado: sabado.toISOString().split('T')[0],
+        ventana_inicio: ini.toISOString().split('T')[0],
+        ventana_fin: fin.toISOString().split('T')[0],
+        en_ventana: ahora >= ini && ahora <= fin,
+      };
+    }
+    res.json({ bloque_id: bloque.id, ventanas });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ENTRENADOR: ver todas las revisiones de un cliente — va DESPUÉS de /pendientes y /ventanas para evitar shadowing
 router.get('/revisiones/:clienteId', entrenador, async (req, res) => {
   try {
     const { rows } = await db.query(
@@ -387,15 +552,16 @@ router.get('/revisiones/:clienteId', entrenador, async (req, res) => {
   }
 });
 
-// CLIENTE: ver una revisión específica por semana (usada por editarRevAnterior en el frontend)
+// CLIENTE: ver una revisión específica por semana
+// Devuelve medidas normalizadas al formato plano y fotos como objeto { rev_0, rev_1, ... }
 router.get('/revision/:semana', cliente, async (req, res) => {
   try {
     const clienteId = req.user.id;
     const semana = parseInt(req.params.semana);
 
-    // Buscar el bloque activo del cliente
+    // Buscar el bloque activo del cliente (con o sin visible_cliente para mayor robustez)
     const { rows: [bloque] } = await db.query(
-      `SELECT id FROM bloques WHERE cliente_id=$1 AND visible_cliente=true AND estado='activo'
+      `SELECT id FROM bloques WHERE cliente_id=$1 AND estado='activo'
        ORDER BY created_at DESC LIMIT 1`,
       [clienteId]
     );
@@ -410,7 +576,7 @@ router.get('/revision/:semana', cliente, async (req, res) => {
     }
 
     if (!rev) {
-      // Si no hay bloque activo o no hay revisión, buscar por cliente+semana directamente
+      // Fallback: buscar por cliente+semana sin filtrar bloque
       const { rows: [any] } = await db.query(
         `SELECT * FROM revisiones WHERE cliente_id=$1 AND semana=$2 ORDER BY created_at DESC LIMIT 1`,
         [clienteId, semana]
@@ -420,7 +586,11 @@ router.get('/revision/:semana', cliente, async (req, res) => {
 
     if (!rev) return res.status(404).json({ error: 'Revisión no encontrada' });
 
-    // Formatear fotos_urls como objeto { rev_0, rev_1, ... } para compatibilidad con el frontend
+    // Normalizar medidas al formato plano { clave: numero }
+    const medidasRaw = typeof rev.medidas === 'string' ? JSON.parse(rev.medidas) : (rev.medidas || {});
+    const medidasNorm = normalizarMedidas(medidasRaw);
+
+    // Formatear fotos_urls como objeto { rev_0, rev_1, ... } para el frontend
     const fotosObj = {};
     if (rev.fotos_urls && Array.isArray(rev.fotos_urls)) {
       rev.fotos_urls.forEach((url, i) => { if (url) fotosObj['rev_' + i] = url; });
@@ -429,7 +599,7 @@ router.get('/revision/:semana', cliente, async (req, res) => {
     res.json({
       ...rev,
       fotos: fotosObj,
-      medidas: typeof rev.medidas === 'string' ? JSON.parse(rev.medidas) : (rev.medidas || {}),
+      medidas: medidasNorm,
       preguntas: typeof rev.preguntas === 'string' ? JSON.parse(rev.preguntas) : (rev.preguntas || {}),
     });
   } catch (err) {

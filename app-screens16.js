@@ -995,117 +995,139 @@ function renderRevision(){
   if(ST._editandoRevSem!=null)return renderRevisionEdit(ST._editandoRevSem);
   const {semana,tipo,inicioBloque}=ST.u;
   const semTotal=tipo==='programa'?13:12;
+  // revSems = semanas de revisión del bloque (excluye S0 que es la inicial)
   const revSems=tipo==='programa'?[4,8,12]:[3,7,11];
-  // nextRev with 2-week window: if client is in week after revision, still show it
-  // e.g. 1a1 revisions at S3,S7,S11: if semana=4, still show S3 as fillable
-  const nextRevStrict=revSems.find(rs=>rs>=semana)||revSems[revSems.length-1];
-  const prevRev=revSems[revSems.indexOf(nextRevStrict)-1]; // revision before current
-  // If client is 1 week past a revision AND hasn't submitted it yet, show that revision
-  const nextRev=(prevRev&&semana===nextRevStrict&&semana>prevRev&&!ST.rev.done&&
-    !(ST.revHistorial&&ST.revHistorial[prevRev]&&Object.keys(ST.revHistorial[prevRev].medidas||{}).length>0))
-    ? prevRev : nextRevStrict;
-  const {done,fotos,medidas,preguntas}=ST.rev;
-  const step=ST.rev.step||0;
+  const allRevSems=[0,...revSems];
 
-  // Calcular fecha de cada revisión
+  // ── Calcular fecha del sábado de revisión ────────────────────────────────────
   function revFecha(rs){
     if(!inicioBloque)return'';
     const d=new Date(inicioBloque);
+    d.setHours(12,0,0,0);
     if(rs===0){
-      // S0 = sábado de la semana ANTERIOR al inicio del bloque
-      // inicioBloque es lunes semana 1 → S0 es el sábado 2 días antes
-      d.setDate(d.getDate()-2);
+      // S0 = sábado ANTERIOR al inicio del bloque
+      const dow=d.getDay();
+      const diasHastaSabPrevio=dow===0?-1:-(dow+1);
+      d.setDate(d.getDate()+diasHastaSabPrevio);
     } else {
-      // Sn = inicio + (n-1)*7 días → avanzar al próximo sábado de esa semana
+      // Sn = sábado de la semana n desde inicio
       d.setDate(d.getDate()+(rs-1)*7);
       const dow=d.getDay();
       const diasHastaSab=(6-dow+7)%7;
       d.setDate(d.getDate()+diasHastaSab);
     }
-    // Formato europeo: DD/MM
     return ('0'+d.getDate()).slice(-2)+'/'+(('0'+(d.getMonth()+1)).slice(-2));
   }
 
-  // Historial de revisiones arriba
+  // ── Comprobar si estamos en ventana para subir una revisión ──────────────────
+  // Ventana: miércoles previo al sábado de revisión → domingo siguiente
+  function enVentana(rs){
+    if(!inicioBloque)return false;
+    if(rs===0)return true; // S0 siempre puede subirse
+    const d=new Date(inicioBloque);
+    d.setHours(12,0,0,0);
+    d.setDate(d.getDate()+(rs-1)*7);
+    const dow=d.getDay();
+    d.setDate(d.getDate()+(6-dow+7)%7); // sábado de la semana rs
+    const ini=new Date(d);ini.setDate(d.getDate()-3);ini.setHours(0,0,0,0);
+    const fin=new Date(d);fin.setDate(d.getDate()+8);fin.setHours(23,59,59,999);
+    const ahora=new Date();
+    return ahora>=ini&&ahora<=fin;
+  }
+
+  // ── Determinar qué revisión mostrar como "activa" ────────────────────────────
+  // nextRevStrict = primera revisión cuya semana >= semana_actual del cliente
+  const nextRevStrict=revSems.find(rs=>rs>=semana)||revSems[revSems.length-1];
+  // Si la semana anterior tuvo revisión y no la han subido aún, mostrar esa primero
+  const prevRev=revSems[revSems.indexOf(nextRevStrict)-1];
+  const prevRevPendiente=prevRev&&semana===nextRevStrict&&semana>prevRev&&
+    !(ST.revHistorial&&ST.revHistorial[prevRev]&&Object.keys(ST.revHistorial[prevRev].medidas||{}).length>0);
+  // Pero solo si todavía está en ventana
+  const nextRev=(prevRevPendiente&&enVentana(prevRev))?prevRev:nextRevStrict;
+
+  const {done,fotos,medidas,preguntas}=ST.rev;
+  const step=ST.rev.step||0;
+
+  // ── Historial de revisiones ──────────────────────────────────────────────────
   let histH='<div class="card" style="margin-bottom:12px"><div class="ch"><h2>📋 Revisiones del bloque</h2></div><div class="cb" style="padding:0">';
-  const allRevSems=[0,...revSems];
   allRevSems.forEach(rs=>{
     const hasData=ST.revHistorial&&ST.revHistorial[rs]&&
       (Object.keys(ST.revHistorial[rs].fotos||{}).length>0||Object.keys(ST.revHistorial[rs].medidas||{}).length>0);
-    // If revision has data it's always "past" (completada) regardless of nextRev
     const isPast=rs<nextRev||(rs===nextRev&&hasData&&ST.rev.done);
     const isCur=rs===nextRev&&!isPast;
     const isFut=rs>nextRev;
+    const _enV=enVentana(rs);
     const ico=isPast?'✅':isCur?'⏳':'🔒';
     const col=isCur?'var(--nr)':isPast?'var(--vd)':'var(--t3)';
     const txt=isPast?(hasData?'Completada · Toca para ver/editar':'Pasada · Sin datos'):isCur?'Pendiente':'Próxima';
     const fecha=revFecha(rs);
     const clickable=isPast||isCur;
-    histH+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 15px;border-bottom:1px solid var(--bor2);cursor:${clickable?'pointer':'default'}" ${isPast?'onclick="verRevAnterior('+rs+')"':isCur?'onclick="document.getElementById(\'rev-actual\').scrollIntoView({behavior:\'smooth\'})"':''}>
+    // Para revisiones futuras que ya están en ventana, mostrarlas como disponibles
+    const futuraEnV=isFut&&_enV;
+    histH+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 15px;border-bottom:1px solid var(--bor2);cursor:${clickable||futuraEnV?'pointer':'default'}" ${isPast?'onclick="verRevAnterior('+rs+')"':isCur?'onclick="document.getElementById(\'rev-actual\').scrollIntoView({behavior:\'smooth\'})"':futuraEnV?'onclick="verRevAnterior('+rs+')"':''}>
       <div>
         <div style="font-size:14px;font-weight:700;color:${col}">${ico} Semana ${rs} ${fecha?'· <span style="font-weight:400;font-size:12px;color:var(--t3)">~'+fecha+'</span>':''}</div>
-        <div style="font-size:12px;color:var(--t3);margin-top:2px">${txt}</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:2px">${txt}${futuraEnV?' · <span style="color:var(--nr);font-weight:600">En ventana</span>':''}</div>
       </div>
-      ${clickable?`<span style="font-size:12px;color:var(--az2);font-weight:700">${isPast?(hasData?'Ver/Editar →':'Sin datos'):'Ir →'}</span>`:''}
+      ${clickable||futuraEnV?`<span style="font-size:12px;color:var(--az2);font-weight:700">${isPast?(hasData?'Ver/Editar →':'Sin datos'):'Ir →'}</span>`:''}
     </div>`;
   });
   histH+='</div></div>';
 
+  // ── Si ya está enviada — mostrar resumen ────────────────────────────────────
   if(done){
-    // Build summary of sent revision
     const PREGS=['¿Cómo te sientes esta semana?','¿Cuáles fueron tus mayores éxitos?','¿Cómo te sentiste con ellos?','¿Qué tal los entrenamientos?','¿Qué tal la nutrición?','¿Qué mejorarías?','¿Algo más que quieras compartir?'];
-    const revPregs=ST.rev.preguntas||{};
     const revFotos=ST.rev.fotos||{};
     const revMeds=ST.rev.medidas||{};
-    const _FK=['Frente','Perfil D.','Perfil I.','Espalda'];
-    const _FK2=['frente','perfil_d','perfil_i','espalda'];
-    
+    const revPregs=ST.rev.preguntas||{};
     let fotosH='';
-    ['Frente','Perfil D.','Perfil I.','Espalda'].forEach(function(pos,pi){
-      const f=getFoto(revFotos,pi);
-      if(f) fotosH+=`<img src="${f}" style="width:70px;height:90px;object-fit:cover;border-radius:6px;margin:2px" onclick="verFoto('${f}')">`;
-    });
-    
+    for(var _pi=0;_pi<4;_pi++){const f=getFoto(revFotos,_pi);if(f)fotosH+=`<img src="${f}" style="width:70px;height:90px;object-fit:cover;border-radius:6px;margin:2px" onclick="verFoto('${f}')">`;};
     let medsH='';
     const MED_LABELS={cintura:'Cintura',pecho:'Pecho',hombros:'Hombros',brazod:'Brazo D',brazoi:'Brazo I',muslod:'Muslo D',musloi:'Muslo I',gemelod:'Gemelo D',gemeloi:'Gemelo I'};
     Object.keys(revMeds).forEach(function(k){if(revMeds[k])medsH+=`<span style="font-size:11px;margin-right:8px">${MED_LABELS[k]||k}: <b>${revMeds[k]}cm</b></span>`;});
-    
-    let pregsH='';
-    PREGS.forEach(function(q,i){
-      if(revPregs[i]||revPregs[String(i)]) pregsH+=`<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--t3)">${q}</div><div style="font-size:13px">${revPregs[i]||revPregs[String(i)]}</div></div>`;
-    });
-    
-    // Show sent revision for 1 extra week after revision date
-  // After that, show next pending revision
-  var revDateStr = revFecha(nextRev);
-  var showSentCard = true;
-  if(revDateStr && inicioBloque){
-    // Parse the revision date (format: DD/MM)
-    var parts = revDateStr.split('/');
-    if(parts.length === 2){
-      var revDate = new Date(new Date().getFullYear(), parseInt(parts[1])-1, parseInt(parts[0]));
-      var daysSince = (Date.now() - revDate.getTime()) / (1000*60*60*24);
-      showSentCard = daysSince < 7; // Show for 1 week after revision date
-    }
-  }
-  if(showSentCard){
-    return histH+`<div class="sent" id="rev-actual">
-      <div style="margin-bottom:10px"><b>✅ Revisión S${nextRev} enviada</b><br><small style="color:var(--t3)">Tu entrenador la revisará en breve</small></div>
-      <button class="btn btns btno" onclick="ST.rev.done=false;save();render()" style="font-size:12px">✏️ Editar</button>
+
+    return histH+`<div class="card" id="rev-actual" style="border-left:4px solid var(--vd)">
+      <div class="cb">
+        <div style="font-size:15px;font-weight:700;color:var(--vd);margin-bottom:8px">✅ Revisión S${nextRev} enviada</div>
+        ${fotosH?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${fotosH}</div>`:''}
+        ${medsH?`<div style="margin-bottom:8px">${medsH}</div>`:''}
+        <small style="color:var(--t3);display:block;margin-bottom:10px">Tu entrenador la revisará en breve</small>
+        <button class="btn btns btno" onclick="editarRevAnterior(${nextRev})" style="font-size:12px">✏️ Ver / Editar</button>
+      </div>
     </div>`;
-  }
-  // After 1 week, show next pending revision
-  const nextNextRev = revSems.find(s=>s>nextRev);
-  if(nextNextRev){
-    return histH+`<div class="rev-card" id="rev-actual">
-      <div><b>📋 Revisión Semana ${nextNextRev}</b><br><small style="color:var(--t3)">Pendiente</small></div>
-      <button class="btn btns btnp" onclick="goTo && goTo('rev')">Ir →</button>
-    </div>`;
-  }
-  return histH;
   }
 
-  // Steps
+  // ── Comprobar ventana antes de mostrar el formulario ─────────────────────────
+  if(!enVentana(nextRev)&&nextRev>0){
+    const fecha=revFecha(nextRev);
+    // Calcular fechas de ventana para mostrar al cliente
+    const d=new Date(inicioBloque||new Date());
+    d.setHours(12,0,0,0);
+    if(inicioBloque){
+      d.setDate(d.getDate()+(nextRev-1)*7);
+      const dow=d.getDay();
+      d.setDate(d.getDate()+(6-dow+7)%7);
+    }
+    const iniV=new Date(d);iniV.setDate(d.getDate()-3);
+    const finV=new Date(d);finV.setDate(d.getDate()+8);
+    const fmtDate=function(dt){return('0'+dt.getDate()).slice(-2)+'/'+(('0'+(dt.getMonth()+1)).slice(-2));};
+    return histH+`<div class="card" id="rev-actual">
+      <div class="cb" style="text-align:center;padding:20px 14px">
+        <div style="font-size:40px;margin-bottom:10px">🔒</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:8px">Revisión S${nextRev} aún no disponible</div>
+        <div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:12px">
+          La fecha de revisión es el <b>sábado ${fecha}</b>.<br>
+          Podrás subir la revisión desde el <b>${inicioBloque?fmtDate(iniV):'miércoles previo'}</b>
+          hasta el <b>${inicioBloque?fmtDate(finV):'domingo siguiente'}</b>.
+        </div>
+        <div style="background:rgba(0,122,255,.08);border-radius:8px;padding:10px;font-size:12px;color:var(--az)">
+          💡 Recuerda hacerte las fotos y medirte el sábado por la mañana, en ayunas.
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // ── Formulario de revisión ───────────────────────────────────────────────────
   const PP=tipo==='programa'?
     ['¿Cómo te sientes esta semana?','¿Cómo han ido los entrenamientos?','¿Cómo ha ido la nutrición?','¿Qué funcionó mejor?','¿Qué cambiarías?']:
     ['¿Cómo te sientes esta semana?','¿Cuáles fueron tus mayores éxitos?','¿Cómo te sentiste con ellos?','¿Qué tal los entrenamientos?','¿Qué tal la nutrición?','¿Qué mejorarías?','¿Algo más que quieras compartir?'];
@@ -1118,10 +1140,9 @@ function renderRevision(){
 
   let content='';
   if(step===0){
-    // Fotos + cuerpo
     content=`<div style="font-size:13px;color:var(--t2);margin-bottom:12px">Sube 4 fotos comparativas: frente, dos perfiles y espalda.</div>`;
     content+=`<div class="rfg">`;
-    ['Frente','Perfil D.','Perfil I.','Espalda'].forEach(function(pos,pi){ const f=getFoto(fotos,pi);
+    ['Frente','Perfil D.','Perfil I.','Espalda'].forEach(function(pos,pi){const f=getFoto(fotos,pi);
       content+=`<div class="rfb ${f?'done':''}" style="position:relative" onclick="${f?'':'triggerRF('+pi+')'}">
         ${f
           ?`<img src="${f}"><button onclick="event.stopPropagation();if(confirm('¿Borrar esta foto?')){delete ST.rev.fotos['rev_'+${pi}];save();render();}" style="position:absolute;top:4px;left:4px;background:rgba(220,30,30,.85);border:none;border-radius:50%;width:26px;height:26px;color:#fff;font-size:13px;cursor:pointer;z-index:3">🗑</button><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:600;text-align:center;padding:3px">${pos}</div>`
@@ -1168,7 +1189,6 @@ let _rfIdx=0;
 function triggerRF(i){_rfIdx=i;document.getElementById('rfin').click();}
 function loadRF(inp){
   const f=inp.files[0];if(!f)return;
-  // Compress to max 1200px and <8MB before storing
   const img=new Image();
   const reader=new FileReader();
   reader.onload=e=>{
@@ -1190,44 +1210,53 @@ function loadRF(inp){
   };
   reader.readAsDataURL(f);
 }
+
 function enviarRev(){
   var fotos=ST.rev.fotos||{};
   var medidas=ST.rev.medidas||{};
   var preguntas=ST.rev.preguntas||{};
   var tipo=ST.u.tipo;
-  // Count fotos in both formats: rev_0/rev_1 and frente/perfil_d/etc
-  var _FKEYS_V=['frente','perfil_d','perfil_i','espalda'];
   var nFotos=0;
-  for(var _fi=0;_fi<4;_fi++){if(fotos['rev_'+_fi]||fotos[_FKEYS_V[_fi]])nFotos++;}
+  for(var _fi=0;_fi<4;_fi++){if(fotos['rev_'+_fi])nFotos++;}
   var nMeds=Object.keys(medidas).filter(function(k){return medidas[k]!==''&&medidas[k]!==null&&medidas[k]!==undefined;}).length;
   var PP=tipo==='programa'?5:7;
   var nPregs=Object.values(preguntas).filter(function(v){return v&&v.trim();}).length;
-  // All required
   if(nFotos<4){toast('Sube las 4 fotos (frente, perfiles y espalda)','rj');ST.rev.step=0;render();return;}
   if(nMeds<9){toast('Rellena todas las medidas corporales','rj');ST.rev.step=1;render();return;}
   if(nPregs<PP){toast('Responde todas las preguntas','rj');ST.rev.step=2;render();return;}
   _doEnviarRev();
 }
+
 async function _doEnviarRev(){
-  // Don't mark as done until API confirms save
-  const {semana,tipo}=ST.u;
+  const {semana,tipo,inicioBloque}=ST.u;
   const revSems=tipo==='programa'?[4,8,12]:[3,7,11];
-  const nextRev=revSems.find(s=>s>=semana)||revSems[revSems.length-1];
+  const nextRevStrict=revSems.find(s=>s>=semana)||revSems[revSems.length-1];
+  const prevRev=revSems[revSems.indexOf(nextRevStrict)-1];
+  // Calcular en ventana para prevRev
+  function _enV(rs){
+    if(!inicioBloque||rs===0)return true;
+    const d=new Date(inicioBloque);d.setHours(12,0,0,0);
+    d.setDate(d.getDate()+(rs-1)*7);
+    const dow=d.getDay();d.setDate(d.getDate()+(6-dow+7)%7);
+    const ini=new Date(d);ini.setDate(d.getDate()-3);ini.setHours(0,0,0,0);
+    const fin=new Date(d);fin.setDate(d.getDate()+8);fin.setHours(23,59,59,999);
+    const ahora=new Date();return ahora>=ini&&ahora<=fin;
+  }
+  const prevRevPendiente=prevRev&&semana===nextRevStrict&&semana>prevRev&&
+    !(ST.revHistorial&&ST.revHistorial[prevRev]&&Object.keys(ST.revHistorial[prevRev].medidas||{}).length>0);
+  const nextRev=(prevRevPendiente&&_enV(prevRev))?prevRev:nextRevStrict;
   if(!ST.revHistorial)ST.revHistorial={};
   ST.revHistorial[nextRev]={fotos:{...ST.rev.fotos},medidas:{...ST.rev.medidas},preguntas:{...ST.rev.preguntas},fecha:new Date().toISOString().split('T')[0]};
   if(!Object.keys(ST.medidasIni).length&&Object.keys(ST.rev.medidas).length)ST.medidasIni={...ST.rev.medidas};
-  save();render();toast('Subiendo fotos y guardando revisión...','');
+  save();render();toast('Subiendo revisión...','');
 
   if(_tk){
-    // Build fotos object to save with revision — include base64 directly
     const fotosB64=ST.rev.fotos||{};
-    const _FKEYS=['frente','perfil_d','perfil_i','espalda'];
     const fotosToSave={};
     for(let i=0;i<4;i++){
-      const b64=fotosB64['rev_'+i]||fotosB64[_FKEYS[i]];
+      const b64=fotosB64['rev_'+i];
       if(b64)fotosToSave['rev_'+i]=b64;
     }
-    // Save revision with fotos in one call
     try {
       await api('POST','/api/entreno/revision',{
         bloque_id:ST.p.bloqueId||null,
@@ -1235,46 +1264,38 @@ async function _doEnviarRev(){
         medidas:ST.rev.medidas||{},
         preguntas:ST.rev.preguntas||{},
         fotos:fotosToSave,
-        estado:'revisada'
       });
       ST.rev.done=true;
       save();
       toast('Revisión S'+nextRev+' enviada ✓','vd');
-      console.log('[BD] Revision S'+nextRev+' saved with fotos');
       render();
     } catch(e) {
-      console.error('[BD] Revision save error:',e);
-      const errMsg = e && e.message ? e.message : 'Error desconocido';
-      toast('Error al guardar. Inténtalo de nuevo. ('+errMsg+')','rj');
+      // Mostrar error de ventana de tiempo de forma amigable
+      var msg=e&&e.message?e.message:'Error desconocido';
+      if(msg.includes('FUERA_VENTANA')||msg.includes('fuera de ventana')){
+        toast('⛔ No estás en el período para subir esta revisión','rj');
+      } else {
+        toast('Error al guardar: '+msg,'rj');
+      }
       return;
     }
   } else {
+    ST.rev.done=true;save();
     toast('Revisión S'+nextRev+' guardada ✓','vd');
+    render();
   }
-}
-
-function editarRevStep(sem, step) {
-  ST._editandoRevSem = sem;
-  ST.rev.step = step;
-  var hist = ST.revHistorial && ST.revHistorial[sem];
-  if (hist) {
-    ST.rev.fotos = Object.assign({}, hist.fotos || {});
-    ST.rev.medidas = Object.assign({}, hist.medidas || {});
-    ST.rev.preguntas = Object.assign({}, hist.preguntas || {});
-  }
-  save();
-  S('revision');
 }
 
 function editarRevAnterior(sem) {
   function doEdit(){
     ST._editandoRevSem=sem;
+    // Resetear step para empezar desde fotos
+    ST.rev.step=0;
     S('revision');
   }
   if(_tk){
     api('GET','/api/entreno/revision/'+sem).then(function(d){
       if(!ST.revHistorial)ST.revHistorial={};
-      // BD is authoritative — overwrite local with BD data
       var fromBD=d||{medidas:{},fotos:{},preguntas:{}};
       ST.revHistorial[sem]={
         medidas:fromBD.medidas||{},
@@ -1287,77 +1308,43 @@ function editarRevAnterior(sem) {
       if(!ST.revHistorial[sem])ST.revHistorial[sem]={medidas:{},fotos:{},preguntas:{}};
       doEdit();
     });
-  } else {
-    if(!ST.revHistorial)ST.revHistorial={};
-    if(!ST.revHistorial[sem])ST.revHistorial[sem]={medidas:{},fotos:{},preguntas:{}};
-    doEdit();
+    return;
   }
+  doEdit();
 }
+
 function verRevAnterior(sem){
   function show(){
-    var hist=ST.revHistorial&&ST.revHistorial[sem];
-    if(!hist){
-      var html='<div style="text-align:center;padding:20px;color:var(--t3)">No hay datos para S'+sem+'</div>';
-      html+='<div style="display:flex;gap:8px;margin-top:12px"><button class="btn btno" style="flex:1" onclick="closeModal()">Cerrar</button><button class="btn btnp" style="flex:1" onclick="closeModal();editarRevAnterior('+sem+')">Añadir datos</button></div>';
-      openModal('Revision S'+sem,html);return;
-    }
-    var POSES=['Frente','Perfil der.','Perfil izq.','Espalda'];
-    var html='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px">';
-    ['Frente','Perfil D.','Perfil I.','Espalda'].forEach(function(pos,pi){
-      var f=hist.fotos&&(getFoto(hist.fotos,pi)||hist.fotos['s'+sem+'_'+pi]);
-      html+='<div style="aspect-ratio:3/5;border-radius:8px;overflow:hidden;background:var(--bg);border:1px solid var(--bor)">'+(f?'<img src="'+f+'" style="width:100%;height:100%;object-fit:cover">':'<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:10px;color:var(--t3);padding:4px;text-align:center">'+pos+'</div>')+'</div>';
+    if(!ST.revHistorial)ST.revHistorial={};
+    if(!ST.revHistorial[sem])ST.revHistorial[sem]={medidas:{},fotos:{},preguntas:{}};
+    var hist=ST.revHistorial[sem];
+    var PREGS_ALL=['¿Cómo te sientes esta semana?','¿Cuáles fueron tus mayores éxitos?','¿Cómo te sentiste con ellos?','¿Qué tal los entrenamientos?','¿Qué tal la nutrición?','¿Qué mejorarías?','¿Algo más que quieras compartir?'];
+    var html='<div style="padding:4px">';
+    // Fotos
+    var fH='';
+    for(var pi=0;pi<4;pi++){var f=getFoto(hist.fotos||{},pi);if(f)fH+=`<img src="${f}" style="width:70px;height:90px;object-fit:cover;border-radius:6px;margin:2px" onclick="verFoto('${f}')">`;}
+    if(fH)html+=`<div style="font-weight:600;margin-bottom:6px">Fotos</div><div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px">${fH}</div>`;
+    // Medidas
+    var mH='';
+    var _meds=hist.medidas||{};
+    Object.entries(_meds).forEach(function(e){
+      var nom=e[0];var vals=e[1];
+      var v=typeof vals==='object'?(vals['S'+sem]||Object.values(vals)[0]||''):vals;
+      if(v)mH+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor2);font-size:13px"><span style="color:var(--t2)">${nom.split('(')[0].trim()}</span><span style="font-weight:700">${v} cm</span></div>`;
     });
+    if(mH)html+=`<div style="font-weight:600;margin-bottom:6px">Medidas</div>${mH}<div style="margin-bottom:14px"></div>`;
+    // Preguntas
+    var pH='';
+    var _pregs=hist.preguntas||{};
+    PREGS_ALL.forEach(function(q,i){var val=_pregs[i]||_pregs[String(i)];if(val)pH+=`<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--t3)">${q}</div><div style="font-size:13px">${val}</div></div>`;});
+    if(pH)html+=`<div style="font-weight:600;margin-bottom:6px">Respuestas</div>${pH}`;
+    html+=`<button class="btn btnp" style="width:100%;margin-top:12px" onclick="editarRevAnterior(${sem});closeModal&&closeModal()">✏️ Editar esta revisión</button>`;
     html+='</div>';
-    var meds=hist.medidas||{};
-    // Support both app format (pecho:107) and panel format (Pecho:{S0:107})
-    var MED_ORDER=[
-      ['hombros','Hombros','Hombros'],
-      ['pecho','Pecho','Pecho'],
-      ['cintura','Cintura','Cintura ombligo'],
-      ['brazod','Brazo D','Brazo dcho.'],
-      ['brazoi','Brazo I','Brazo izq.'],
-      ['muslod','Muslo D','Muslo dcho.'],
-      ['musloi','Muslo I','Muslo izq.'],
-      ['gemelod','Gemelo D','Gemelo dcho.'],
-      ['gemeloi','Gemelo I','Gemelo izq.']
-    ];
-    var medVals=[];
-    MED_ORDER.forEach(function(m){
-      var raw=meds[m[0]]||meds[m[2]]||meds[m[1]];
-      if(raw===undefined||raw===null||raw==='')return;
-      var v=typeof raw==='object'?(raw['S'+sem]||raw['s'+sem]||Object.values(raw)[0]||''):raw;
-      if(v)medVals.push([m[1],v]);
-    });
-    if(medVals.length){
-      html+='<div style="font-weight:700;font-size:13px;margin-bottom:8px">Medidas</div>';
-      medVals.forEach(function(m){
-        html+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor2);font-size:12px"><span style="color:var(--t2)">'+m[0]+'</span><span style="font-weight:700">'+m[1]+' cm</span></div>';
-      });
-    }
-    var pregs=hist.preguntas||{};
-    var pregE=Object.entries(pregs).filter(function(e){return e[1];});
-    if(pregE.length){
-      html+='<div style="font-weight:700;font-size:13px;margin:12px 0 8px">Respuestas</div>';
-      var PREG_TEXTS=['¿Cómo te sientes esta semana?','¿Cuáles fueron tus mayores éxitos?','¿Cómo te sentiste con ellos?','¿Qué tal los entrenamientos?','¿Qué tal la nutrición?','¿Qué mejorarías?','¿Algo más que quieras compartir?'];
-      pregE.forEach(function(e){
-        var qi=parseInt(e[0]);
-        var qText=PREG_TEXTS[qi]||('Pregunta '+(qi+1));
-        html+='<div style="background:var(--bg);border-radius:8px;padding:10px;margin-bottom:8px;border-left:3px solid var(--az2)">'
-          +'<div style="font-size:11px;color:var(--t3);margin-bottom:4px">'+qText+'</div>'
-          +'<div style="font-size:13px;color:var(--t1)">'+e[1]+'</div>'
-          +'</div>';
-      });
-    }
-    html+='<div style="display:flex;gap:8px;margin-top:14px">'
-      +'<button class="btn btno" style="flex:1" onclick="closeModal()">Cerrar</button>'
-      +'<button class="btn btnp" style="flex:1" onclick="closeModal();editarRevAnterior('+sem+')">✏️ Editar</button>'
-      +'</div>';
-    openModal('Revision S'+sem,html);
+    openModal('Revisión S'+sem,html);
   }
   if(_tk){
     api('GET','/api/entreno/revision/'+sem).then(function(d){
       if(!ST.revHistorial)ST.revHistorial={};
-      // BD is authoritative — overwrite local with BD data
       var fromBD=d||{medidas:{},fotos:{},preguntas:{}};
       ST.revHistorial[sem]={
         medidas:fromBD.medidas||{},
@@ -1375,15 +1362,14 @@ function verRevAnterior(sem){
   show();
 }
 
-
 function renderRevisionEdit(sem){
   if(!ST.revHistorial)ST.revHistorial={};
   if(!ST.revHistorial[sem])ST.revHistorial[sem]={medidas:{},fotos:{},preguntas:{}};
   var hist=ST.revHistorial[sem];
-  var POSES=['Frente','Perfil der.','Perfil izq.','Espalda'];
   var MEDS=[['hombros','Hombros'],['pecho','Pecho'],['brazoi','Brazo izq.'],['brazod','Brazo dcho.'],['cintura','Cintura ombligo'],['musloi','Muslo izq.'],['muslod','Muslo dcho.'],['gemeloi','Gemelo izq.'],['gemelod','Gemelo dcho.']];
-  var h='<div style="padding:4px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><button class="btn bo bs" onclick="ST._editandoRevSem=null;render()">&#8592; Volver</button><div style="font-weight:700;font-size:15px">Revision S'+sem+'</div></div>';
-  h+='<div class="card" style="margin-bottom:12px"><div class="ch"><h2>Fotos</h2></div><div class="cb"><div class="rfg">';
+  var h='<div style="padding:4px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><button class="btn bo bs" onclick="ST._editandoRevSem=null;render()">&#8592; Volver</button><div style="font-weight:700;font-size:15px">Editar Revisión S'+sem+'</div></div>';
+  // Fotos
+  h+='<div class="card" style="margin-bottom:12px"><div class="ch"><h2>📸 Fotos</h2></div><div class="cb"><div class="rfg">';
   ['Frente','Perfil D.','Perfil I.','Espalda'].forEach(function(pos,pi){
     var f=hist.fotos&&getFoto(hist.fotos,pi);
     h+='<div class="rfb '+(f?'done':'')+'" style="position:relative" onclick="triggerRevHistFoto('+sem+','+pi+')">'
@@ -1392,26 +1378,24 @@ function renderRevisionEdit(sem){
     +'</div>';
   });
   h+='</div></div></div>';
+  // Medidas — siempre editables en edición
   var meds=hist.medidas||{};
-  var dbE=Object.entries(meds);
-  h+='<div class="card" style="margin-bottom:12px"><div class="ch"><h2>Medidas</h2></div><div class="cb">';
-  if(dbE.length){
-    dbE.forEach(function(e){
-      var nom=e[0];var vals=e[1];
-      var v=typeof vals==='object'?(vals['S'+sem]||Object.values(vals)[0]||''):vals;
-      h+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor2);font-size:13px"><span style="color:var(--t2)">'+nom.split('(')[0].trim()+'</span><span style="font-weight:700">'+v+' cm</span></div>';
-    });
-    h+='<div style="font-size:11px;color:var(--t3);margin-top:8px">Para cambiar medidas contacta con tu entrenador.</div>';
-  } else {
-    MEDS.forEach(function(m){
-      var k=m[0],l=m[1];
-      h+='<div style="margin-bottom:8px"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">'+l+'</label><input type="number" step="0.1" value="'+(meds[k]||'')+'" placeholder="--" data-sem="'+sem+'" data-k="'+k+'" style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:8px;font-size:14px;box-sizing:border-box" onchange="revHistMed(this)"></div>';
-    });
-  }
+  h+='<div class="card" style="margin-bottom:12px"><div class="ch"><h2>📏 Medidas</h2></div><div class="cb">';
+  MEDS.forEach(function(m){
+    var k=m[0],l=m[1];
+    // Normalizar valor: puede ser número, string o nested object
+    var raw=meds[k];
+    var v='';
+    if(raw!==null&&raw!==undefined){
+      if(typeof raw==='object'){v=Object.values(raw)[0]||'';}
+      else{v=raw;}
+    }
+    h+='<div style="margin-bottom:8px"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">'+l+'</label><input type="number" step="0.1" value="'+v+'" placeholder="--" data-sem="'+sem+'" data-k="'+k+'" style="width:100%;border:1.5px solid var(--bor);border-radius:8px;padding:8px;font-size:14px;box-sizing:border-box" onchange="revHistMed(this)"></div>';
+  });
   h+='</div></div>';
-  // Preguntas section
+  // Preguntas
   var _PP=ST.u&&ST.u.tipo==='programa'?
-    ['¿Cómo te sientes esta semana?','¿Cuáles fueron tus mayores éxitos?','¿Cómo te sentiste con ellos?','¿Qué tal los entrenamientos?','¿Qué tal la nutrición?']:
+    ['¿Cómo te sientes esta semana?','¿Cómo han ido los entrenamientos?','¿Cómo ha ido la nutrición?','¿Qué funcionó mejor?','¿Qué cambiarías?']:
     ['¿Cómo te sientes esta semana?','¿Cuáles fueron tus mayores éxitos?','¿Cómo te sentiste con ellos?','¿Qué tal los entrenamientos?','¿Qué tal la nutrición?','¿Qué mejorarías?','¿Algo más que quieras compartir?'];
   h+='<div class="card" style="margin-bottom:12px"><div class="ch"><h2>💬 Respuestas</h2></div><div class="cb">';
   _PP.forEach(function(q,i){
@@ -1422,8 +1406,7 @@ function renderRevisionEdit(sem){
       +'</div>';
   });
   h+='</div></div>';
-
-  h+='<button class="btn bp" style="width:100%;padding:14px" onclick="guardarRevAnterior('+sem+')">Guardar y volver</button></div>';
+  h+='<button class="btn btnp" style="width:100%;padding:14px" onclick="guardarRevAnterior('+sem+')">💾 Guardar cambios</button></div>';
   return h;
 }
 
@@ -1431,37 +1414,30 @@ function triggerRevHistFoto(sem,pi){
   var inp=document.createElement('input');inp.type='file';inp.accept='image/*';
   inp.onchange=function(e){
     var file=e.target.files[0];if(!file)return;
+    var img2=new Image();
     var reader=new FileReader();
     reader.onload=function(ev){
-      if(!ST.revHistorial)ST.revHistorial={};
-      if(!ST.revHistorial[sem])ST.revHistorial[sem]={medidas:{},fotos:{},preguntas:{}};
-      ST.revHistorial[sem].fotos['rev_'+pi]=ev.target.result;
-      save();render();
+      img2.onload=function(){
+        var MAX=1200,w=img2.width,h=img2.height;
+        if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
+        var canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img2,0,0,w,h);
+        var compressed=canvas.toDataURL('image/jpeg',0.82);
+        if(!ST.revHistorial)ST.revHistorial={};
+        if(!ST.revHistorial[sem])ST.revHistorial[sem]={medidas:{},fotos:{},preguntas:{}};
+        ST.revHistorial[sem].fotos['rev_'+pi]=compressed;
+        save();render();
+      };
+      img2.src=ev.target.result;
     };
     reader.readAsDataURL(file);
   };
   inp.click();
 }
 
-function confirmarBorrarFoto(btn){
-  var gi=parseInt(btn.dataset.gi),pi=parseInt(btn.dataset.pi);
-  var rs=parseInt(btn.dataset.rs),isCur=btn.dataset.cur==='1';
-  if(!confirm('¿Borrar esta foto?'))return;
-  if(isCur){
-    delete ST.rev.fotos['rev_'+pi];
-    save();
-  } else {
-    if(ST.revHistorial&&ST.revHistorial[rs]&&ST.revHistorial[rs].fotos)
-      delete ST.revHistorial[rs].fotos['rev_'+pi];
-    save();
-  }
-  // Update progreso in-place without scroll
-  var ct=document.getElementById('ct');
-  if(ct&&SEC==='progreso'){var sp=ct.scrollTop;ct.innerHTML=renderProgreso();ct.scrollTop=sp;}
-  else render();
-}
 function revHistDelFoto(btn){
   var sem=parseInt(btn.dataset.sem),pi=parseInt(btn.dataset.pi);
+  if(!confirm('¿Borrar esta foto?'))return;
   if(!ST.revHistorial||!ST.revHistorial[sem])return;
   delete ST.revHistorial[sem].fotos['rev_'+pi];
   save();render();
@@ -1484,34 +1460,30 @@ async function guardarRevAnterior(sem){
   save();
   if(_tk){
     toast('Guardando...','');
-    // Upload any base64 fotos to Cloudinary first
-    var fotoUrls={};
-    var POSES=['frente','perfil_d','perfil_i','espalda'];
-    var fotosRaw=hist.fotos||{};
+    // Preparar fotos como objeto rev_0..rev_3
+    var fotosToSave={};
     for(var i=0;i<4;i++){
-      var key='rev_'+i;
-      var b64=fotosRaw[key];
-      if(b64&&b64.startsWith('data:')){
-        try{
-          var res=await api('POST','/api/entreno/upload-foto',{foto_b64:b64,pose:POSES[i],semana:sem});
-          if(res.url)fotoUrls[key]=res.url;
-        }catch(e){fotoUrls[key]=b64;}
-      } else if(b64){
-        fotoUrls[key]=b64; // already a URL
+      var b64=hist.fotos&&(hist.fotos['rev_'+i]);
+      if(b64)fotosToSave['rev_'+i]=b64;
+    }
+    try {
+      await api('POST','/api/entreno/revision',{bloque_id:ST.p.bloqueId||null,semana:sem,medidas:hist.medidas||{},preguntas:hist.preguntas||{},fotos:fotosToSave});
+      toast('Revisión S'+sem+' guardada ✓','vd');
+      ST._editandoRevSem=null;render();
+    } catch(e) {
+      var msg=e&&e.message?e.message:'Error desconocido';
+      if(msg.includes('fuera de ventana')||msg.includes('FUERA_VENTANA')){
+        toast('⛔ Esta revisión ya no está en período de edición','rj');
+      } else {
+        toast('Error: '+msg,'rj');
       }
     }
-    // Merge uploaded URLs back
-    if(Object.keys(fotoUrls).length)hist.fotos=fotoUrls;
-    save();
-    api('POST','/api/entreno/revision',{bloque_id:ST.p.bloqueId||null,semana:sem,medidas:hist.medidas||{},preguntas:hist.preguntas||{},fotos:hist.fotos||{},estado:'revisada'}).then(function(){
-      toast('Revision S'+sem+' guardada ✓','vd');
-      ST._editandoRevSem=null;render();
-    }).catch(function(e){toast('Error: '+e.message,'rj');});
   } else {
     toast('Guardado local','vd');
     ST._editandoRevSem=null;render();
   }
 }
+
 
 
 function logout(){
