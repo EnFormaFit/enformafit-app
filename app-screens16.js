@@ -1265,8 +1265,8 @@ async function _doEnviarRev(){
           if(r&&r.url&&r.url.startsWith('http'))fotoUrls['rev_'+i]=r.url;
           else console.warn('[Cloudinary] foto',i,'no devolvió URL http');
         }catch(e){
-          console.warn('[Cloudinary] Error subiendo foto',i,e.message);
-          toast('⚠️ Error subiendo foto '+(i+1)+'. Inténtalo de nuevo.','rj');
+          console.warn('[Cloudinary] Error subiendo foto',i,e);
+          toast('⚠️ Error foto '+(i+1)+': '+(e&&e.message?e.message:'sin conexión'),'rj');
           return; // No continuar si falla una foto
         }
       }
