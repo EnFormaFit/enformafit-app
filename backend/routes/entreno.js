@@ -3,6 +3,14 @@
 const router = require('express').Router();
 const db     = require('../db');
 const { cliente, entrenador } = require('../middleware/auth');
+const cloudinary = require('cloudinary').v2;
+
+// Configurar Cloudinary (credenciales desde variables de entorno Railway)
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'k4pqppx7',
+  api_key:    process.env.CLOUDINARY_API_KEY    || '721928791542319',
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // ── CLIENTE: plan completo (rutina + macros + semana) ────────────────────────
 router.get('/mi-plan', cliente, async (req, res) => {
@@ -352,14 +360,27 @@ router.post('/upload-foto', cliente, async (req, res) => {
   try {
     const { foto_b64, pose, semana } = req.body;
     if (!foto_b64) return res.status(400).json({ error: 'foto_b64 requerida' });
-    // Validar que es una imagen base64 válida
     if (!foto_b64.startsWith('data:image/')) {
       return res.status(400).json({ error: 'Formato inválido: se esperaba data:image/...' });
     }
-    // Devolvemos la base64 como "url" — se almacenará en fotos_urls de revisiones
-    // En el futuro se puede reemplazar por un upload a S3/Cloudinary sin cambiar el frontend
-    res.json({ url: foto_b64, pose, semana });
+
+    // Subir a Cloudinary si está configurado
+    if (process.env.CLOUDINARY_API_SECRET) {
+      const folder = `enformafit/revisiones/cliente_${req.user.id}/s${semana||0}`;
+      const result = await cloudinary.uploader.upload(foto_b64, {
+        folder,
+        resource_type: 'image',
+        // Comprimir y limitar tamaño para ahorrar espacio
+        transformation: [{ width: 1200, crop: 'limit', quality: 'auto:good' }],
+      });
+      return res.json({ url: result.secure_url, pose, semana });
+    }
+
+    // Fallback sin Cloudinary configurado (no debería llegar aquí en producción)
+    console.warn('[upload-foto] CLOUDINARY_API_SECRET no configurado — foto NO subida');
+    res.status(503).json({ error: 'Almacenamiento de fotos no configurado. Contacta con soporte.' });
   } catch (err) {
+    console.error('[upload-foto] Error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

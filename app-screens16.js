@@ -1252,25 +1252,41 @@ async function _doEnviarRev(){
 
   if(_tk){
     const fotosB64=ST.rev.fotos||{};
-    const fotosToSave={};
+    const fotoUrls={};
+    const POSES_ARR=['Frente','Perfil D.','Perfil I.','Espalda'];
+    toast('Subiendo fotos...','');
+    // 1. Subir cada foto a Cloudinary via /upload-foto
     for(let i=0;i<4;i++){
       const b64=fotosB64['rev_'+i];
-      if(b64)fotosToSave['rev_'+i]=b64;
+      if(b64){
+        try{
+          const r=await api('POST','/api/entreno/upload-foto',{
+            foto_b64:b64,pose:POSES_ARR[i],semana:nextRev
+          });
+          if(r&&r.url&&r.url.startsWith('http'))fotoUrls['rev_'+i]=r.url;
+          else console.warn('[Cloudinary] foto',i,'no devolvió URL http');
+        }catch(e){
+          console.warn('[Cloudinary] Error subiendo foto',i,e.message);
+          toast('⚠️ Error subiendo foto '+(i+1)+'. Inténtalo de nuevo.','rj');
+          return; // No continuar si falla una foto
+        }
+      }
     }
+    // 2. Guardar revisión con URLs de Cloudinary
+    toast('Guardando revisión...','');
     try {
       await api('POST','/api/entreno/revision',{
         bloque_id:ST.p.bloqueId||null,
         semana:nextRev,
         medidas:ST.rev.medidas||{},
         preguntas:ST.rev.preguntas||{},
-        fotos:fotosToSave,
+        fotos:fotoUrls,
       });
       ST.rev.done=true;
       save();
       toast('Revisión S'+nextRev+' enviada ✓','vd');
       render();
     } catch(e) {
-      // Mostrar error de ventana de tiempo de forma amigable
       var msg=e&&e.message?e.message:'Error desconocido';
       if(msg.includes('FUERA_VENTANA')||msg.includes('fuera de ventana')){
         toast('⛔ No estás en el período para subir esta revisión','rj');
