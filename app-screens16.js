@@ -1274,13 +1274,12 @@ function editarRevAnterior(sem) {
   if(_tk){
     api('GET','/api/entreno/revision/'+sem).then(function(d){
       if(!ST.revHistorial)ST.revHistorial={};
-      var existing=ST.revHistorial[sem]||{};
+      // BD is authoritative — overwrite local with BD data
       var fromBD=d||{medidas:{},fotos:{},preguntas:{}};
-      // Preserve local fotos — BD doesn't have them yet (no Drive)
       ST.revHistorial[sem]={
-        medidas:fromBD.medidas||existing.medidas||{},
-        preguntas:fromBD.preguntas||existing.preguntas||{},
-        fotos:Object.assign({},fromBD.fotos||{},existing.fotos||{})
+        medidas:fromBD.medidas||{},
+        preguntas:fromBD.preguntas||{},
+        fotos:fromBD.fotos||{}
       };
       doEdit();
     }).catch(function(){
@@ -1358,12 +1357,12 @@ function verRevAnterior(sem){
   if(_tk){
     api('GET','/api/entreno/revision/'+sem).then(function(d){
       if(!ST.revHistorial)ST.revHistorial={};
-      var existing=ST.revHistorial[sem]||{};
+      // BD is authoritative — overwrite local with BD data
       var fromBD=d||{medidas:{},fotos:{},preguntas:{}};
       ST.revHistorial[sem]={
-        medidas:fromBD.medidas||existing.medidas||{},
-        preguntas:fromBD.preguntas||existing.preguntas||{},
-        fotos:Object.assign({},fromBD.fotos||{},existing.fotos||{})
+        medidas:fromBD.medidas||{},
+        preguntas:fromBD.preguntas||{},
+        fotos:fromBD.fotos||{}
       };
       show();
     }).catch(function(){

@@ -560,19 +560,29 @@ async function loadClienteData() {
       const revsBD = await api('GET', '/api/entreno/revisiones/all');
       if (revsBD && revsBD.length) {
         if (!ST.revHistorial) ST.revHistorial = {};
-        // Smart merge: BD is authoritative but preserve local fotos if BD has empty fotos
+        // BD is authoritative — overwrite localStorage with BD data for any semana that exists in BD.
+        // We do NOT fall back to localStorage for fotos/medidas/preguntas because that would restore
+        // data the user intentionally deleted (e.g. borrar fotos + guardar → BD queda vacío → local tenía fotos → bug).
         revsBD.forEach(function(d) {
-          var existing = ST.revHistorial[d.semana] || {};
-          var bdFotos = d.fotos || {};
-          var localFotos = existing.fotos || {};
-          // Use BD fotos if they exist, otherwise keep local fotos
-          var mergedFotos = Object.keys(bdFotos).length > 0 ? bdFotos : localFotos;
+          // fotos_urls viene como array de postgres ['url0','url1',...]
+          // lo convertimos al objeto { rev_0: url, rev_1: url, ... } que espera el frontend
+          var bdFotosArr = d.fotos_urls || d.fotos_urls === null ? (d.fotos_urls || []) : [];
+          var bdFotos = {};
+          if (Array.isArray(bdFotosArr)) {
+            bdFotosArr.forEach(function(url, i) { if (url) bdFotos['rev_' + i] = url; });
+          } else if (typeof bdFotosArr === 'object') {
+            bdFotos = bdFotosArr; // ya es objeto
+          }
+          var bdMedidas = d.medidas;
+          if (typeof bdMedidas === 'string') { try { bdMedidas = JSON.parse(bdMedidas); } catch(e) { bdMedidas = {}; } }
+          var bdPreguntas = d.preguntas;
+          if (typeof bdPreguntas === 'string') { try { bdPreguntas = JSON.parse(bdPreguntas); } catch(e) { bdPreguntas = {}; } }
           ST.revHistorial[d.semana] = {
             semana: d.semana,
-            medidas: d.medidas || existing.medidas || {},
-            preguntas: d.preguntas || existing.preguntas || {},
-            fotos: mergedFotos,
-            fecha: d.fecha || existing.fecha
+            medidas: bdMedidas || {},
+            preguntas: bdPreguntas || {},
+            fotos: bdFotos,
+            fecha: d.fecha_subida || d.fecha
           };
         });
         ST._revAllLoaded = true;
