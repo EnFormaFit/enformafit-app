@@ -1092,8 +1092,9 @@ function renderRevision(){
     let fotosH='';
     for(var _pi=0;_pi<4;_pi++){const f=getFoto(revFotos,_pi);if(f)fotosH+=`<img src="${f}" style="width:70px;height:90px;object-fit:cover;border-radius:6px;margin:2px" onclick="verFoto('${f}')">`;};
     let medsH='';
-    const MED_LABELS={cintura:'Cintura',pecho:'Pecho',hombros:'Hombros',brazod:'Brazo D',brazoi:'Brazo I',muslod:'Muslo D',musloi:'Muslo I',gemelod:'Gemelo D',gemeloi:'Gemelo I'};
-    Object.keys(revMeds).forEach(function(k){if(revMeds[k])medsH+=`<span style="font-size:11px;margin-right:8px">${MED_LABELS[k]||k}: <b>${revMeds[k]}cm</b></span>`;});
+    const MED_ORDER=['hombros','pecho','brazoi','brazod','cintura','musloi','muslod','gemeloi','gemelod'];
+    const MED_LABELS={hombros:'Hombros',pecho:'Pecho',brazoi:'Brazo I',brazod:'Brazo D',cintura:'Cintura',musloi:'Muslo I',muslod:'Muslo D',gemeloi:'Gemelo I',gemelod:'Gemelo D'};
+    MED_ORDER.forEach(function(k){if(revMeds[k])medsH+=`<span style="font-size:11px;margin-right:8px">${MED_LABELS[k]}: <b>${revMeds[k]}cm</b></span>`;});
 
     return histH+`<div class="card" id="rev-actual" style="border-left:4px solid var(--vd)">
       <div class="cb">
@@ -1351,10 +1352,13 @@ function verRevAnterior(sem){
     // Medidas
     var mH='';
     var _meds=hist.medidas||{};
-    Object.entries(_meds).forEach(function(e){
-      var nom=e[0];var vals=e[1];
+    var _MED_ORDER=['hombros','pecho','brazoi','brazod','cintura','musloi','muslod','gemeloi','gemelod'];
+    var _MED_LABELS={hombros:'Hombros',pecho:'Pecho',brazoi:'Brazo I',brazod:'Brazo D',cintura:'Cintura',musloi:'Muslo I',muslod:'Muslo D',gemeloi:'Gemelo I',gemelod:'Gemelo D'};
+    _MED_ORDER.forEach(function(k){
+      var vals=_meds[k];
+      if(vals==null)return;
       var v=typeof vals==='object'?(vals['S'+sem]||Object.values(vals)[0]||''):vals;
-      if(v)mH+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor2);font-size:13px"><span style="color:var(--t2)">${nom.split('(')[0].trim()}</span><span style="font-weight:700">${v} cm</span></div>`;
+      if(v)mH+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor2);font-size:13px"><span style="color:var(--t2)">${_MED_LABELS[k]}</span><span style="font-weight:700">${v} cm</span></div>`;
     });
     if(mH)html+=`<div style="font-weight:600;margin-bottom:6px">Medidas</div>${mH}<div style="margin-bottom:14px"></div>`;
     // Preguntas
