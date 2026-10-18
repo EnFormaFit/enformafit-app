@@ -788,14 +788,16 @@ router.get('/checkins/pendientes', entrenador, async (req, res) => {
 // Devuelve el check-in más reciente de cada cliente 1:1 que haya enviado en los últimos 14 días
 router.get('/checkins/semana-actual', entrenador, async (req, res) => {
   try {
-    // Ventana: los últimos 7 días hasta hoy+1
-    // Solo muestra check-ins de esta semana actual (semana_inicio >= hoy-7)
+    // Ventana: desde el lunes de la semana actual hasta hoy+1
     const hoy = new Date();
     const hasta = new Date(hoy);
-    hasta.setDate(hoy.getDate() + 1); // incluir hoy aunque sea lunes
-    const desde = new Date(hoy);
-    desde.setDate(hoy.getDate() - 7);
-    const desdeStr = desde.toISOString().split('T')[0];
+    hasta.setDate(hoy.getDate() + 1); // incluir hoy aunque sea domingo
+    // Calcular el lunes de esta semana (0=domingo → retroceder 6, 1=lunes → retroceder 0, etc.)
+    const dow = hoy.getDay(); // 0=dom, 1=lun, ..., 6=sab
+    const diasHastaLunes = dow === 0 ? 6 : dow - 1;
+    const lunesActual = new Date(hoy);
+    lunesActual.setDate(hoy.getDate() - diasHastaLunes);
+    const desdeStr = lunesActual.toISOString().split('T')[0];
     const hastaStr = hasta.toISOString().split('T')[0];
 
     // Obtener el check-in más reciente de cada cliente 1:1 dentro de la ventana
