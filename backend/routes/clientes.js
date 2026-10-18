@@ -17,6 +17,8 @@ router.get('/', entrenador, async (req, res) => {
                     c.semanas_revision,
                     c.created_at,
                     b.fecha_inicio AS bloque_fecha_inicio,
+                    b.visible_cliente AS bloque_visible,
+                    b.id AS bloque_id,
                     CASE
                       WHEN b.fecha_inicio IS NOT NULL THEN
                         GREATEST(1, FLOOR(EXTRACT(EPOCH FROM (NOW() - b.fecha_inicio)) / 604800)::int + 1)
@@ -24,8 +26,8 @@ router.get('/', entrenador, async (req, res) => {
                     END AS semana_actual
              FROM clientes c
              LEFT JOIN LATERAL (
-               SELECT fecha_inicio FROM bloques
-               WHERE cliente_id = c.id AND estado = 'activo' AND visible_cliente = true
+               SELECT id, fecha_inicio, visible_cliente FROM bloques
+               WHERE cliente_id = c.id AND estado = 'activo'
                ORDER BY created_at DESC LIMIT 1
              ) b ON true
              WHERE 1=1`;
@@ -111,6 +113,25 @@ router.post('/aprobar-todos-bloques', entrenador, async (req, res) => {
        RETURNING id, cliente_id, numero_bloque`
     );
     res.json({ actualizados: rows.length, bloques: rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── ENTRENADOR: publicar/despublicar bloque activo de un cliente ─────────────
+router.patch('/:id/publicar-bloque', entrenador, async (req, res) => {
+  try {
+    const { visible } = req.body; // true o false
+    if (typeof visible !== 'boolean') return res.status(400).json({ error: 'Campo "visible" (boolean) requerido' });
+    const { rows } = await db.query(
+      `UPDATE bloques SET visible_cliente=$1, aprobado_por=CASE WHEN $1 THEN 'entrenador' ELSE aprobado_por END,
+              aprobado_at=CASE WHEN $1 THEN NOW() ELSE aprobado_at END
+       WHERE cliente_id=$2 AND estado='activo'
+       RETURNING id, visible_cliente`,
+      [visible, req.params.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'No hay bloque activo para este cliente' });
+    res.json({ ok: true, visible_cliente: rows[0].visible_cliente, bloque_id: rows[0].id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
