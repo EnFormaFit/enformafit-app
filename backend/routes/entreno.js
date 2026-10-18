@@ -788,27 +788,31 @@ router.get('/checkins/pendientes', entrenador, async (req, res) => {
 // Devuelve el check-in más reciente de cada cliente 1:1 que haya enviado en los últimos 14 días
 router.get('/checkins/semana-actual', entrenador, async (req, res) => {
   try {
-    // Ventana: desde el lunes de la semana actual hasta hoy+1
+    // Calcular semana_inicio de la semana actual (misma lógica que la app)
+    // semana_inicio en BD = lunesRef - 7
+    // lunesRef = próximo lunes si hoy es domingo, lunes pasado si lun-sab
     const hoy = new Date();
-    const hasta = new Date(hoy);
-    hasta.setDate(hoy.getDate() + 1); // incluir hoy aunque sea domingo
-    // Calcular el lunes de esta semana (0=domingo → retroceder 6, 1=lunes → retroceder 0, etc.)
-    const dow = hoy.getDay(); // 0=dom, 1=lun, ..., 6=sab
-    const diasHastaLunes = dow === 0 ? 6 : dow - 1;
-    const lunesActual = new Date(hoy);
-    lunesActual.setDate(hoy.getDate() - diasHastaLunes);
-    const desdeStr = lunesActual.toISOString().split('T')[0];
-    const hastaStr = hasta.toISOString().split('T')[0];
+    const dia = hoy.getDay(); // 0=dom,1=lun,...,6=sab
+    const lunesRef = new Date(hoy);
+    if (dia === 0) {
+      lunesRef.setDate(hoy.getDate() + 1); // domingo → próximo lunes
+    } else {
+      lunesRef.setDate(hoy.getDate() - (dia - 1)); // lun-sab → lunes de esta semana
+    }
+    const semanaInicioActual = new Date(lunesRef);
+    semanaInicioActual.setDate(lunesRef.getDate() - 7);
+    const desdeStr = semanaInicioActual.toISOString().split('T')[0];
+    const hastaStr = desdeStr; // solo check-ins con exactamente ese semana_inicio
 
-    // Obtener el check-in más reciente de cada cliente 1:1 dentro de la ventana
+    // Obtener el check-in de la semana actual de cada cliente 1:1
     const { rows } = await db.query(
       `SELECT DISTINCT ON (ci.cliente_id) ci.*
        FROM checkins ci
        JOIN clientes c ON c.id = ci.cliente_id
-       WHERE ci.semana_inicio BETWEEN $1 AND $2
+       WHERE ci.semana_inicio::date = $1::date
          AND c.tipo IN ('1a1','uno')
-       ORDER BY ci.cliente_id, ci.semana_inicio DESC, ci.created_at DESC`,
-      [desdeStr, hastaStr]
+       ORDER BY ci.cliente_id, ci.created_at DESC`,
+      [desdeStr]
     );
     res.json(rows);
   } catch (err) {
