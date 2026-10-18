@@ -5,9 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>EnFormaFit</title>
 <link rel="stylesheet" href="app.css">
-<!-- build 1791271447 -->
+<!-- build 1792350000 -->
 </head>
 <body>
 
@@ -84,5 +87,28 @@
 <script src="app-data2.js?v=1790672766"></script>
 <script src="app-core9.js?v=1792350000"></script>
 <script src="app-screens16.js?v=1792233000"></script>
+<!-- auto-update: comprueba versión del servidor y recarga si hay deploy nuevo -->
+<script>
+(function(){
+  var BUILD='1792350000';
+  var CHECKED_KEY='ef_ver_check';
+  var last=sessionStorage.getItem(CHECKED_KEY);
+  // Solo comprobar una vez por sesión de pestaña (evitar loop)
+  if(last===BUILD) return;
+  sessionStorage.setItem(CHECKED_KEY,BUILD);
+  try{
+    fetch('https://enformafit-backend-production.up.railway.app/api/version?_='+Date.now(),{cache:'no-store'})
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d&&d.v&&d.v!==BUILD){
+          // Hay versión nueva: recargar limpiando caché
+          var newUrl=window.location.pathname+'?bust='+d.v;
+          window.location.replace(newUrl);
+        }
+      })
+      .catch(function(){/* sin red — no pasa nada */});
+  }catch(e){}
+})();
+</script>
 </body>
 </html>

@@ -20,6 +20,15 @@ app.use('/api/entreno',   require('./routes/entreno'));
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (_, res) => res.json({ ok: true, ts: new Date().toISOString() }));
 
+// ── Version endpoint (cache busting) ──────────────────────────────────────────
+// Este número debe coincidir con BUILD en los index.html del app y panel.
+// Actualizarlo junto con cada deploy que cambie JS/CSS.
+const BUILD_VERSION = process.env.BUILD_VERSION || '1792350000';
+app.get('/api/version', (_, res) => {
+  res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.json({ v: BUILD_VERSION });
+});
+
 // ── Cron: enviar notificaciones pendientes (cada 5 min) ───────────────────────
 cron.schedule('*/5 * * * *', async () => {
   try {
