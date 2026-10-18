@@ -18,7 +18,7 @@ router.get('/mi-plan', cliente, async (req, res) => {
   try {
     const clienteId = req.user.id;
 
-    // Bloque activo + rutina
+    // Bloque activo + rutina (visible_cliente puede ser false por bug — lo activamos automáticamente)
     const { rows: [bloque] } = await db.query(
       `SELECT b.*, r.ejercicios, r.nombre as rutina_nombre,
               c.kcal_asignadas, c.objetivo, c.dias_entreno, c.comidas,
@@ -27,11 +27,18 @@ router.get('/mi-plan', cliente, async (req, res) => {
        FROM bloques b
        JOIN rutinas r ON r.cod = b.rutina_cod
        JOIN clientes c ON c.id = b.cliente_id
-       WHERE b.cliente_id=$1 AND b.visible_cliente=true AND b.estado='activo'
+       WHERE b.cliente_id=$1 AND b.estado='activo'
        ORDER BY b.created_at DESC LIMIT 1`,
       [clienteId]
     );
     if (!bloque) return res.status(404).json({ error: 'No hay plan activo' });
+    // Auto-publicar si por algún motivo quedó en borrador
+    if (!bloque.visible_cliente) {
+      await db.query(
+        `UPDATE bloques SET visible_cliente=true, aprobado_por='auto', aprobado_at=NOW() WHERE id=$1`,
+        [bloque.id]
+      );
+    }
 
     // Calcular semana actual a partir de fecha_inicio del bloque
     let semana_actual = 1;

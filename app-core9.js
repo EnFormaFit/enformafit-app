@@ -418,8 +418,9 @@ async function loadClienteData() {
   try {
     // ── 1. Perfil básico del usuario ────────────────────────────────────────
     const perfil = await api('GET', '/api/clientes/me/perfil');
-    const nom = (perfil.nombre || '').split(' ')[0];
-    const init = nom[0] || 'C';
+    if (!perfil || !perfil.nombre) throw new Error('Perfil sin nombre — sesión inválida');
+    const nom = perfil.nombre.split(' ')[0];
+    const init = nom[0];
     ST.u.nom = nom;
     ST.u.init = init.toUpperCase();
     ST.u.tipo = perfil.tipo === '1a1' ? 'uno' : 'programa';
@@ -836,7 +837,7 @@ async function loadClienteData() {
 function showApp(){
   document.getElementById('lw').style.display='none';
   document.getElementById('app').classList.add('on');
-  document.getElementById('avbtn').textContent=ST.u.init||'CL';
+  document.getElementById('avbtn').textContent=ST.u.init||'?';
   const li=document.getElementById('loginLogoImg')||document.querySelector('.llo img');
   const tl=document.getElementById('topLogo');
   if(li&&tl)tl.src=li.src;
