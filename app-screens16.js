@@ -585,7 +585,16 @@ function confirmCopy(){
     ST.menu[to]=JSON.parse(JSON.stringify(ST.menu[_copyFrom]||{}));
     ST.menuGuardado[to]=JSON.parse(JSON.stringify(ST.menuGuardado[_copyFrom]||{}));
   });
-  save();closeModal();toast('Copiado a '+_copyTargets.map(t=>DNAMES[t]).join(', '),'vd');
+  save();
+  // Persistir en backend (igual que cuando se edita manualmente una comida)
+  if(typeof _tk!=='undefined'&&_tk){
+    var menuToSave={};
+    Object.keys(ST.menuGuardado).forEach(function(k){
+      if(!isNaN(parseInt(k)))menuToSave[k]=ST.menuGuardado[k];
+    });
+    api('POST','/api/entreno/menu-semanal',{menu_semanal:menuToSave}).catch(function(){});
+  }
+  closeModal();toast('Copiado a '+_copyTargets.map(t=>DNAMES[t]).join(', '),'vd');
 }
 
 function renderSemana(){
