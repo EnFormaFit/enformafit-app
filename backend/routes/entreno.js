@@ -248,7 +248,20 @@ router.get('/revisiones/all', cliente, async (req, res) => {
       `SELECT * FROM revisiones WHERE bloque_id=$1 AND cliente_id=$2 ORDER BY semana ASC`,
       [bloque.id, req.user.id]
     );
-    res.json(rows);
+    const normalized = rows.map(rev => {
+      const medidasRaw = typeof rev.medidas === 'string' ? JSON.parse(rev.medidas) : (rev.medidas || {});
+      const fotosObj = {};
+      if (rev.fotos_urls && Array.isArray(rev.fotos_urls)) {
+        rev.fotos_urls.forEach((url, i) => { if (url) fotosObj['rev_' + i] = url; });
+      }
+      return {
+        ...rev,
+        fotos: fotosObj,
+        medidas: normalizarMedidas(medidasRaw),
+        preguntas: typeof rev.preguntas === 'string' ? JSON.parse(rev.preguntas) : (rev.preguntas || {}),
+      };
+    });
+    res.json(normalized);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
