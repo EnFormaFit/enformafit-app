@@ -86,6 +86,10 @@ try{
 let SEC='inicio';
 const TITLES={inicio:'Inicio',nutricion:'Nutrición',entreno:'Entreno',progreso:'Progreso',revision:'Revisión',perfil:'Perfil'};
 function S(s){
+  // Flush any pending saves when leaving entreno
+  if(SEC==='entreno' && s!=='entreno') {
+    flushPendingSaves();
+  }
   SEC=s;
   // When navigating to entreno, restore ejStates from histEnt for current week
   if(s==='entreno' && ST.histEnt && DIAS) {
@@ -317,8 +321,7 @@ function autoGuardarSerie(di, ei, si) {
   if (!st || !st.series || !st.series[si]) return;
   var s = st.series[si];
   save(); // persist ejStates immediately to localStorage
-  var bloque_id = ST.p.bloqueId || ST.p.bloqueId || '';
-  if(!bloque_id){if(typeof toast==='function')toast('⚠️ Error al guardar serie: recarga la app','rj');console.warn('[Serie] No bloque_id');return;}
+  var bloque_id = ST.p.bloqueId || null; // backend resolves if null
   var semana = ST.semVer || ST.u.semana || 1;
 
   // Update histEnt so week changes preserve this data
@@ -330,11 +333,11 @@ function autoGuardarSerie(di, ei, si) {
     api('POST', '/api/entreno/registrar-serie', {
       bloque_id: bloque_id,
       semana: semana,
-      dia: di,
+      dia: String(di),
       ejercicio: ej.nom,
       serie: si + 1,
-      kg: parseFloat(s.kg) || 0,
-      reps_reales: parseInt(s.repsH) || 0,
+      kg: parseFloat(s.kg) > 0 ? parseFloat(s.kg) : null,
+      reps_reales: parseInt(s.repsH) > 0 ? parseInt(s.repsH) : null,
       rir_real: (s.rir !== undefined && s.rir !== null && s.rir !== '') ? parseInt(s.rir) : null,
       completada: s.done === true
     }).then(function() {

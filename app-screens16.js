@@ -227,6 +227,7 @@ function toggleSer(key,si,di){
     if(ej){
       clearTimeout(window['_serSave_' + key + '_' + si]);
       api('POST','/api/entreno/registrar-serie',{
+        bloque_id:ST.p.bloqueId||null,
         ejercicio:ej.nom||ej.nombre||key,
         dia:String(diaIdx),
         semana:ST.semVer||ST.u.semana||1,

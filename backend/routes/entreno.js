@@ -133,18 +133,39 @@ router.get('/mi-rutina', cliente, async (req, res) => {
 // ── CLIENTE: registrar serie ──────────────────────────────────────────────────
 router.post('/registrar-serie', cliente, async (req, res) => {
   try {
-    const { bloque_id, semana, dia, ejercicio, serie, kg, reps_reales, rir_real } = req.body;
+    let { bloque_id, semana, dia, ejercicio, serie, kg, reps_reales, rir_real, completada } = req.body;
     const clienteId = req.user.id;
 
-    const { rows: [reg] } = await db.query(
-      `INSERT INTO registro_entreno
-         (bloque_id, cliente_id, semana, dia, ejercicio, serie, kg, reps_reales, rir_real, completada)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,true)
-       ON CONFLICT (bloque_id, cliente_id, semana, dia, ejercicio, serie)
-       DO UPDATE SET kg=$7, reps_reales=$8, rir_real=$9
+    // Si no viene bloque_id en el body, resolverlo desde el bloque activo del cliente
+    if (!bloque_id) {
+      const { rows: [bloque] } = await db.query(
+        `SELECT id FROM bloques WHERE cliente_id=$1 AND visible_cliente=true AND estado='activo'
+         ORDER BY created_at DESC LIMIT 1`,
+        [clienteId]
+      );
+      if (!bloque) return res.status(400).json({ error: 'Sin bloque activo' });
+      bloque_id = bloque.id;
+    }
+
+    // Update existing row first; if none exists, insert new one
+    const { rows: upd } = await db.query(
+      `UPDATE registro_entreno
+       SET kg=$7, reps_reales=$8, rir_real=$9, completada=$10
+       WHERE bloque_id=$1 AND cliente_id=$2 AND semana=$3 AND dia=$4 AND ejercicio=$5 AND serie=$6
        RETURNING *`,
-      [bloque_id, clienteId, semana, dia, ejercicio, serie, kg, reps_reales, rir_real]
+      [bloque_id, clienteId, semana, dia, ejercicio, serie, kg ?? null, reps_reales ?? null, rir_real ?? null, completada === true]
     );
+    let reg = upd[0];
+    if (!reg) {
+      const { rows: ins } = await db.query(
+        `INSERT INTO registro_entreno
+           (bloque_id, cliente_id, semana, dia, ejercicio, serie, kg, reps_reales, rir_real, completada)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+         RETURNING *`,
+        [bloque_id, clienteId, semana, dia, ejercicio, serie, kg ?? null, reps_reales ?? null, rir_real ?? null, completada === true]
+      );
+      reg = ins[0];
+    }
     res.json(reg);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -223,11 +244,13 @@ router.get('/mi-historial', cliente, async (req, res) => {
       [req.user.id]
     );
     if (!bloque) return res.json([]);
-    let q = `SELECT * FROM registro_entreno WHERE bloque_id=$1 AND cliente_id=$2`;
+    let q = `SELECT DISTINCT ON (semana, dia, ejercicio, serie)
+       semana, dia, ejercicio, serie, kg, reps_reales, rir_real, completada
+       FROM registro_entreno WHERE bloque_id=$1 AND cliente_id=$2`;
     const params = [bloque.id, req.user.id];
     if (semana) { params.push(semana); q += ` AND semana=$${params.length}`; }
     if (dia !== undefined) { params.push(dia); q += ` AND dia=$${params.length}`; }
-    q += ' ORDER BY dia, ejercicio, serie';
+    q += ' ORDER BY semana, dia, ejercicio, serie, created_at DESC';
     const { rows } = await db.query(q, params);
     res.json(rows);
   } catch (err) {
@@ -863,6 +886,29 @@ router.post('/checkins/:clienteId/fix-semana', entrenador, async (req, res) => {
       [req.params.clienteId]
     );
     res.json({ fixed: rows.length, rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ENTRENADOR: historial completo de entreno de un cliente (panel)
+router.get('/historial/:clienteId', entrenador, async (req, res) => {
+  try {
+    const { rows: [bloque] } = await db.query(
+      `SELECT id FROM bloques WHERE cliente_id=$1 AND estado='activo'
+       ORDER BY created_at DESC LIMIT 1`,
+      [req.params.clienteId]
+    );
+    if (!bloque) return res.json([]);
+    const { rows } = await db.query(
+      `SELECT DISTINCT ON (semana, dia, ejercicio, serie)
+         semana, dia, ejercicio, serie, kg, reps_reales, rir_real, completada
+       FROM registro_entreno
+       WHERE bloque_id=$1 AND cliente_id=$2
+       ORDER BY semana, dia, ejercicio, serie, created_at DESC`,
+      [bloque.id, req.params.clienteId]
+    );
+    res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

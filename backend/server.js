@@ -23,7 +23,7 @@ app.get('/health', (_, res) => res.json({ ok: true, ts: new Date().toISOString()
 // ── Version endpoint (cache busting) ──────────────────────────────────────────
 // Este número debe coincidir con BUILD en los index.html del app y panel.
 // Actualizarlo junto con cada deploy que cambie JS/CSS.
-const BUILD_VERSION = process.env.BUILD_VERSION || '1792423639';
+const BUILD_VERSION = process.env.BUILD_VERSION || '1792434747';
 app.get('/api/version', (_, res) => {
   res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.json({ v: BUILD_VERSION });
@@ -58,12 +58,50 @@ app.use((err, req, res, _next) => {
   res.status(500).json({ error: 'Error interno del servidor' });
 });
 
+// ── Migraciones automáticas al arranque ──────────────────────────────────────
+async function runMigrations() {
+  try {
+    // 1. Asegurar unique constraint en registro_entreno
+    //    Primero limpiamos duplicados (quedamos con el más reciente de cada grupo)
+    await db.query(`
+      DELETE FROM registro_entreno
+      WHERE id IN (
+        SELECT id FROM (
+          SELECT id,
+            ROW_NUMBER() OVER (
+              PARTITION BY bloque_id, cliente_id, semana, dia, ejercicio, serie
+              ORDER BY created_at DESC
+            ) AS rn
+          FROM registro_entreno
+        ) t WHERE rn > 1
+      )
+    `);
+    // 2. Crear la constraint si no existe
+    await db.query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint
+          WHERE conname = 'registro_entreno_unique'
+        ) THEN
+          ALTER TABLE registro_entreno
+            ADD CONSTRAINT registro_entreno_unique
+            UNIQUE (bloque_id, cliente_id, semana, dia, ejercicio, serie);
+        END IF;
+      END $$
+    `);
+    console.log('✅ Migraciones OK');
+  } catch (e) {
+    console.error('⚠️ Migración falló (no crítico):', e.message);
+  }
+}
+
 // ── Arrancar ──────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`\n✅ EnFormaFit API arrancada en puerto ${PORT}`);
   console.log(`   Entorno: ${process.env.NODE_ENV || 'development'}`);
   console.log(`   DB: ${process.env.DATABASE_URL ? 'conectada' : 'sin configurar'}\n`);
+  await runMigrations();
 });
 
 module.exports = app;
