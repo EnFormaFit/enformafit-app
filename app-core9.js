@@ -576,23 +576,16 @@ async function loadClienteData() {
         // We do NOT fall back to localStorage for fotos/medidas/preguntas because that would restore
         // data the user intentionally deleted (e.g. borrar fotos + guardar → BD queda vacío → local tenía fotos → bug).
         revsBD.forEach(function(d) {
-          // fotos_urls viene como array de postgres ['url0','url1',...]
-          // lo convertimos al objeto { rev_0: url, rev_1: url, ... } que espera el frontend
-          var bdFotosArr = d.fotos_urls || d.fotos_urls === null ? (d.fotos_urls || []) : [];
-          var bdFotos = {};
-          if (Array.isArray(bdFotosArr)) {
-            bdFotosArr.forEach(function(url, i) { if (url) bdFotos['rev_' + i] = url; });
-          } else if (typeof bdFotosArr === 'object') {
-            bdFotos = bdFotosArr; // ya es objeto
-          }
-          var bdMedidas = d.medidas;
+          // El backend normaliza fotos→{rev_0:url,...}, medidas y preguntas
+          var bdFotos = d.fotos || {};
+          var bdMedidas = d.medidas || {};
           if (typeof bdMedidas === 'string') { try { bdMedidas = JSON.parse(bdMedidas); } catch(e) { bdMedidas = {}; } }
-          var bdPreguntas = d.preguntas;
+          var bdPreguntas = d.preguntas || {};
           if (typeof bdPreguntas === 'string') { try { bdPreguntas = JSON.parse(bdPreguntas); } catch(e) { bdPreguntas = {}; } }
           ST.revHistorial[d.semana] = {
             semana: d.semana,
-            medidas: bdMedidas || {},
-            preguntas: bdPreguntas || {},
+            medidas: bdMedidas,
+            preguntas: bdPreguntas,
             fotos: bdFotos,
             fecha: d.fecha_subida || d.fecha
           };
