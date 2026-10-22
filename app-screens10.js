@@ -127,12 +127,10 @@ function getGrabarIdxs(di,s){
   const ejs=DIAS[di]?.ejercicios||[];
   if(!ejs.length)return[];
 
-  // Exclude cardio exercises
-  const CARDIO_KEYS=['hiit','carrera','caminata','cinta','cardio','bicicleta','remo','elíptica','eliptica','saltar','saltos','burpees'];
-  const elegibles=ejs.map((ej,i)=>({ej,i})).filter(({ej})=>{
-    const nom=(ej.nom||'').toLowerCase();
-    return !CARDIO_KEYS.some(k=>nom.includes(k));
-  });
+  // Todos los ejercicios son elegibles (filtro por keywords eliminado — era demasiado
+  // agresivo: "Regresión Burpees" o "Remo Bilateral" se excluían incorrectamente).
+  // Si un ejercicio tiene grabar:false explícito en la rutina, se excluye.
+  const elegibles=ejs.map((ej,i)=>({ej,i})).filter(({ej})=>ej.grabar!==false);
   if(!elegibles.length)return[];
 
   // Rotate every 2 weeks: weeks 1-2 → idx 0, weeks 3-4 → idx 1, etc.
