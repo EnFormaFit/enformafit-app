@@ -136,7 +136,10 @@ function getGrabarIdxs(di,s){
   if(!elegibles.length)return[];
 
   // Rotate every 2 weeks: weeks 1-2 → idx 0, weeks 3-4 → idx 1, etc.
-  const rotIdx=Math.floor((s-1)/2)%elegibles.length;
+  // Si rotIdx supera los elegibles disponibles, no mostrar badge (evita repetir el primero
+  // cuando la sesión tiene menos ejercicios que semanas de bloque / 2)
+  const rotIdx=Math.floor((s-1)/2);
+  if(rotIdx>=elegibles.length)return[];
   return[elegibles[rotIdx].i];
 }
 

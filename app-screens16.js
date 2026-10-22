@@ -179,7 +179,9 @@ function getGrabarIdxs(di,s){
   if(!elegibles.length)return[];
 
   // Rotate every 2 weeks: weeks 1-2 → idx 0, weeks 3-4 → idx 1, etc.
-  const rotIdx=Math.floor((s-1)/2)%elegibles.length;
+  // Sin módulo: si ya se grabaron todos los ejercicios, no mostrar badge (evita repetir)
+  const rotIdx=Math.floor((s-1)/2);
+  if(rotIdx>=elegibles.length)return[];
   return[elegibles[rotIdx].i];
 }
 
