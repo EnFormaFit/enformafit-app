@@ -1,4 +1,4 @@
-// app-screens16 v1792656264
+// app-screens16 v1792656557
 // app-screens15 v1791048307
 // app-screens14 v1791047915
 // app-screens13 v1791047439
@@ -23,20 +23,21 @@ function renderEntreno(){
       if(curDay<0)curDay=0;
     }
   }
-  if(!ST.semVer)ST.semVer=Math.max(1,ST.u.semana||1); // S0 shows week 1
+  if(!ST.semVer)ST.semVer=Math.max(1,ST.u.semana||1);
   var sem=ST.semVer;
   var di=curDay;
   var cacheKey=sem+'_'+di;
+  // Cargar semana completa en background al entrar (todos los días de una vez)
+  _precargarSemanaCompleta(sem);
   // Always fill ejStates from cache (may be empty if not loaded yet)
   _fillEjStatesFromCache(di, sem);
-  // If not in cache yet, load from BD then re-render
+  // Si el día actual no está en cache todavía, marcar y re-render cuando llegue
   if(ENT_CACHE[cacheKey]===undefined){
-    ENT_CACHE[cacheKey]=null; // mark as loading
+    ENT_CACHE[cacheKey]=null;
     (function(capturedSem, capturedDi){
       cargarRegistrosSemDia(capturedSem, capturedDi, function(){
         cargarRegistrosAnt(capturedSem, capturedDi, function(){
           _fillEjStatesFromCache(capturedDi, capturedSem);
-          // Re-render if still on entreno screen (any day/sem)
           var ct=document.getElementById('ct');
           if(ct&&ct.querySelector('.ent-wrap')){
             _fillEjStatesFromCache(curDay,ST.semVer);
@@ -47,6 +48,28 @@ function renderEntreno(){
     })(sem, di);
   }
   return buildEntHTML(di);
+}
+
+// Precarga todos los días de la semana actual en background (sin bloquear UI)
+// Se llama al entrar a entreno — así al navegar entre días los datos ya están listos
+function _precargarSemanaCompleta(sem){
+  if(!DIAS||!DIAS.length)return;
+  DIAS.forEach(function(dia,di){
+    var cacheKey=sem+'_'+di;
+    if(ENT_CACHE[cacheKey]!==undefined)return; // ya cargado o en curso
+    ENT_CACHE[cacheKey]=null; // marcar como en carga
+    (function(capturedSem,capturedDi){
+      cargarRegistrosSemDia(capturedSem,capturedDi,function(){
+        // Rellenar ejStates en background
+        _fillEjStatesFromCache(capturedDi,capturedSem);
+        // Si el usuario ya está en ese día, re-render
+        if(capturedDi===curDay&&capturedSem===ST.semVer){
+          var ct=document.getElementById('ct');
+          if(ct&&ct.querySelector('.ent-wrap'))ct.innerHTML=buildEntHTML(curDay);
+        }
+      });
+    })(sem,di);
+  });
 }
 
 function _fillEjStatesFromCache(di,sem){
