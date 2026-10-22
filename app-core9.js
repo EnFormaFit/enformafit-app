@@ -34,9 +34,6 @@ function fmtFechaApp(f){
   return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:f;
 }
 function save(){
-  // DEBUG: track rir value
-  var _dbgRir = ST.ejStates?.['1_0']?.series?.[0]?.rir;
-  if(_dbgRir !== undefined) console.log('[SAVE] rir 1_0 s0:', JSON.stringify(_dbgRir), new Error().stack.split('\n')[2]);
   try{localStorage.setItem('ef8_ver',APP_VER);localStorage.setItem('ef8',JSON.stringify({
   _v:'v2',
   menu:ST.menu,menuGuardado:ST.menuGuardado,pesos:ST.pesos,
@@ -660,36 +657,13 @@ async function loadClienteData() {
       }
     } catch(e) {}
 
-    // Load check-ins from BD
-    try {
-      const cisBD = await api('GET', '/api/entreno/checkins');
-      if (cisBD && cisBD.length) {
-        ST.checkIns = cisBD;
-        // Load current week's check-in into ST.ci if exists
-        const _lunesActual1 = getLunesActual();
-        const ciActual = cisBD.find(ci => ci.semana_inicio && ci.semana_inicio.substring(0,10) === _lunesActual1);
-        if (ciActual) {
-          ST.ci = ST.ci || {};
-          ST.ci.diasEnt = ciActual.dias_entreno_real || 0;
-          ST.ci.diasNut = ciActual.dias_nutricion || 0;
-          ST.ci.diasPasos = ciActual.dias_pasos || 0;
-          ST.ci.orgullo = ciActual.orgullos || '';
-          ST.ci.compromiso = ciActual.compromisos || '';
-          ST.ci.sensaciones = ciActual.sensaciones || '';
-          ST.ci.como = ciActual.como_semana || '';
-          ST.ci.adh = ciActual.adherencia || 0;
-          ST.checkInDone = true;
-        }
-      }
-    } catch(e) {}
-
-    // Load check-ins from BD
+    // Load check-ins from BD (una sola llamada)
     try {
       const cisBD = await api('GET', '/api/entreno/checkins');
       if (Array.isArray(cisBD) && cisBD.length) {
         ST.checkIns = cisBD;
-        const _lunesActual2 = getLunesActual();
-        const ciActual = cisBD.find(ci => (ci.semana_inicio||'').substring(0,10) === _lunesActual2);
+        const _lunesActual = getLunesActual();
+        const ciActual = cisBD.find(function(ci){ return (ci.semana_inicio||'').substring(0,10) === _lunesActual; });
         if (ciActual) {
           ST.ci = ST.ci || {};
           ST.ci.diasEnt = ciActual.dias_entreno_real || 0;
@@ -705,48 +679,21 @@ async function loadClienteData() {
       }
     } catch(e) { console.warn('[CI load]', e); }
 
-        // Restore ejStates from BD
-    try {
-      var histBD = await api('GET', '/api/entreno/mi-historial?semana=' + (ST.u.semana || 1));
-      if (histBD && Array.isArray(histBD) && histBD.length) {
-        histBD.forEach(function(row) {
-          var nom = row.ejercicio;
-          var dia = parseInt(row.dia) || 0;
-          var si = (row.serie || 1) - 1;
-          var ejIdx = row.ej_idx != null ? row.ej_idx : null;
-          // Update histEnt
-          if (nom) {
-            if (!ST.histEnt[nom]) ST.histEnt[nom] = {semanas:{}};
-            var sem = String(row.semana || ST.u.semana || 1);
-            if (!ST.histEnt[nom].semanas[sem]) ST.histEnt[nom].semanas[sem] = {};
-            var serKey = 'dia' + dia + '_s' + (si+1);
-            ST.histEnt[nom].semanas[sem][serKey] = {kg: String(row.kg||''), reps: String(row.reps_reales||''), rir: row.rir_real!=null?String(row.rir_real):'', done: !!row.completada};
-          }
-        });
-      }
-    } catch(eHist) { console.warn('[historial]', eHist && eHist.message); }
-
-    // Restore histEnt from BD (for reference weights) — never overwrite ejStates from localStorage
+    // Cargar historial completo desde BD (una sola llamada — sin params devuelve todo)
+    // Puebla histEnt (para "Anterior" y semanas pasadas) y ejStates (semana actual)
     try {
       var semActual = ST.semVer || ST.u.semana || 1;
       var histBD = await api('GET', '/api/entreno/mi-historial');
       if (histBD && Array.isArray(histBD) && histBD.length) {
-        // Only populate histEnt — never touch ejStates if localStorage already has it
-        // localEjOK: only true if localStorage has data with actual values for this week
-        var localEjOK = Object.keys(ST.ejStates||{}).some(function(k){
-          var ej = ST.ejStates[k];
-          if (!ej || ej._sem !== semActual) return false;
-          // Check if any series has actual data (kg or reps or done)
-          return (ej.series||[]).some(function(s){ return s.done || parseFloat(s.kg) > 0 || parseInt(s.repsH) > 0; });
-        });
         histBD.forEach(function(row) {
           var nom = row.ejercicio;
           var dia = parseInt(row.dia) || 0;
           var si = (parseInt(row.serie) || 1) - 1;
-          // Always update histEnt for reference weights
+          var rowSem = parseInt(row.semana) || semActual;
+          // Siempre actualizar histEnt (para mostrar "Anterior" y semanas pasadas)
           if (nom) {
             if (!ST.histEnt[nom]) ST.histEnt[nom] = {semanas:{}};
-            var sem = String(row.semana || semActual);
+            var sem = String(rowSem);
             if (!ST.histEnt[nom].semanas[sem]) ST.histEnt[nom].semanas[sem] = {};
             var serKey = 'dia' + dia + '_s' + (si+1);
             ST.histEnt[nom].semanas[sem][serKey] = {
@@ -755,9 +702,18 @@ async function loadClienteData() {
               rir: row.rir_real!=null?String(row.rir_real):'',
               done: !!row.completada
             };
+            // También poblar ENT_CACHE para que "Anterior" aparezca instantáneo
+            var cKey = rowSem + '_' + dia;
+            if (!ENT_CACHE[cKey]) ENT_CACHE[cKey] = {};
+            ENT_CACHE[cKey][nom + '_' + (si+1)] = {
+              kg: String(row.kg||''),
+              reps: String(row.reps_reales||''),
+              rir: row.rir_real!=null?String(row.rir_real):'',
+              done: !!row.completada
+            };
           }
-          // Restaurar ejStates desde BD para esta semana
-          if (parseInt(row.semana) === semActual) {
+          // Restaurar ejStates solo para la semana actual
+          if (rowSem === semActual) {
             var ejIdx = -1;
             if (DIAS && DIAS[dia] && DIAS[dia].ejercicios) {
               DIAS[dia].ejercicios.forEach(function(ej, i) {
@@ -777,7 +733,7 @@ async function loadClienteData() {
               var rowKg = parseFloat(row.kg) || 0;
               if (rowKg > 0 && !existing.kg) existing.kg = String(rowKg);
               if (row.reps_reales && row.reps_reales > 0 && !existing.repsH) existing.repsH = String(row.reps_reales);
-              // RIR: SIEMPRE restaurar desde BD si el campo está vacío (no depende de localEjOK)
+              // RIR: siempre restaurar desde BD si el campo está vacío
               if (row.rir_real !== null && row.rir_real !== undefined && (existing.rir === '' || existing.rir === undefined || existing.rir === null)) existing.rir = String(row.rir_real);
               if (row.completada) existing.done = true;
             }

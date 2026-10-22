@@ -50,25 +50,31 @@ function renderEntreno(){
   return buildEntHTML(di);
 }
 
-// Precarga todos los días de la semana actual en background (sin bloquear UI)
+// Precarga todos los días de la semana actual Y la anterior en background (sin bloquear UI)
 // Se llama al entrar a entreno — así al navegar entre días los datos ya están listos
+// y la columna "Anterior" aparece rellena desde el primer momento
 function _precargarSemanaCompleta(sem){
   if(!DIAS||!DIAS.length)return;
-  DIAS.forEach(function(dia,di){
-    var cacheKey=sem+'_'+di;
-    if(ENT_CACHE[cacheKey]!==undefined)return; // ya cargado o en curso
-    ENT_CACHE[cacheKey]=null; // marcar como en carga
-    (function(capturedSem,capturedDi){
-      cargarRegistrosSemDia(capturedSem,capturedDi,function(){
-        // Rellenar ejStates en background
-        _fillEjStatesFromCache(capturedDi,capturedSem);
-        // Si el usuario ya está en ese día, re-render
-        if(capturedDi===curDay&&capturedSem===ST.semVer){
-          var ct=document.getElementById('ct');
-          if(ct&&ct.querySelector('.ent-wrap'))ct.innerHTML=buildEntHTML(curDay);
-        }
-      });
-    })(sem,di);
+  // Precargar semana actual y semana anterior (para columna "Anterior")
+  var semsACargar = [sem];
+  if(sem > 1) semsACargar.push(sem - 1);
+  semsACargar.forEach(function(semCarga){
+    DIAS.forEach(function(dia,di){
+      var cacheKey=semCarga+'_'+di;
+      if(ENT_CACHE[cacheKey]!==undefined)return; // ya cargado o en curso
+      ENT_CACHE[cacheKey]=null; // marcar como en carga
+      (function(capturedSem,capturedDi){
+        cargarRegistrosSemDia(capturedSem,capturedDi,function(){
+          // Rellenar ejStates en background solo para semana actual
+          if(capturedSem===sem) _fillEjStatesFromCache(capturedDi,capturedSem);
+          // Si el usuario ya está en ese día de la semana actual, re-render
+          if(capturedDi===curDay&&capturedSem===ST.semVer){
+            var ct=document.getElementById('ct');
+            if(ct&&ct.querySelector('.ent-wrap'))ct.innerHTML=buildEntHTML(curDay);
+          }
+        });
+      })(semCarga,di);
+    });
   });
 }
 
