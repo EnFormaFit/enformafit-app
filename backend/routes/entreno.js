@@ -928,7 +928,7 @@ router.get('/debug-registros', cliente, async (req, res) => {
 router.get('/historial/:clienteId', entrenador, async (req, res) => {
   try {
     const { rows: [bloque] } = await db.query(
-      `SELECT id FROM bloques WHERE cliente_id=$1 AND estado='activo'
+      `SELECT id FROM bloques WHERE cliente_id=$1 AND visible_cliente=true AND estado='activo'
        ORDER BY created_at DESC LIMIT 1`,
       [req.params.clienteId]
     );
@@ -942,6 +942,63 @@ router.get('/historial/:clienteId', entrenador, async (req, res) => {
       [bloque.id, req.params.clienteId]
     );
     res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ENTRENADOR: limpiar registros basura de un cliente (ejercicios que no están en su bloque actual)
+router.delete('/historial/:clienteId/limpiar-basura', entrenador, async (req, res) => {
+  try {
+    const { ejercicios } = req.body; // array de nombres de ejercicios a eliminar
+    if (!ejercicios || !Array.isArray(ejercicios) || ejercicios.length === 0) {
+      return res.status(400).json({ error: 'Envía { ejercicios: ["nombre1","nombre2",...] }' });
+    }
+    const clienteId = req.params.clienteId;
+    const { rows: [bloque] } = await db.query(
+      `SELECT id FROM bloques WHERE cliente_id=$1 AND visible_cliente=true AND estado='activo'
+       ORDER BY created_at DESC LIMIT 1`,
+      [clienteId]
+    );
+    if (!bloque) return res.status(400).json({ error: 'Sin bloque activo' });
+    const placeholders = ejercicios.map((_,i) => `$${i+3}`).join(',');
+    const { rowCount } = await db.query(
+      `DELETE FROM registro_entreno WHERE cliente_id=$1 AND bloque_id=$2 AND ejercicio IN (${placeholders})`,
+      [clienteId, bloque.id, ...ejercicios]
+    );
+    res.json({ deleted: rowCount, ejercicios });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ENTRENADOR: borrar todos los registros de ejercicios que no están en el plan activo del cliente
+router.delete('/historial/:clienteId/limpiar-ejercicios-fuera-de-plan', entrenador, async (req, res) => {
+  try {
+    const clienteId = req.params.clienteId;
+    // Obtener bloque activo y sus ejercicios
+    const { rows: [bloque] } = await db.query(
+      `SELECT id, ejercicios FROM bloques WHERE cliente_id=$1 AND visible_cliente=true AND estado='activo'
+       ORDER BY created_at DESC LIMIT 1`,
+      [clienteId]
+    );
+    if (!bloque) return res.status(400).json({ error: 'Sin bloque activo' });
+    // Extraer nombres de ejercicios del bloque (campo JSONB dias[].ejercicios[].nom)
+    const { rows: ejRows } = await db.query(
+      `SELECT DISTINCT jsonb_array_elements(d->'ejercicios')->>'nom' AS nom
+       FROM bloques, jsonb_array_elements(bloques.dias) AS d
+       WHERE bloques.id=$1`,
+      [bloque.id]
+    );
+    const ejerciciosDelPlan = ejRows.map(r => r.nom).filter(Boolean);
+    if (ejerciciosDelPlan.length === 0) return res.status(400).json({ error: 'No se pudieron extraer ejercicios del bloque' });
+    // Borrar registros cuyos ejercicios NO estén en el plan
+    const placeholders = ejerciciosDelPlan.map((_,i) => `$${i+3}`).join(',');
+    const { rowCount } = await db.query(
+      `DELETE FROM registro_entreno WHERE cliente_id=$1 AND bloque_id=$2 AND ejercicio NOT IN (${placeholders})`,
+      [clienteId, bloque.id, ...ejerciciosDelPlan]
+    );
+    res.json({ deleted: rowCount, ejercicios_del_plan: ejerciciosDelPlan });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
