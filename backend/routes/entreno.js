@@ -133,19 +133,19 @@ router.get('/mi-rutina', cliente, async (req, res) => {
 // ── CLIENTE: registrar serie ──────────────────────────────────────────────────
 router.post('/registrar-serie', cliente, async (req, res) => {
   try {
-    let { bloque_id, semana, dia, ejercicio, serie, kg, reps_reales, rir_real, completada } = req.body;
+    let { semana, dia, ejercicio, serie, kg, reps_reales, rir_real, completada } = req.body;
     const clienteId = req.user.id;
 
-    // Si no viene bloque_id en el body, resolverlo desde el bloque activo del cliente
-    if (!bloque_id) {
-      const { rows: [bloque] } = await db.query(
-        `SELECT id FROM bloques WHERE cliente_id=$1 AND visible_cliente=true AND estado='activo'
-         ORDER BY created_at DESC LIMIT 1`,
-        [clienteId]
-      );
-      if (!bloque) return res.status(400).json({ error: 'Sin bloque activo' });
-      bloque_id = bloque.id;
-    }
+    // SIEMPRE resolver bloque_id desde servidor — nunca confiar en el del cliente
+    const { rows: [bloque] } = await db.query(
+      `SELECT id FROM bloques WHERE cliente_id=$1 AND visible_cliente=true AND estado='activo'
+       ORDER BY created_at DESC LIMIT 1`,
+      [clienteId]
+    );
+    if (!bloque) return res.status(400).json({ error: 'Sin bloque activo' });
+    const bloque_id = bloque.id;
+
+    console.log(`[registrar-serie] cliente=${clienteId} bloque=${bloque_id} sem=${semana} dia=${dia} ej=${ejercicio} serie=${serie} kg=${kg} reps=${reps_reales} rir=${rir_real} done=${completada}`);
 
     // Update existing row first; if none exists, insert new one
     const { rows: upd } = await db.query(
@@ -157,6 +157,7 @@ router.post('/registrar-serie', cliente, async (req, res) => {
     );
     let reg = upd[0];
     if (!reg) {
+      console.log(`[registrar-serie] INSERT (no existía) cliente=${clienteId} bloque=${bloque_id} ej=${ejercicio} s${serie}`);
       const { rows: ins } = await db.query(
         `INSERT INTO registro_entreno
            (bloque_id, cliente_id, semana, dia, ejercicio, serie, kg, reps_reales, rir_real, completada)
@@ -165,9 +166,12 @@ router.post('/registrar-serie', cliente, async (req, res) => {
         [bloque_id, clienteId, semana, dia, ejercicio, serie, kg ?? null, reps_reales ?? null, rir_real ?? null, completada === true]
       );
       reg = ins[0];
+    } else {
+      console.log(`[registrar-serie] UPDATE OK id=${reg.id}`);
     }
     res.json(reg);
   } catch (err) {
+    console.error('[registrar-serie] ERROR:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -243,17 +247,21 @@ router.get('/mi-historial', cliente, async (req, res) => {
        ORDER BY created_at DESC LIMIT 1`,
       [req.user.id]
     );
-    if (!bloque) return res.json([]);
+    if (!bloque) { console.log(`[mi-historial] cliente=${req.user.id} SIN bloque activo`); return res.json([]); }
+    console.log(`[mi-historial] cliente=${req.user.id} bloque=${bloque.id} sem=${semana} dia=${dia}`);
     let q = `SELECT DISTINCT ON (semana, dia, ejercicio, serie)
        semana, dia, ejercicio, serie, kg, reps_reales, rir_real, completada
        FROM registro_entreno WHERE bloque_id=$1 AND cliente_id=$2`;
     const params = [bloque.id, req.user.id];
     if (semana) { params.push(semana); q += ` AND semana=$${params.length}`; }
-    if (dia !== undefined) { params.push(dia); q += ` AND dia=$${params.length}`; }
+    if (dia !== undefined) { params.push(String(dia)); q += ` AND dia=$${params.length}`; }
+    // DISTINCT ON requiere que ORDER BY empiece por las mismas columnas, luego created_at DESC para obtener el más reciente
     q += ' ORDER BY semana, dia, ejercicio, serie, created_at DESC';
     const { rows } = await db.query(q, params);
+    console.log(`[mi-historial] → ${rows.length} registros`);
     res.json(rows);
   } catch (err) {
+    console.error('[mi-historial] ERROR:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -886,6 +894,31 @@ router.post('/checkins/:clienteId/fix-semana', entrenador, async (req, res) => {
       [req.params.clienteId]
     );
     res.json({ fixed: rows.length, rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DIAGNÓSTICO: ver registros recientes del cliente autenticado (temporal)
+router.get('/debug-registros', cliente, async (req, res) => {
+  try {
+    const clienteId = req.user.id;
+    // Bloque activo (cualquier estado)
+    const { rows: bloques } = await db.query(
+      `SELECT id, estado, visible_cliente, created_at FROM bloques WHERE cliente_id=$1 ORDER BY created_at DESC LIMIT 3`,
+      [clienteId]
+    );
+    const bloque = bloques[0];
+    let registros = [];
+    if (bloque) {
+      const { rows } = await db.query(
+        `SELECT semana, dia, ejercicio, serie, kg, reps_reales, rir_real, completada, created_at
+         FROM registro_entreno WHERE cliente_id=$1 ORDER BY created_at DESC LIMIT 50`,
+        [clienteId]
+      );
+      registros = rows;
+    }
+    res.json({ cliente_id: clienteId, bloques, registros });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

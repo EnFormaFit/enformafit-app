@@ -1,4 +1,4 @@
-// app-screens16 v1791048820
+// app-screens16 v1792656264
 // app-screens15 v1791048307
 // app-screens14 v1791047915
 // app-screens13 v1791047439
@@ -232,8 +232,8 @@ function toggleSer(key,si,di){
         dia:String(diaIdx),
         semana:ST.semVer||ST.u.semana||1,
         serie:si+1,
-        kg:parseFloat(s.kg)||0,
-        reps_reales:parseInt(s.repsH)||null,
+        kg:parseFloat(s.kg)>0?parseFloat(s.kg):null,
+        reps_reales:parseInt(s.repsH)>0?parseInt(s.repsH):null,
         rir_real:s.rir!==''&&s.rir!==null&&s.rir!==undefined?parseFloat(s.rir):null,
         completada:s.done
       }).catch(function(e){console.warn('[serie]',e);});
