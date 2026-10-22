@@ -1,4 +1,4 @@
-// app-screens16 v1792656557
+// app-screens16 v1792661092
 // app-screens15 v1791048307
 // app-screens14 v1791047915
 // app-screens13 v1791047439
@@ -249,7 +249,7 @@ function toggleSer(key,si,di){
     const ej=dia&&dia.ejercicios&&dia.ejercicios[ejIdx];
     if(ej){
       clearTimeout(window['_serSave_' + key + '_' + si]);
-      api('POST','/api/entreno/registrar-serie',{
+      var _togPayload={
         bloque_id:ST.p.bloqueId||null,
         ejercicio:ej.nom||ej.nombre||key,
         dia:String(diaIdx),
@@ -257,9 +257,14 @@ function toggleSer(key,si,di){
         serie:si+1,
         kg:parseFloat(s.kg)>0?parseFloat(s.kg):null,
         reps_reales:parseInt(s.repsH)>0?parseInt(s.repsH):null,
-        rir_real:s.rir!==''&&s.rir!==null&&s.rir!==undefined?parseFloat(s.rir):null,
+        rir_real:s.rir!==''&&s.rir!==null&&s.rir!==undefined?parseInt(s.rir):null,
         completada:s.done
-      }).catch(function(e){console.warn('[serie]',e);});
+      };
+      api('POST','/api/entreno/registrar-serie',_togPayload).catch(function(e){
+        console.error('[toggleSer] Error:',e.message||e);
+        toast('⚠️ Error guardando — reintentando...','rj');
+        setTimeout(function(){api('POST','/api/entreno/registrar-serie',_togPayload).catch(function(e2){console.error('[toggleSer] Retry fallido:',e2);});},2000);
+      });
     }
   }
   if(s.done){

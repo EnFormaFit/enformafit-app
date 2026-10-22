@@ -1,4 +1,4 @@
-// app-core9 v1792656264
+// app-core9 v1792661092
 // ── STATE ──
 const APP_VER='v8.6';
 const ST={
@@ -224,17 +224,25 @@ var ENT_CACHE = {};
 // Cargar registros de BD para semana+día concreto
 function cargarRegistrosSemDia(semana, dia, callback) {
   var cacheKey = semana + '_' + dia;
-  if (ENT_CACHE[cacheKey]) { if(callback)callback(ENT_CACHE[cacheKey]); return; }
+  // Solo usar cache si tiene datos reales (objeto con al menos una key)
+  // null = en carga, {} vacío = puede ser que BD no tenga datos aún → siempre recargar si vacío
+  var cached = ENT_CACHE[cacheKey];
+  if (cached && Object.keys(cached).length > 0) { if(callback)callback(cached); return; }
   api('GET', '/api/entreno/mi-historial?semana=' + semana + '&dia=' + dia)
     .then(function(rows) {
       var data = {};
       (rows || []).forEach(function(r) {
         var k = r.ejercicio + '_' + r.serie;
-        data[k] = { kg: r.kg ? String(parseFloat(r.kg)) : '', reps: r.reps_reales ? String(r.reps_reales) : '', rir: r.rir_real !== undefined ? r.rir_real : '', done: !!(r.completada) };
+        data[k] = {
+          kg: r.kg !== null && r.kg !== undefined ? String(parseFloat(r.kg)) : '',
+          reps: r.reps_reales !== null && r.reps_reales !== undefined ? String(r.reps_reales) : '',
+          rir: r.rir_real !== null && r.rir_real !== undefined ? String(r.rir_real) : '',
+          done: !!(r.completada)
+        };
       });
       ENT_CACHE[cacheKey] = data;
       if(callback)callback(data);
-    }).catch(function() { if(callback)callback({}); });
+    }).catch(function(e) { console.warn('[cargarRegistros]', e); if(callback)callback({}); });
 }
 
 // Cargar registros de semana anterior (para mostrar "Anterior")
@@ -345,7 +353,28 @@ function autoGuardarSerie(di, ei, si) {
       var cacheKey = semana + '_' + di;
       if (!ENT_CACHE[cacheKey]) ENT_CACHE[cacheKey] = {};
       ENT_CACHE[cacheKey][ej.nom + '_' + (si + 1)] = { kg: s.kg, reps: s.repsH, rir: s.rir, done: s.done };
-    }).catch(function(e) { console.warn('[Serie]', e.message); });
+    }).catch(function(e) {
+      console.error('[Serie] Error guardando:', e.message || e);
+      toast('⚠️ Error guardando serie — reintentando...', 'rj');
+      // Retry once after 2s
+      setTimeout(function() {
+        api('POST', '/api/entreno/registrar-serie', {
+          bloque_id: ST.p.bloqueId || null,
+          semana: semana,
+          dia: String(di),
+          ejercicio: ej.nom,
+          serie: si + 1,
+          kg: parseFloat(s.kg) > 0 ? parseFloat(s.kg) : null,
+          reps_reales: parseInt(s.repsH) > 0 ? parseInt(s.repsH) : null,
+          rir_real: (s.rir !== undefined && s.rir !== null && s.rir !== '') ? parseInt(s.rir) : null,
+          completada: s.done === true
+        }).then(function() {
+          var cacheKey = semana + '_' + di;
+          if (!ENT_CACHE[cacheKey]) ENT_CACHE[cacheKey] = {};
+          ENT_CACHE[cacheKey][ej.nom + '_' + (si + 1)] = { kg: s.kg, reps: s.repsH, rir: s.rir, done: s.done };
+        }).catch(function(e2) { console.error('[Serie] Retry fallido:', e2.message || e2); });
+      }, 2000);
+    });
   }, 300);
 }
 
