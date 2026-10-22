@@ -281,9 +281,9 @@ function restoreEjStatesFromHistEnt(semActual) {
         // Restore done:true and rir_real from histEnt
         // kg and reps must always be entered manually - but RIR should persist
         if (d.done === true) ex.done = true;
-        // Restore RIR only if current value is empty
-        if (d.rir_real !== null && d.rir_real !== undefined && (ex.rir === '' || ex.rir === undefined || ex.rir === null)) {
-          ex.rir = String(d.rir_real);
+        // Restore RIR only if current value is empty (clave es 'rir', no 'rir_real')
+        if (d.rir !== null && d.rir !== undefined && d.rir !== '' && (ex.rir === '' || ex.rir === undefined || ex.rir === null)) {
+          ex.rir = String(d.rir);
         }
       });
     });
@@ -306,18 +306,40 @@ function updateHistEnt(nom, di, si, semana, kg, reps, rir, done) {
 }
 
 function flushPendingSaves() {
-  // Cancel all pending debounces and save immediately to BD
+  // Flush all pending debounced saves — llamar API directamente sin nuevo debounce
   Object.keys(window).filter(function(k){ return k.startsWith('_serSave_'); }).forEach(function(k) {
     clearTimeout(window[k]);
-    // Parse key: _serSave_<ejKey>_<si> -> e.g. _serSave_1_0_0
+    delete window[k];
+    // Parse key: _serSave_<di>_<ei>_<si>
     var parts = k.replace('_serSave_','').split('_');
     if (parts.length >= 3) {
       var si = parseInt(parts[parts.length-1]);
       var ei = parseInt(parts[parts.length-2]);
       var di = parseInt(parts[parts.length-3]);
-      autoGuardarSerie(di, ei, si);
+      var ej = DIAS[di] && DIAS[di].ejercicios ? DIAS[di].ejercicios[ei] : null;
+      if (!ej) return;
+      var key = di + '_' + ei;
+      var st = ST.ejStates && ST.ejStates[key];
+      if (!st || !st.series || !st.series[si]) return;
+      var s = st.series[si];
+      var semana = ST.semVer || ST.u.semana || 1;
+      // Llamada directa a la API sin setTimeout
+      api('POST', '/api/entreno/registrar-serie', {
+        bloque_id: ST.p.bloqueId || null,
+        semana: semana,
+        dia: String(di),
+        ejercicio: ej.nom,
+        serie: si + 1,
+        kg: parseFloat(s.kg) > 0 ? parseFloat(s.kg) : null,
+        reps_reales: parseInt(s.repsH) > 0 ? parseInt(s.repsH) : null,
+        rir_real: (s.rir !== undefined && s.rir !== null && s.rir !== '') ? parseInt(s.rir) : null,
+        completada: s.done === true
+      }).then(function() {
+        var cacheKey = semana + '_' + di;
+        if (!ENT_CACHE[cacheKey]) ENT_CACHE[cacheKey] = {};
+        ENT_CACHE[cacheKey][ej.nom + '_' + (si + 1)] = { kg: s.kg, reps: s.repsH, rir: s.rir, done: s.done };
+      }).catch(function(e) { console.error('[flush] Error guardando:', e.message || e); });
     }
-    delete window[k];
   });
 }
 
@@ -734,8 +756,8 @@ async function loadClienteData() {
               done: !!row.completada
             };
           }
-          // Only restore ejStates from BD if localStorage doesn't have this semana
-          if (!localEjOK && parseInt(row.semana) === semActual) {
+          // Restaurar ejStates desde BD para esta semana
+          if (parseInt(row.semana) === semActual) {
             var ejIdx = -1;
             if (DIAS && DIAS[dia] && DIAS[dia].ejercicios) {
               DIAS[dia].ejercicios.forEach(function(ej, i) {
@@ -751,10 +773,11 @@ async function loadClienteData() {
               }
               if (!ST.ejStates[key].series[si]) ST.ejStates[key].series[si] = {kg:'',repsH:'',done:false,rir:''};
               var existing = ST.ejStates[key].series[si];
+              // kg y reps: solo si localStorage no tiene valor (localStorage tiene prioridad)
               var rowKg = parseFloat(row.kg) || 0;
               if (rowKg > 0 && !existing.kg) existing.kg = String(rowKg);
               if (row.reps_reales && row.reps_reales > 0 && !existing.repsH) existing.repsH = String(row.reps_reales);
-              // RIR: restore from BD if we have a real value
+              // RIR: SIEMPRE restaurar desde BD si el campo está vacío (no depende de localEjOK)
               if (row.rir_real !== null && row.rir_real !== undefined && (existing.rir === '' || existing.rir === undefined || existing.rir === null)) existing.rir = String(row.rir_real);
               if (row.completada) existing.done = true;
             }
