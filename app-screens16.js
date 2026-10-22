@@ -92,10 +92,18 @@ function _fillEjStatesFromCache(di,sem){
           kg:rec&&rec.kg?String(rec.kg):'',
           repsH:rec&&rec.reps?String(rec.reps):'',
           done:!!(rec&&rec.done),
-          rir:rec&&rec.rir!==undefined&&rec.rir!==null?String(rec.rir):''
+          rir:rec&&rec.rir!==undefined&&rec.rir!==null&&rec.rir!==''?String(rec.rir):''
         };
       });
       ST.ejStates[key]={collapsed:false,rest:ej.rest||120,series:series,_sem:sem};
+    } else if(hasData&&existing&&existing.series){
+      // Rellenar RIR desde caché aunque la serie ya exista (caso: rir vacío pero BD tiene valor)
+      existing.series.forEach(function(s,si){
+        if(s.rir===''||s.rir===undefined||s.rir===null){
+          var rec=data&&data[ej.nom+'_'+(si+1)];
+          if(rec&&rec.rir!==undefined&&rec.rir!==null&&rec.rir!=='')s.rir=String(rec.rir);
+        }
+      });
     }
   });
 }

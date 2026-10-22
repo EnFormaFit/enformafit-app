@@ -754,7 +754,8 @@ async function loadClienteData() {
               var rowKg = parseFloat(row.kg) || 0;
               if (rowKg > 0 && !existing.kg) existing.kg = String(rowKg);
               if (row.reps_reales && row.reps_reales > 0 && !existing.repsH) existing.repsH = String(row.reps_reales);
-              // RIR: never autocomplete from BD
+              // RIR: restore from BD if we have a real value
+              if (row.rir_real !== null && row.rir_real !== undefined && (existing.rir === '' || existing.rir === undefined || existing.rir === null)) existing.rir = String(row.rir_real);
               if (row.completada) existing.done = true;
             }
           }
@@ -808,8 +809,8 @@ async function loadClienteData() {
               // For each serie, localStorage values take priority
               (_lsSnap2.ejStates[k].series||[]).forEach(function(lsSerie, si) {
                 if (ST.ejStates[k].series && ST.ejStates[k].series[si]) {
-                  // rir: always use localStorage value (even if empty)
-                  if (lsSerie.rir !== undefined) ST.ejStates[k].series[si].rir = lsSerie.rir;
+                  // rir: use localStorage only if it has a real value (not empty string)
+                  if (lsSerie.rir !== undefined && lsSerie.rir !== '' && lsSerie.rir !== null) ST.ejStates[k].series[si].rir = lsSerie.rir;
                   // kg/reps: use localStorage if it has a value
                   if (lsSerie.kg) ST.ejStates[k].series[si].kg = lsSerie.kg;
                   if (lsSerie.repsH) ST.ejStates[k].series[si].repsH = lsSerie.repsH;
@@ -832,8 +833,8 @@ async function loadClienteData() {
           snapSeries.forEach(function(snapS, si) {
             if (!ST.ejStates[k].series[si]) return;
             var cur = ST.ejStates[k].series[si];
-            // rir: always restore from snapshot (user value has priority)
-            if (snapS.rir !== undefined) cur.rir = snapS.rir;
+            // rir: restore from snapshot only if it has a real value
+            if (snapS.rir !== undefined && snapS.rir !== '' && snapS.rir !== null) cur.rir = snapS.rir;
             // kg/reps: restore if snapshot has value and current doesn't
             if (snapS.kg && !cur.kg) cur.kg = snapS.kg;
             if (snapS.repsH && !cur.repsH) cur.repsH = snapS.repsH;
