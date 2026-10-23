@@ -1241,20 +1241,31 @@ let _rfIdx=0;
 function triggerRF(i){_rfIdx=i;document.getElementById('rfin').click();}
 function loadRF(inp){
   const f=inp.files[0];if(!f)return;
-  // HEIC/HEIF: los navegadores no pueden dibujarlos en canvas — usar base64 directo
-  // Cloudinary acepta HEIC y convierte automáticamente
-  const isHeic=f.type==='image/heic'||f.type==='image/heif'
+  // HEIC/HEIF: el navegador no puede dibujarlo en canvas (img.onload no dispara)
+  // iOS a veces envía f.type='' para HEIC — también lo detectamos por extensión
+  const isHeic=!f.type||f.type==='image/heic'||f.type==='image/heif'
     ||/\.(heic|heif)$/i.test(f.name);
   const reader=new FileReader();
   reader.onload=function(e){
+    const b64=e.target.result;
     if(isHeic){
       // Pasar directamente sin canvas — Cloudinary convertirá en el servidor
-      ST.rev.fotos['rev_'+_rfIdx]=e.target.result;
+      ST.rev.fotos['rev_'+_rfIdx]=b64;
       save();render();
       return;
     }
     const img=new Image();
+    // Fallback: si el canvas no puede procesar el formato (img.onerror o timeout),
+    // usar el base64 directo para que al menos se guarde algo
+    var _saved=false;
+    function _guardarDirecto(){if(_saved)return;_saved=true;ST.rev.fotos['rev_'+_rfIdx]=b64;save();render();}
+    img.onerror=_guardarDirecto;
+    // Timeout de 4s por si img.onload nunca dispara (formato no soportado en canvas)
+    var _t=setTimeout(_guardarDirecto,4000);
     img.onload=function(){
+      clearTimeout(_t);
+      if(_saved)return;
+      _saved=true;
       const MAX=1200;
       let w=img.width,h=img.height;
       if(w>MAX||h>MAX){
@@ -1268,7 +1279,7 @@ function loadRF(inp){
       ST.rev.fotos['rev_'+_rfIdx]=compressed;
       save();render();
     };
-    img.src=e.target.result;
+    img.src=b64;
   };
   reader.readAsDataURL(f);
 }
