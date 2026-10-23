@@ -412,8 +412,9 @@ router.post('/upload-foto', cliente, async (req, res) => {
   try {
     const { foto_b64, pose, semana } = req.body;
     if (!foto_b64) return res.status(400).json({ error: 'foto_b64 requerida' });
-    if (!foto_b64.startsWith('data:image/')) {
-      return res.status(400).json({ error: 'Formato inválido: se esperaba data:image/...' });
+    // Aceptar data:image/* y también data:application/octet-stream (HEIC en iOS sin MIME)
+    if (!foto_b64.startsWith('data:')) {
+      return res.status(400).json({ error: 'Formato inválido: se esperaba base64' });
     }
 
     // Subir a Cloudinary si está configurado

@@ -1247,7 +1247,12 @@ function loadRF(inp){
     ||/\.(heic|heif)$/i.test(f.name);
   const reader=new FileReader();
   reader.onload=function(e){
-    const b64=e.target.result;
+    // Si el navegador no conoce el tipo (HEIC en iOS → data:application/octet-stream o data:;base64)
+    // reemplazar el prefijo para que el backend y Cloudinary lo acepten como imagen
+    var b64=e.target.result;
+    if(b64&&!b64.startsWith('data:image/')){
+      b64='data:image/heic;base64,'+b64.split(',')[1];
+    }
     if(isHeic){
       // Pasar directamente sin canvas — Cloudinary convertirá en el servidor
       ST.rev.fotos['rev_'+_rfIdx]=b64;
