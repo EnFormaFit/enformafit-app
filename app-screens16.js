@@ -1241,32 +1241,48 @@ let _rfIdx=0;
 function triggerRF(i){_rfIdx=i;document.getElementById('rfin').click();}
 function loadRF(inp){
   const f=inp.files[0];if(!f)return;
-  // HEIC/HEIF: el navegador no puede dibujarlo en canvas (img.onload no dispara)
-  // iOS a veces envía f.type='' para HEIC — también lo detectamos por extensión
-  const isHeic=!f.type||f.type==='image/heic'||f.type==='image/heif'
-    ||/\.(heic|heif)$/i.test(f.name);
+  // HEIC/HEIF: el navegador NO puede mostrar data:image/heic en un <img>
+  // Detectar por MIME type (puede ser vacío en iOS) o extensión
+  const isHeic=f.type==='image/heic'||f.type==='image/heif'
+    ||/\.(heic|heif)$/i.test(f.name)
+    ||(!f.type&&/iphone|ipad/i.test(navigator.userAgent));
+
+  if(isHeic && typeof heic2any==='function'){
+    // Convertir HEIC→JPEG en el cliente con heic2any
+    heic2any({blob:f,toType:'image/jpeg',quality:0.82})
+      .then(function(jpegBlob){
+        const reader2=new FileReader();
+        reader2.onload=function(e2){
+          ST.rev.fotos['rev_'+_rfIdx]=e2.target.result;
+          save();render();
+        };
+        reader2.readAsDataURL(jpegBlob);
+      })
+      .catch(function(err){
+        // Si heic2any falla, intentar subir raw (Cloudinary lo convierte)
+        console.warn('[HEIC convert error]',err);
+        _loadRFRaw(f);
+      });
+    return;
+  }
+
+  // Formato normal (o HEIC sin heic2any disponible)
+  _loadRFRaw(f);
+}
+
+function _loadRFRaw(f){
   const reader=new FileReader();
   reader.onload=function(e){
-    // Si el navegador no conoce el tipo (HEIC en iOS → data:application/octet-stream o data:;base64)
-    // reemplazar el prefijo para que el backend y Cloudinary lo acepten como imagen
     var b64=e.target.result;
+    // Si iOS envía tipo vacío y prefix no es image/, forzar heic para el backend
     if(b64&&!b64.startsWith('data:image/')){
       b64='data:image/heic;base64,'+b64.split(',')[1];
     }
-    if(isHeic){
-      // Pasar directamente sin canvas — Cloudinary convertirá en el servidor
-      ST.rev.fotos['rev_'+_rfIdx]=b64;
-      save();render();
-      return;
-    }
     const img=new Image();
-    // Fallback: si el canvas no puede procesar el formato (img.onerror o timeout),
-    // usar el base64 directo para que al menos se guarde algo
     var _saved=false;
     function _guardarDirecto(){if(_saved)return;_saved=true;ST.rev.fotos['rev_'+_rfIdx]=b64;save();render();}
     img.onerror=_guardarDirecto;
-    // Timeout de 4s por si img.onload nunca dispara (formato no soportado en canvas)
-    var _t=setTimeout(_guardarDirecto,4000);
+    var _t=setTimeout(_guardarDirecto,3000);
     img.onload=function(){
       clearTimeout(_t);
       if(_saved)return;
