@@ -1241,9 +1241,19 @@ let _rfIdx=0;
 function triggerRF(i){_rfIdx=i;document.getElementById('rfin').click();}
 function loadRF(inp){
   const f=inp.files[0];if(!f)return;
-  const img=new Image();
+  // HEIC/HEIF: los navegadores no pueden dibujarlos en canvas — usar base64 directo
+  // Cloudinary acepta HEIC y convierte automáticamente
+  const isHeic=f.type==='image/heic'||f.type==='image/heif'
+    ||/\.(heic|heif)$/i.test(f.name);
   const reader=new FileReader();
-  reader.onload=e=>{
+  reader.onload=function(e){
+    if(isHeic){
+      // Pasar directamente sin canvas — Cloudinary convertirá en el servidor
+      ST.rev.fotos['rev_'+_rfIdx]=e.target.result;
+      save();render();
+      return;
+    }
+    const img=new Image();
     img.onload=function(){
       const MAX=1200;
       let w=img.width,h=img.height;
