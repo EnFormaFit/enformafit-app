@@ -1247,26 +1247,30 @@ function loadRF(inp){
     ||/\.(heic|heif)$/i.test(f.name)
     ||(!f.type&&/iphone|ipad/i.test(navigator.userAgent));
 
-  if(isHeic && typeof heic2any==='function'){
-    // Convertir HEIC→JPEG en el cliente con heic2any
-    heic2any({blob:f,toType:'image/jpeg',quality:0.82})
-      .then(function(jpegBlob){
-        const reader2=new FileReader();
-        reader2.onload=function(e2){
-          ST.rev.fotos['rev_'+_rfIdx]=e2.target.result;
-          save();render();
-        };
-        reader2.readAsDataURL(jpegBlob);
-      })
-      .catch(function(err){
-        // Si heic2any falla, intentar subir raw (Cloudinary lo convierte)
-        console.warn('[HEIC convert error]',err);
-        _loadRFRaw(f);
-      });
+  if(isHeic){
+    // Cargar heic2any dinámicamente solo cuando se necesita (pesa 1.3MB)
+    function _convertWithHeic2any(){
+      heic2any({blob:f,toType:'image/jpeg',quality:0.82})
+        .then(function(jpegBlob){
+          const r=new FileReader();
+          r.onload=function(e2){ST.rev.fotos['rev_'+_rfIdx]=e2.target.result;save();render();};
+          r.readAsDataURL(jpegBlob);
+        })
+        .catch(function(err){console.warn('[HEIC convert]',err);_loadRFRaw(f);});
+    }
+    if(typeof heic2any==='function'){
+      _convertWithHeic2any();
+    } else {
+      var s=document.createElement('script');
+      s.src='https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
+      s.onload=_convertWithHeic2any;
+      s.onerror=function(){console.warn('[heic2any no disponible]');_loadRFRaw(f);};
+      document.head.appendChild(s);
+    }
     return;
   }
 
-  // Formato normal (o HEIC sin heic2any disponible)
+  // Formato normal (JPG, PNG, etc.)
   _loadRFRaw(f);
 }
 
