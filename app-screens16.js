@@ -1241,11 +1241,13 @@ let _rfIdx=0;
 function triggerRF(i){_rfIdx=i;document.getElementById('rfin').click();}
 function loadRF(inp){
   const f=inp.files[0];if(!f)return;
+  console.log('[loadRF] tipo='+f.type+' nombre='+f.name+' size='+f.size);
   // HEIC/HEIF: el navegador NO puede mostrar data:image/heic en un <img>
-  // Detectar por MIME type (puede ser vacío en iOS) o extensión
+  // Detectar por MIME type (puede ser vacío en iOS/Mac) o extensión
   const isHeic=f.type==='image/heic'||f.type==='image/heif'
     ||/\.(heic|heif)$/i.test(f.name)
     ||(!f.type&&/iphone|ipad/i.test(navigator.userAgent));
+  console.log('[loadRF] isHeic='+isHeic);
 
   if(isHeic){
     // Cargar heic2any dinámicamente solo cuando se necesita (pesa 1.3MB)
