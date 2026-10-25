@@ -926,7 +926,7 @@ function renderProgreso(){
     });
     fotosH+=`</div>`;
   });
-  fotosH+=`</div><input type="file" accept="image/*" id="pfin" onchange="loadPF(this)">`;
+  fotosH+=`</div><input type="file" accept="image/*,.heic,.heif,image/heic,image/heif" id="pfin" onchange="loadPF(this)">`;
 
   // Medidas comparativa
   const MEDS=[['peso','Peso','kg'],['pecho','Pecho','cm'],['cintura','Cintura','cm'],['cadera','Cadera','cm'],['bicepsd','Bíceps der.','cm'],['bicepsi','Bíceps izq.','cm'],['muslod','Muslo der.','cm'],['musloi','Muslo izq.','cm'],['gemelod','Gemelo der.','cm'],['gemeloi','Gemelo izq.','cm']];
@@ -1201,7 +1201,7 @@ function renderRevision(){
           :`<div onclick="triggerRF(${pi})" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer"><div style="font-size:24px">📷</div><div class="rfb-lbl">${pos}</div></div>`}
       </div>`;
     });
-    content+=`</div><input type="file" accept="image/*" id="rfin" onchange="loadRF(this)">`;
+    content+=`</div><input type="file" accept="image/*,.heic,.heif,image/heic,image/heif" id="rfin" onchange="loadRF(this)">`;
     content+=`<button class="btn btnp btnf" onclick="ST.rev.step=1;render()">Siguiente → Medidas</button>`;
   }
   else if(step===1){

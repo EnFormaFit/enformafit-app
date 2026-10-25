@@ -59,8 +59,8 @@ router.post('/', entrenador, async (req, res) => {
 
     if (!nombre || !email) return res.status(400).json({ error: 'Nombre y email requeridos' });
 
-    // Contraseña temporal = primeros 6 chars del email
-    const passTemp = email.split('@')[0].slice(0, 6) + '2024';
+    // Contraseña temporal = parte del email antes del @ + 2026
+    const passTemp = email.split('@')[0] + '2026';
     const hash     = await bcrypt.hash(passTemp, 12);
 
     // Semanas de revisión según tipo
