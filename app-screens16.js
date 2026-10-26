@@ -1001,7 +1001,7 @@ ${(function(){
 
 let _pfGi=0,_pfPi=0;
 function triggerPF(gi,pi){_pfGi=gi;_pfPi=pi;document.getElementById('pfin').click();}
-function loadPF(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{ST.rev.fotos[`prog_${_pfGi}_${_pfPi}`]=e.target.result;save();render();};r.readAsDataURL(f);}
+function loadPF(inp){const f=inp.files[0];if(!f)return;_procesarFotoRev(f,function(b64){ST.rev.fotos['prog_'+_pfGi+'_'+_pfPi]=b64;save();render();});}
 function buildPesosList(pesos){
   var h='<div style="margin-top:8px">';
   [...pesos].reverse().forEach(function(p,ri){
@@ -1241,60 +1241,30 @@ let _rfIdx=0;
 function triggerRF(i){_rfIdx=i;document.getElementById('rfin').click();}
 function loadRF(inp){
   const f=inp.files[0];if(!f)return;
-  console.log('[loadRF] tipo='+f.type+' nombre='+f.name+' size='+f.size);
-  // HEIC/HEIF: el navegador NO puede mostrar data:image/heic en un <img>
-  // Detectar por MIME type (puede ser vacío en iOS/Mac) o extensión
-  const isHeic=f.type==='image/heic'||f.type==='image/heif'
-    ||/\.(heic|heif)$/i.test(f.name)
-    ||(!f.type&&/iphone|ipad/i.test(navigator.userAgent));
-  console.log('[loadRF] isHeic='+isHeic);
-
-  if(isHeic){
-    // Cargar heic2any dinámicamente solo cuando se necesita (pesa 1.3MB)
-    function _convertWithHeic2any(){
-      heic2any({blob:f,toType:'image/jpeg',quality:0.82})
-        .then(function(jpegBlob){
-          const r=new FileReader();
-          r.onload=function(e2){ST.rev.fotos['rev_'+_rfIdx]=e2.target.result;save();render();};
-          r.readAsDataURL(jpegBlob);
-        })
-        .catch(function(err){console.warn('[HEIC convert]',err);_loadRFRaw(f);});
-    }
-    if(typeof heic2any==='function'){
-      _convertWithHeic2any();
-    } else {
-      var s=document.createElement('script');
-      s.src='https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
-      s.onload=_convertWithHeic2any;
-      s.onerror=function(){console.warn('[heic2any no disponible]');_loadRFRaw(f);};
-      document.head.appendChild(s);
-    }
-    return;
-  }
-
-  // Formato normal (JPG, PNG, etc.)
-  _loadRFRaw(f);
+  _procesarFotoRev(f,function(b64){ST.rev.fotos['rev_'+_rfIdx]=b64;save();render();});
 }
 
-function _loadRFRaw(f){
+function _procesarFotoRev(f,cb){
   const reader=new FileReader();
   reader.onload=function(e){
     var b64=e.target.result;
-    // Si iOS envía tipo vacío y prefix no es image/, forzar heic para el backend
+    // Asegurar que tiene prefijo data:image/ correcto
     if(b64&&!b64.startsWith('data:image/')){
-      b64='data:image/heic;base64,'+b64.split(',')[1];
+      b64='data:image/jpeg;base64,'+b64.split(',')[1];
     }
     const img=new Image();
-    var _saved=false;
-    function _guardarDirecto(){if(_saved)return;_saved=true;ST.rev.fotos['rev_'+_rfIdx]=b64;save();render();}
-    img.onerror=_guardarDirecto;
-    var _t=setTimeout(_guardarDirecto,3000);
+    var _done=false;
+    function _guardar(src){if(_done)return;_done=true;cb(src);}
+    // Timeout fallback: si en 5s img.onload no dispara (formato no soportado), guardar raw
+    var _t=setTimeout(function(){_guardar(b64);},5000);
+    img.onerror=function(){clearTimeout(_t);_guardar(b64);};
     img.onload=function(){
       clearTimeout(_t);
-      if(_saved)return;
-      _saved=true;
+      if(_done)return;
+      // Canvas: redimensionar y convertir a JPEG
       const MAX=1200;
-      let w=img.width,h=img.height;
+      let w=img.naturalWidth||img.width,h=img.naturalHeight||img.height;
+      if(!w||!h){_guardar(b64);return;}
       if(w>MAX||h>MAX){
         if(w>h){h=Math.round(h*MAX/w);w=MAX;}
         else{w=Math.round(w*MAX/h);h=MAX;}
@@ -1302,9 +1272,7 @@ function _loadRFRaw(f){
       const canvas=document.createElement('canvas');
       canvas.width=w;canvas.height=h;
       canvas.getContext('2d').drawImage(img,0,0,w,h);
-      const compressed=canvas.toDataURL('image/jpeg',0.82);
-      ST.rev.fotos['rev_'+_rfIdx]=compressed;
-      save();render();
+      _guardar(canvas.toDataURL('image/jpeg',0.82));
     };
     img.src=b64;
   };
