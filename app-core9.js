@@ -1,4 +1,4 @@
-// app-core9 v1792661092
+// app-core9 v1793053050
 // ── STATE ──
 const APP_VER='v8.6';
 const ST={
@@ -457,13 +457,21 @@ function labelFechaCi(semana_inicio) {
 }
 
 async function loadClienteData() {
-  // Snapshot menuGuardado and ejStates from localStorage BEFORE anything modifies them
+  // Snapshot menuGuardado, ejStates y ci desde localStorage ANTES de que nada los modifique
   var _menuGuardadoSnapshot = {};
   var _ejStatesSnapshot = {};
+  var _ciSnapshot = null;
   try {
     var _snap = JSON.parse(localStorage.getItem('ef8')||'{}');
     if (_snap.menuGuardado) _menuGuardadoSnapshot = _snap.menuGuardado;
     if (_snap.ejStates) { _menuGuardadoSnapshot._ejStates = _snap.ejStates; _ejStatesSnapshot = _snap.ejStates; }
+    // Restaurar ci parcial desde localStorage si existe y la versión del cache es actual
+    var _snapVer = localStorage.getItem('ef8_ver');
+    if (_snap.ci && _snapVer === APP_VER) {
+      _ciSnapshot = _snap.ci;
+      // Restaurar inmediatamente — se validará contra la semana más adelante
+      Object.assign(ST.ci, _snap.ci);
+    }
   } catch(e) {}
 
   try {
@@ -665,6 +673,7 @@ async function loadClienteData() {
         const _lunesActual = getLunesActual();
         const ciActual = cisBD.find(function(ci){ return (ci.semana_inicio||'').substring(0,10) === _lunesActual; });
         if (ciActual) {
+          // Check-in ya enviado en BD → marcarlo como done (fuente de verdad = BD)
           ST.ci = ST.ci || {};
           ST.ci.diasEnt = ciActual.dias_entreno_real || 0;
           ST.ci.diasNut = ciActual.dias_nutricion || 0;
@@ -674,6 +683,8 @@ async function loadClienteData() {
           ST.ci.sensaciones = ciActual.sensaciones || '';
           ST.ci.como = ciActual.como_semana || '';
           ST.ci.adh = ciActual.adherencia || 0;
+          ST.ci.done = true; // BD confirma que fue enviado
+          ST.ci.lunesRef = _lunesActual;
           ST.checkInDone = true;
         }
       }
