@@ -1245,24 +1245,45 @@ function loadRF(inp){
 }
 
 function _procesarFotoRev(f,cb){
+  var MAX=1200;
+  // Intentar createImageBitmap primero — decodifica HEIC/HEIF nativamente en Chrome/Safari
+  // sin pasar por FileReader, evitando problemas de tipo MIME y canvas taint
+  if(typeof createImageBitmap==='function'){
+    createImageBitmap(f).then(function(bmp){
+      var w=bmp.width,h=bmp.height;
+      if(w>MAX||h>MAX){
+        if(w>h){h=Math.round(h*MAX/w);w=MAX;}
+        else{w=Math.round(w*MAX/h);h=MAX;}
+      }
+      var canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(bmp,0,0,w,h);
+      bmp.close&&bmp.close();
+      cb(canvas.toDataURL('image/jpeg',0.82));
+    }).catch(function(){
+      // createImageBitmap falló (ej. Firefox sin soporte HEIC) → fallback FileReader
+      _procesarFotoRevFallback(f,cb);
+    });
+  } else {
+    _procesarFotoRevFallback(f,cb);
+  }
+}
+function _procesarFotoRevFallback(f,cb){
+  var MAX=1200;
   const reader=new FileReader();
   reader.onload=function(e){
     var b64=e.target.result;
-    // Asegurar que tiene prefijo data:image/ correcto
     if(b64&&!b64.startsWith('data:image/')){
       b64='data:image/jpeg;base64,'+b64.split(',')[1];
     }
     const img=new Image();
     var _done=false;
     function _guardar(src){if(_done)return;_done=true;cb(src);}
-    // Timeout fallback: si en 5s img.onload no dispara (formato no soportado), guardar raw
     var _t=setTimeout(function(){_guardar(b64);},5000);
     img.onerror=function(){clearTimeout(_t);_guardar(b64);};
     img.onload=function(){
       clearTimeout(_t);
       if(_done)return;
-      // Canvas: redimensionar y convertir a JPEG
-      const MAX=1200;
       let w=img.naturalWidth||img.width,h=img.naturalHeight||img.height;
       if(!w||!h){_guardar(b64);return;}
       if(w>MAX||h>MAX){
