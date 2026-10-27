@@ -1245,9 +1245,31 @@ function loadRF(inp){
 }
 
 function _procesarFotoRev(f,cb){
+  // Si es HEIC/HEIF → convertir en el servidor (sharp soporta HEIC nativamente)
+  var nombre=(f.name||'').toLowerCase();
+  var tipo=(f.type||'').toLowerCase();
+  var esHeic=tipo==='image/heic'||tipo==='image/heif'||nombre.endsWith('.heic')||nombre.endsWith('.heif');
+  if(esHeic){
+    var fd=new FormData();
+    fd.append('foto',f);
+    fetch(API+'/api/entreno/convert-heic',{
+      method:'POST',
+      headers:typeof _tk!=='undefined'&&_tk?{Authorization:'Bearer '+_tk}:{},
+      body:fd
+    }).then(function(r){return r.json();}).then(function(j){
+      if(j.jpeg_b64){cb(j.jpeg_b64);}
+      else{console.error('[convert-heic] sin jpeg_b64:',j);_procesarFotoRevCanvas(f,cb);}
+    }).catch(function(err){
+      console.error('[convert-heic] fetch error:',err);
+      _procesarFotoRevCanvas(f,cb);
+    });
+    return;
+  }
+  // No es HEIC → canvas normal
+  _procesarFotoRevCanvas(f,cb);
+}
+function _procesarFotoRevCanvas(f,cb){
   var MAX=1200;
-  // Intentar createImageBitmap primero — decodifica HEIC/HEIF nativamente en Chrome/Safari
-  // sin pasar por FileReader, evitando problemas de tipo MIME y canvas taint
   if(typeof createImageBitmap==='function'){
     createImageBitmap(f).then(function(bmp){
       var w=bmp.width,h=bmp.height;
@@ -1260,10 +1282,7 @@ function _procesarFotoRev(f,cb){
       canvas.getContext('2d').drawImage(bmp,0,0,w,h);
       bmp.close&&bmp.close();
       cb(canvas.toDataURL('image/jpeg',0.82));
-    }).catch(function(){
-      // createImageBitmap falló (ej. Firefox sin soporte HEIC) → fallback FileReader
-      _procesarFotoRevFallback(f,cb);
-    });
+    }).catch(function(){_procesarFotoRevFallback(f,cb);});
   } else {
     _procesarFotoRevFallback(f,cb);
   }

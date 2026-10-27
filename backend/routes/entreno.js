@@ -4,6 +4,9 @@ const router = require('express').Router();
 const db     = require('../db');
 const { cliente, entrenador } = require('../middleware/auth');
 const cloudinary = require('cloudinary').v2;
+const multer  = require('multer');
+const sharp   = require('sharp');
+const _multerMem = multer({ storage: multer.memoryStorage(), limits: { fileSize: 30 * 1024 * 1024 } });
 
 // Configurar Cloudinary (credenciales desde variables de entorno Railway)
 cloudinary.config({
@@ -405,6 +408,24 @@ function normalizarMedidas(medidas) {
   }
   return out;
 }
+
+// CLIENTE: convertir HEIC/HEIF → JPEG en el servidor usando sharp
+// Recibe multipart/form-data con campo "foto" (File), devuelve { jpeg_b64: 'data:image/jpeg;base64,...' }
+router.post('/convert-heic', cliente, _multerMem.single('foto'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'Campo foto requerido' });
+    const jpegBuf = await sharp(req.file.buffer)
+      .rotate()               // respetar EXIF orientation
+      .resize({ width: 1200, height: 1200, fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 82 })
+      .toBuffer();
+    const b64 = 'data:image/jpeg;base64,' + jpegBuf.toString('base64');
+    res.json({ jpeg_b64: b64 });
+  } catch (err) {
+    console.error('[convert-heic] Error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // CLIENTE: upload de foto de revisión (recibe base64, la guarda en BD como URL data)
 // El frontend llama a este endpoint por cada foto antes de llamar a POST /revision
