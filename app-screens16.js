@@ -1240,7 +1240,9 @@ function renderRevision(){
 let _rfIdx=0;
 function triggerRF(i){_rfIdx=i;document.getElementById('rfin').click();}
 function loadRF(inp){
-  const f=inp.files[0];if(!f)return;
+  const f=inp.files[0];
+  console.log('[loadRF] files:', inp.files.length, f?'name='+f.name+' type='+f.type+' size='+f.size:'NO FILE');
+  if(!f)return;
   _procesarFotoRev(f,function(b64){ST.rev.fotos['rev_'+_rfIdx]=b64;save();render();});
 }
 
@@ -1248,6 +1250,7 @@ function _procesarFotoRev(f,cb){
   // Si es HEIC/HEIF → convertir en el servidor (sharp soporta HEIC nativamente)
   var nombre=(f.name||'').toLowerCase();
   var tipo=(f.type||'').toLowerCase();
+  console.log('[_procesarFotoRev] nombre:', nombre, '| tipo:', tipo, '| size:', f.size);
   var esHeic=tipo==='image/heic'||tipo==='image/heif'||nombre.endsWith('.heic')||nombre.endsWith('.heif');
   if(esHeic){
     var fd=new FormData();
