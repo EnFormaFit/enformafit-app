@@ -895,6 +895,31 @@ router.get('/checkins/semana-actual', entrenador, async (req, res) => {
   }
 });
 
+// ENTRENADOR: debug semana-actual — devuelve fechas calculadas y check-ins encontrados
+router.get('/checkins/debug-semana', entrenador, async (req, res) => {
+  try {
+    const hoy = new Date();
+    const dia = hoy.getDay();
+    const lunes = new Date(hoy);
+    const offsetToMonday = dia === 0 ? 1 : 1 - dia;
+    lunes.setDate(hoy.getDate() + offsetToMonday);
+    const desdeStr = lunes.toISOString().split('T')[0];
+    const semanaFin = new Date(lunes);
+    semanaFin.setDate(lunes.getDate() + 6);
+    const hastaStr = semanaFin.toISOString().split('T')[0];
+    const { rows } = await db.query(
+      `SELECT ci.cliente_id, c.nombre, ci.semana_inicio, ci.created_at
+       FROM checkins ci
+       JOIN clientes c ON c.id = ci.cliente_id
+       WHERE ci.created_at > NOW() - INTERVAL '14 days'
+       ORDER BY ci.created_at DESC LIMIT 20`
+    );
+    res.json({ hoy: hoy.toISOString(), dia, desde: desdeStr, hasta: hastaStr, checkins_recientes: rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ENTRENADOR: debug — ver todos los check-ins recientes con nombre de cliente
 router.get('/checkins/debug-recientes', entrenador, async (req, res) => {
   try {
