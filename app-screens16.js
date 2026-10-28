@@ -1075,6 +1075,7 @@ function renderRevision(){
   // Ventana: miércoles previo al sábado de revisión → domingo siguiente
   function enVentana(rs){
     if(!inicioBloque)return false;
+    if(ST.u.baja)return false; // clientes de baja: nunca en ventana
     if(rs===0)return true; // S0 siempre puede subirse
     const d=new Date(inicioBloque);
     d.setHours(12,0,0,0);
