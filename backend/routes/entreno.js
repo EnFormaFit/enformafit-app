@@ -884,7 +884,6 @@ router.get('/checkins/semana-actual', entrenador, async (req, res) => {
        FROM checkins ci
        JOIN clientes c ON c.id = ci.cliente_id
        WHERE ci.semana_inicio::date BETWEEN $1::date AND $2::date
-         AND c.tipo IN ('1a1','uno')
        ORDER BY ci.cliente_id, ci.created_at DESC`,
       [desdeStr, hastaStr]
     );
