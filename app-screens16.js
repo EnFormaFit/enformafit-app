@@ -1,4 +1,4 @@
-// app-screens16 v1792661092
+// app-screens16 v1793214740
 // app-screens15 v1791048307
 // app-screens14 v1791047915
 // app-screens13 v1791047439
@@ -127,6 +127,13 @@ function buildEntHTML(di){
   const todayIdx=[6,0,1,2,3,4,5][new Date().getDay()]||0;
   const semActual=ST.u.semana||1;
   const semTotal=ST.u.semTotal||14;
+  // Siempre sincronizar ejStates desde ENT_CACHE antes de renderizar
+  // Esto garantiza que los datos más recientes (BD o localStorage) se usan para este día
+  var _semBuild=ST.semVer||semActual;
+  var _cacheKeyBuild=_semBuild+'_'+di;
+  if(ENT_CACHE[_cacheKeyBuild]&&Object.keys(ENT_CACHE[_cacheKeyBuild]).length>0){
+    if(typeof _fillEjStatesFromCache==='function') _fillEjStatesFromCache(di,_semBuild);
+  }
   // Week selector header
   const semSel=`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--az3);border-radius:10px;margin-bottom:10px">
     <button onclick="if(ST.semVer>1){flushPendingSaves();ST.semVer--;buildDIAS(ST.semVer);restoreEjStatesFromHistEnt(ST.semVer);var _ct=document.getElementById('ct');if(_ct){_ct.innerHTML='';render();}}" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--az);padding:4px 8px" ${(ST.semVer||semActual)<=1?'disabled':''}>‹</button>
