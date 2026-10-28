@@ -815,6 +815,13 @@ router.post('/checkin', cliente, async (req, res) => {
     const { semana_inicio, dias_entreno_real, dias_nutricion, dias_pasos,
             orgullos, compromisos, sensaciones, como_semana, adherencia } = req.body;
 
+    // Normalizar semana_inicio al lunes de esa semana (por si el cliente rellena dom, mar, etc.)
+    const fechaRef = new Date(semana_inicio);
+    const dow = fechaRef.getUTCDay(); // 0=dom,1=lun,...,6=sab
+    const offsetToMonday = dow === 0 ? -6 : 1 - dow;
+    fechaRef.setUTCDate(fechaRef.getUTCDate() + offsetToMonday);
+    const semanaInicioNorm = fechaRef.toISOString().split('T')[0];
+
     const { rows: [ci] } = await db.query(
       `INSERT INTO checkins
          (cliente_id, semana_inicio, dias_entreno_real, dias_nutricion, dias_pasos,
@@ -825,7 +832,7 @@ router.post('/checkin', cliente, async (req, res) => {
              orgullos=$6, compromisos=$7, sensaciones=$8,
              como_semana=$9, adherencia=$10
        RETURNING *`,
-      [req.user.id, semana_inicio, dias_entreno_real, dias_nutricion, dias_pasos,
+      [req.user.id, semanaInicioNorm, dias_entreno_real, dias_nutricion, dias_pasos,
        orgullos, compromisos, sensaciones, como_semana, adherencia || 0]
     );
     res.json(ci);
@@ -865,20 +872,24 @@ router.get('/checkins/semana-actual', entrenador, async (req, res) => {
     } else {
       lunesRef.setDate(hoy.getDate() - (dia - 1)); // lun-sab → lunes de esta semana
     }
+    // semana_inicio normalizado = lunes de la semana de referencia (lunesRef - 7)
     const semanaInicioActual = new Date(lunesRef);
     semanaInicioActual.setDate(lunesRef.getDate() - 7);
     const desdeStr = semanaInicioActual.toISOString().split('T')[0];
-    const hastaStr = desdeStr; // solo check-ins con exactamente ese semana_inicio
+    // El rango cubre lunes a domingo de esa semana de referencia (por check-ins ya guardados con fecha no-lunes)
+    const semanaFin = new Date(semanaInicioActual);
+    semanaFin.setDate(semanaInicioActual.getDate() + 6);
+    const hastaStr = semanaFin.toISOString().split('T')[0];
 
     // Obtener el check-in de la semana actual de cada cliente 1:1
     const { rows } = await db.query(
       `SELECT DISTINCT ON (ci.cliente_id) ci.*
        FROM checkins ci
        JOIN clientes c ON c.id = ci.cliente_id
-       WHERE ci.semana_inicio::date = $1::date
+       WHERE ci.semana_inicio::date BETWEEN $1::date AND $2::date
          AND c.tipo IN ('1a1','uno')
        ORDER BY ci.cliente_id, ci.created_at DESC`,
-      [desdeStr]
+      [desdeStr, hastaStr]
     );
     res.json(rows);
   } catch (err) {
