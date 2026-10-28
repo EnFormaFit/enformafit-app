@@ -706,8 +706,9 @@ async function loadClienteData() {
               done: !!row.completada
             };
             // También poblar ENT_CACHE para que "Anterior" aparezca instantáneo
+            // Nota: sobreescribir null (marcador de "en carga") y {} vacío (fetch que llegó antes)
             var cKey = rowSem + '_' + dia;
-            if (!ENT_CACHE[cKey]) ENT_CACHE[cKey] = {};
+            if (!ENT_CACHE[cKey] || ENT_CACHE[cKey] === null || Object.keys(ENT_CACHE[cKey]).length === 0) ENT_CACHE[cKey] = {};
             ENT_CACHE[cKey][nom + '_' + (si+1)] = {
               kg: String(row.kg||''),
               reps: String(row.reps_reales||''),
@@ -744,6 +745,14 @@ async function loadClienteData() {
         });
       }
     } catch(eHist) { console.warn('[hist]', eHist && eHist.message); }
+
+    // Tras cargar historial completo desde BD: actualizar ejStates para todos los días de la semana actual
+    // Esto asegura que al navegar a "entreno" los datos ya estén en ejStates sin esperar lazy loads
+    try {
+      if (DIAS && DIAS.length && typeof _fillEjStatesFromCache === 'function') {
+        DIAS.forEach(function(_, di) { _fillEjStatesFromCache(di, semActual); });
+      }
+    } catch(eFill) { console.warn('[fillEjStates]', eFill && eFill.message); }
 
     // Clean menuGuardado: remove categories not in current plan
     // Runs here so both plan and menuGuardado are fully loaded
@@ -833,6 +842,11 @@ async function loadClienteData() {
     setTimeout(function(){
       var ct = document.getElementById('ct');
       if (ct) ct.innerHTML = '';
+      // Si estamos en entreno, rellenar ejStates de nuevo con el ENT_CACHE ya completo
+      if (SEC === 'entreno' && DIAS && DIAS.length && typeof _fillEjStatesFromCache === 'function') {
+        var _semR = ST.semVer || ST.u.semana || 1;
+        DIAS.forEach(function(_, di) { _fillEjStatesFromCache(di, _semR); });
+      }
       render();
     }, 800);
   } catch(e) {
