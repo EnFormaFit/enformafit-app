@@ -1,6 +1,6 @@
-// app-core9 v1793053050
+// app-core9 v1793189431
 // ── STATE ──
-const APP_VER='v8.6';
+const APP_VER='v8.7';
 const ST={
   u:{nom:'',init:'',plan:'',semana:1,semTotal:12,tipo:'programa',
      altura:175,peso:80,dob:'',objetivo:75,lesiones:'',
@@ -427,32 +427,23 @@ function getSemanaFechas(semana) {
 // Examples (storage value / display label):
 //   Sun 11/oct → lunesRef=12/oct → semana_inicio=5/oct  (shows "sem 12/10") ✅
 //   Mon 12/oct → lunesRef=12/oct → semana_inicio=5/oct  (shows "sem 12/10") ✅
-//   Fri 16/oct → lunesRef=12/oct → semana_inicio=5/oct  (shows "sem 12/10") ✅
-//   Sat 17/oct → lunesRef=12/oct → semana_inicio=5/oct  (shows "sem 12/10") ✅
-//   Sun 18/oct → lunesRef=19/oct → semana_inicio=12/oct (shows "sem 19/10") ✅
+// REGLA semana_inicio (nunca borrar):
+//   Dom → próximo lunes (+1). Lun → mismo día (0). Mar-Sáb → lunes de esa semana.
+//   Ejemplos: dom 25/lun 26/mar 27/.../sáb 31 oct → semana_inicio = 2026-10-26
+//             dom 1/lun 2/.../sáb 7 nov → semana_inicio = 2026-11-02
 function getLunesActual() {
   var hoy = new Date();
-  var dia = hoy.getDay(); // 0=dom,1=lun...6=sab
-  var lunesRef = new Date(hoy);
-  if (dia === 0) {
-    // Sunday: next monday is the reference
-    lunesRef.setDate(hoy.getDate() + 1);
-  } else {
-    // Mon-Sat: last monday is the reference
-    lunesRef.setDate(hoy.getDate() - (dia - 1));
-  }
-  // semana_inicio = lunesRef - 7 (legacy BD format, do not change)
-  var semanaInicio = new Date(lunesRef);
-  semanaInicio.setDate(lunesRef.getDate() - 7);
-  return semanaInicio.toISOString().split('T')[0];
+  var dow = hoy.getUTCDay(); // 0=dom,1=lun,...,6=sab
+  var offsetToMonday = dow === 0 ? 1 : 1 - dow;
+  var lunes = new Date(hoy);
+  lunes.setUTCDate(hoy.getUTCDate() + offsetToMonday);
+  return lunes.toISOString().split('T')[0];
 }
 
-// Returns the display label for a semana_inicio value (adds 7 days)
-// Use this everywhere a date is shown to the user
+// Returns the display label for a semana_inicio value (ES ya el lunes real — no añadir días)
 function labelFechaCi(semana_inicio) {
   if (!semana_inicio) return '?';
   var d = new Date(semana_inicio);
-  d.setDate(d.getDate() + 7);
   return 'sem ' + d.toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit'});
 }
 
@@ -845,7 +836,9 @@ async function loadClienteData() {
     }, 800);
   } catch(e) {
     console.error('loadClienteData error:', e);
-    render();
+    // No llamar render() aquí — la app (#app) está oculta por CSS hasta que showApp() la muestre.
+    // Limpiar localStorage para evitar que versiones antiguas del JS restauren datos de otro cliente.
+    try { localStorage.removeItem('ef8'); } catch(_){}
   }
 }
 
