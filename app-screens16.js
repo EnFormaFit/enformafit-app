@@ -58,6 +58,14 @@ function _precargarSemanaCompleta(sem){
   // Precargar semana actual y semana anterior (para columna "Anterior")
   var semsACargar = [sem];
   if(sem > 1) semsACargar.push(sem - 1);
+
+  // Si loadClienteData ya cargó el historial completo, no lanzar fetches redundantes
+  // Solo rellenar ejStates desde el ENT_CACHE ya disponible
+  if(typeof _historialBDCargado !== 'undefined' && _historialBDCargado) {
+    DIAS.forEach(function(_,di){ _fillEjStatesFromCache(di, sem); });
+    return;
+  }
+
   semsACargar.forEach(function(semCarga){
     DIAS.forEach(function(dia,di){
       var cacheKey=semCarga+'_'+di;

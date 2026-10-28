@@ -1,5 +1,8 @@
 // app-core9 v1793189431
 // ── STATE ──
+// Flag: true cuando loadClienteData ya cargó el historial completo de BD en ENT_CACHE
+// _precargarSemanaCompleta lo respeta y no lanza fetches redundantes
+var _historialBDCargado = false;
 const APP_VER='v8.7';
 const ST={
   u:{nom:'',init:'',plan:'',semana:1,semTotal:12,tipo:'programa',
@@ -237,8 +240,15 @@ function cargarRegistrosSemDia(semana, dia, callback) {
           done: !!(r.completada)
         };
       });
-      ENT_CACHE[cacheKey] = data;
-      if(callback)callback(data);
+      // Solo sobreescribir si el cache no tiene ya datos reales (loadClienteData puede haberlos puesto)
+      var existing = ENT_CACHE[cacheKey];
+      if (!existing || existing === null || Object.keys(existing).length === 0) {
+        ENT_CACHE[cacheKey] = data;
+      } else {
+        // Ya hay datos reales — mergear en vez de sobreescribir para no perder nada
+        Object.assign(existing, data);
+      }
+      if(callback)callback(ENT_CACHE[cacheKey]);
     }).catch(function(e) { console.warn('[cargarRegistros]', e); if(callback)callback({}); });
 }
 
@@ -746,6 +756,9 @@ async function loadClienteData() {
       }
     } catch(eHist) { console.warn('[hist]', eHist && eHist.message); }
 
+    // Marcar historial como completamente cargado — _precargarSemanaCompleta no lanzará fetches redundantes
+    _historialBDCargado = true;
+
     // Tras cargar historial completo desde BD: actualizar ejStates para todos los días de la semana actual
     // Esto asegura que al navegar a "entreno" los datos ya estén en ejStates sin esperar lazy loads
     try {
@@ -753,6 +766,16 @@ async function loadClienteData() {
         DIAS.forEach(function(_, di) { _fillEjStatesFromCache(di, semActual); });
       }
     } catch(eFill) { console.warn('[fillEjStates]', eFill && eFill.message); }
+
+    // Si el usuario ya está en la pantalla de entreno, re-renderizar inmediatamente con los datos recién cargados
+    try {
+      if (SEC === 'entreno') {
+        var ct = document.getElementById('ct');
+        if (ct && typeof buildEntHTML === 'function' && typeof curDay !== 'undefined' && curDay !== null) {
+          ct.innerHTML = buildEntHTML(curDay);
+        }
+      }
+    } catch(eRE) { console.warn('[reRenderEntreno]', eRE && eRE.message); }
 
     // Clean menuGuardado: remove categories not in current plan
     // Runs here so both plan and menuGuardado are fully loaded
@@ -837,18 +860,23 @@ async function loadClienteData() {
     } catch(eMerge) {}
     save(); // save all including ejStates
     render();
-    // Re-render after short delay to ensure DOM is updated with BD data
-    // Force full re-render after BD data loads - clear and rebuild
-    setTimeout(function(){
+    // Re-render tras carga de BD para que la pantalla activa refleje los datos
+    function _postLoadRender() {
       var ct = document.getElementById('ct');
-      if (ct) ct.innerHTML = '';
-      // Si estamos en entreno, rellenar ejStates de nuevo con el ENT_CACHE ya completo
+      if (!ct) return;
       if (SEC === 'entreno' && DIAS && DIAS.length && typeof _fillEjStatesFromCache === 'function') {
         var _semR = ST.semVer || ST.u.semana || 1;
         DIAS.forEach(function(_, di) { _fillEjStatesFromCache(di, _semR); });
+        if (typeof buildEntHTML === 'function' && typeof curDay !== 'undefined' && curDay !== null) {
+          ct.innerHTML = buildEntHTML(curDay);
+          return; // re-render quirúrgico sin limpiar el resto
+        }
       }
+      ct.innerHTML = '';
       render();
-    }, 800);
+    }
+    setTimeout(_postLoadRender, 600);
+    setTimeout(_postLoadRender, 2000); // red de seguridad si Railway tardó más
   } catch(e) {
     console.error('loadClienteData error:', e);
     // No llamar render() aquí — la app (#app) está oculta por CSS hasta que showApp() la muestre.
