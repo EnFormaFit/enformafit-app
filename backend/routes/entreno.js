@@ -866,19 +866,17 @@ router.get('/checkins/semana-actual', entrenador, async (req, res) => {
     // lunesRef = próximo lunes si hoy es domingo, lunes pasado si lun-sab
     const hoy = new Date();
     const dia = hoy.getDay(); // 0=dom,1=lun,...,6=sab
-    const lunesRef = new Date(hoy);
+    // Lunes de la semana actual (domingo también cuenta como parte de la semana siguiente)
+    const lunesActual = new Date(hoy);
     if (dia === 0) {
-      lunesRef.setDate(hoy.getDate() + 1); // domingo → próximo lunes
+      lunesActual.setDate(hoy.getDate() - 6); // domingo → lunes de esta misma semana
     } else {
-      lunesRef.setDate(hoy.getDate() - (dia - 1)); // lun-sab → lunes de esta semana
+      lunesActual.setDate(hoy.getDate() - (dia - 1)); // lun-sab → lunes de esta semana
     }
-    // semana_inicio normalizado = lunes de la semana de referencia (lunesRef - 7)
-    const semanaInicioActual = new Date(lunesRef);
-    semanaInicioActual.setDate(lunesRef.getDate() - 7);
-    const desdeStr = semanaInicioActual.toISOString().split('T')[0];
-    // El rango cubre lunes a domingo de esa semana de referencia (por check-ins ya guardados con fecha no-lunes)
-    const semanaFin = new Date(semanaInicioActual);
-    semanaFin.setDate(semanaInicioActual.getDate() + 6);
+    const desdeStr = lunesActual.toISOString().split('T')[0];
+    // Rango lunes a domingo de esta semana
+    const semanaFin = new Date(lunesActual);
+    semanaFin.setDate(lunesActual.getDate() + 6);
     const hastaStr = semanaFin.toISOString().split('T')[0];
 
     // Obtener el check-in de la semana actual de cada cliente 1:1
