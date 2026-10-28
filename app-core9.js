@@ -232,8 +232,8 @@ function cargarRegistrosSemDia(semana, dia, callback) {
         var k = r.ejercicio + '_' + r.serie;
         data[k] = {
           kg: r.kg !== null && r.kg !== undefined ? String(parseFloat(r.kg)) : '',
-          reps: r.reps_reales !== null && r.reps_reales !== undefined ? String(r.reps_reales) : '',
-          rir: r.rir_real !== null && r.rir_real !== undefined ? String(r.rir_real) : '',
+          reps: r.reps_reales !== null && r.reps_reales !== undefined ? String(parseInt(r.reps_reales)) : '',
+          rir: r.rir_real !== null && r.rir_real !== undefined ? String(parseInt(r.rir_real)) : '',
           done: !!(r.completada)
         };
       });
@@ -700,9 +700,9 @@ async function loadClienteData() {
             if (!ST.histEnt[nom].semanas[sem]) ST.histEnt[nom].semanas[sem] = {};
             var serKey = 'dia' + dia + '_s' + (si+1);
             ST.histEnt[nom].semanas[sem][serKey] = {
-              kg: String(row.kg||''),
-              reps: String(row.reps_reales||''),
-              rir: row.rir_real!=null?String(row.rir_real):'',
+              kg: row.kg!=null&&row.kg!==''?String(parseFloat(row.kg)):'',
+              reps: row.reps_reales!=null&&row.reps_reales!==''?String(parseInt(row.reps_reales)):'',
+              rir: row.rir_real!=null?String(parseInt(row.rir_real)):'',
               done: !!row.completada
             };
             // También poblar ENT_CACHE para que "Anterior" aparezca instantáneo
@@ -710,9 +710,9 @@ async function loadClienteData() {
             var cKey = rowSem + '_' + dia;
             if (!ENT_CACHE[cKey] || ENT_CACHE[cKey] === null || Object.keys(ENT_CACHE[cKey]).length === 0) ENT_CACHE[cKey] = {};
             ENT_CACHE[cKey][nom + '_' + (si+1)] = {
-              kg: String(row.kg||''),
-              reps: String(row.reps_reales||''),
-              rir: row.rir_real!=null?String(row.rir_real):'',
+              kg: row.kg!=null&&row.kg!==''?String(parseFloat(row.kg)):'',
+              reps: row.reps_reales!=null&&row.reps_reales!==''?String(parseInt(row.reps_reales)):'',
+              rir: row.rir_real!=null?String(parseInt(row.rir_real)):'',
               done: !!row.completada
             };
           }
@@ -735,10 +735,10 @@ async function loadClienteData() {
               var existing = ST.ejStates[key].series[si];
               // kg y reps: solo si localStorage no tiene valor (localStorage tiene prioridad)
               var rowKg = parseFloat(row.kg) || 0;
-              if (rowKg > 0 && !existing.kg) existing.kg = String(rowKg);
-              if (row.reps_reales && row.reps_reales > 0 && !existing.repsH) existing.repsH = String(row.reps_reales);
+              if (rowKg > 0 && !existing.kg) existing.kg = String(rowKg); // parseFloat quita .00 innecesarios
+              if (row.reps_reales && row.reps_reales > 0 && !existing.repsH) existing.repsH = String(parseInt(row.reps_reales));
               // RIR: siempre restaurar desde BD si el campo está vacío
-              if (row.rir_real !== null && row.rir_real !== undefined && (existing.rir === '' || existing.rir === undefined || existing.rir === null)) existing.rir = String(row.rir_real);
+              if (row.rir_real !== null && row.rir_real !== undefined && (existing.rir === '' || existing.rir === undefined || existing.rir === null)) existing.rir = String(parseInt(row.rir_real));
               if (row.completada) existing.done = true;
             }
           }
