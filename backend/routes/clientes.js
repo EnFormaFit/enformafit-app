@@ -37,6 +37,7 @@ router.get('/', entrenador, async (req, res) => {
     q += ' ORDER BY c.created_at DESC';
 
     const { rows } = await db.query(q, params);
+    console.log('[clientes] total devueltos:', rows.length, '| por estado:', rows.reduce((a,r)=>{a[r.estado]=(a[r.estado]||0)+1;return a},{}));
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -815,10 +815,12 @@ router.post('/checkin', cliente, async (req, res) => {
     const { semana_inicio, dias_entreno_real, dias_nutricion, dias_pasos,
             orgullos, compromisos, sensaciones, como_semana, adherencia } = req.body;
 
-    // Normalizar semana_inicio al lunes de esa semana (por si el cliente rellena dom, mar, etc.)
+    // Normalizar semana_inicio al lunes de referencia:
+    // Dom → próximo lunes (+1). Lun → mismo día. Mar-Sáb → lunes anterior.
+    // Ejemplo: dom 25 oct → lun 26 oct. Lun 26 → lun 26. Mar 27 → lun 26. Sáb 31 → lun 26.
     const fechaRef = new Date(semana_inicio);
     const dow = fechaRef.getUTCDay(); // 0=dom,1=lun,...,6=sab
-    const offsetToMonday = dow === 0 ? -6 : 1 - dow;
+    const offsetToMonday = dow === 0 ? 1 : 1 - dow; // dom: +1 (próximo lunes), lun: 0, mar-sáb: negativo
     fechaRef.setUTCDate(fechaRef.getUTCDate() + offsetToMonday);
     const semanaInicioNorm = fechaRef.toISOString().split('T')[0];
 
@@ -866,20 +868,12 @@ router.get('/checkins/semana-actual', entrenador, async (req, res) => {
     // lunesRef = próximo lunes si hoy es domingo, lunes pasado si lun-sab
     const hoy = new Date();
     const dia = hoy.getDay(); // 0=dom,1=lun,...,6=sab
-    // Los check-ins referencian la semana ANTERIOR a cuando se rellenan.
-    // La app guarda semana_inicio = lunes de la semana pasada.
-    // Para mostrar los check-ins "de esta semana" necesitamos el lunes de hace 7 días.
-    const lunesActual = new Date(hoy);
-    if (dia === 0) {
-      lunesActual.setDate(hoy.getDate() - 6); // domingo → lunes de esta semana
-    } else {
-      lunesActual.setDate(hoy.getDate() - (dia - 1)); // lun-sab → lunes de esta semana
-    }
-    // semana_inicio en BD = lunes de la semana anterior (lunesActual - 7)
-    const lunes = new Date(lunesActual);
-    lunes.setDate(lunesActual.getDate() - 7);
+    // Misma lógica que la app: dom → próximo lunes (+1), lun-sáb → lunes de esta semana
+    const lunes = new Date(hoy);
+    const offsetToMonday = dia === 0 ? 1 : 1 - dia;
+    lunes.setDate(hoy.getDate() + offsetToMonday);
     const desdeStr = lunes.toISOString().split('T')[0];
-    // Rango: lunes pasado a domingo pasado
+    // Rango: ese lunes + 6 días (hasta el domingo)
     const semanaFin = new Date(lunes);
     semanaFin.setDate(lunes.getDate() + 6);
     const hastaStr = semanaFin.toISOString().split('T')[0];
