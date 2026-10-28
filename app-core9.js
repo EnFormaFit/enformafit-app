@@ -478,6 +478,7 @@ async function loadClienteData() {
     ST.u.lesiones = perfil.lesiones || '';
     ST.u.altura = parseFloat(perfil.altura) || 175;
     ST.u.diasSemana = parseInt(perfil.dias_entreno) || 0;
+    ST.u.baja = perfil.estado === 'baja';
     // Load pending nutrition changes alert
     if (perfil.notas && perfil.notas.pendingNutChanges && !perfil.notas.pendingNutChanges.leido) {
       ST.pendingNutChanges = perfil.notas.pendingNutChanges;
@@ -906,10 +907,12 @@ function renderInicio(){
   const _dow=_now.getDay();
   const _hour=_now.getHours();
   // Ventana amplia: dom≥19h, lun, mar, mié, jue, vie, sáb (toda la semana desde el domingo)
-  const _enVentanaCI=(!ST.checkInDone)&&((_dow===0&&_hour>=19)||(_dow>=1&&_dow<=6));
-  const ciBanner=_enVentanaCI
-    ?'<div onclick="ST.ci.open=true;save();var _ct=document.getElementById(\'ct\');var _sp=_ct?_ct.scrollTop:0;render();if(_ct)_ct.scrollTop=_sp;setTimeout(function(){var el=document.getElementById(\'ci-card\');if(el)el.scrollIntoView({behavior:\'smooth\'});},80)" style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:12px;padding:13px 15px;color:#fff;margin-bottom:11px;display:flex;align-items:center;gap:12px;cursor:pointer"><div style="font-size:26px">⏰</div><div style="flex:1"><div style="font-weight:800;font-size:14px;margin-bottom:2px">¡Rellena tu check-in semanal!</div><div style="font-size:12px;opacity:.9">Cuéntame cómo fue tu semana. Solo tarda 2 minutos.</div></div><div style="font-size:18px">→</div></div>'
-    :'';
+  const _enVentanaCI=(!ST.checkInDone)&&(!ST.u.baja)&&((_dow===0&&_hour>=19)||(_dow>=1&&_dow<=6));
+  const ciBanner=ST.u.baja
+    ?'<div style="background:linear-gradient(135deg,#6b7280,#4b5563);border-radius:12px;padding:13px 15px;color:#fff;margin-bottom:11px;display:flex;align-items:center;gap:12px"><div style="font-size:26px">🔒</div><div style="flex:1"><div style="font-weight:800;font-size:14px;margin-bottom:2px">Tu plan está interrumpido</div><div style="font-size:12px;opacity:.9">Puedes consultar tu historial pero no registrar nueva actividad.</div></div></div>'
+    :_enVentanaCI
+      ?'<div onclick="ST.ci.open=true;save();var _ct=document.getElementById(\'ct\');var _sp=_ct?_ct.scrollTop:0;render();if(_ct)_ct.scrollTop=_sp;setTimeout(function(){var el=document.getElementById(\'ci-card\');if(el)el.scrollIntoView({behavior:\'smooth\'});},80)" style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:12px;padding:13px 15px;color:#fff;margin-bottom:11px;display:flex;align-items:center;gap:12px;cursor:pointer"><div style="font-size:26px">⏰</div><div style="flex:1"><div style="font-weight:800;font-size:14px;margin-bottom:2px">¡Rellena tu check-in semanal!</div><div style="font-size:12px;opacity:.9">Cuéntame cómo fue tu semana. Solo tarda 2 minutos.</div></div><div style="font-size:18px">→</div></div>'
+      :'';
   const revSems=tipo==='programa'?[4,8,12]:[3,7,11];
   const nextRev=revSems.find(rs=>rs>=s)||revSems[revSems.length-1];
   const semsLeft=nextRev-s;
@@ -989,7 +992,7 @@ ${ciBanner}
   </div>
 </div>
 
-${renderCI()}`;
+${ST.u.baja?'':renderCI()}`;
 }
 
 // ── CHECK-IN ──
