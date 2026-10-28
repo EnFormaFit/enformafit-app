@@ -877,8 +877,9 @@ router.get('/checkins/semana-actual', entrenador, async (req, res) => {
     const semanaFin = new Date(lunes);
     semanaFin.setDate(lunes.getDate() + 6);
     const hastaStr = semanaFin.toISOString().split('T')[0];
+    console.log('[semana-actual] hoy:', hoy.toISOString(), 'dia:', dia, 'desde:', desdeStr, 'hasta:', hastaStr);
 
-    // Obtener el check-in de la semana actual de cada cliente 1:1
+    // Obtener el check-in de la semana actual de cada cliente
     const { rows } = await db.query(
       `SELECT DISTINCT ON (ci.cliente_id) ci.*
        FROM checkins ci
@@ -887,6 +888,7 @@ router.get('/checkins/semana-actual', entrenador, async (req, res) => {
        ORDER BY ci.cliente_id, ci.created_at DESC`,
       [desdeStr, hastaStr]
     );
+    console.log('[semana-actual] encontrados:', rows.length, rows.map(r=>r.cliente_id+' '+r.semana_inicio));
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
