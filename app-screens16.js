@@ -936,9 +936,9 @@ function renderProgreso(){
 
   return`
 <div class="card">
-  <div class="ch"><h2>⚖️ Registrar peso</h2></div>
+  <div class="ch"><h2>⚖️ ${ST.u.baja?'Historial de peso':'Registrar peso'}</h2></div>
   <div class="cb">
-    <div style="font-size:13px;color:var(--t2);margin-bottom:10px">Una vez al día, en ayunas por la mañana.</div>
+    ${ST.u.baja?'':`<div style="font-size:13px;color:var(--t2);margin-bottom:10px">Una vez al día, en ayunas por la mañana.</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
       <div>
         <div style="font-size:10.5px;font-weight:700;color:var(--t3);margin-bottom:4px">FECHA</div>
@@ -949,7 +949,7 @@ function renderProgreso(){
         <input type="number" inputmode="decimal" id="pesoVal" placeholder="0.0" min="0" step="0.1" style="width:100%;border:1.5px solid var(--bor);border-radius:9px;padding:10px 8px;font-size:15px;font-weight:700;outline:none;font-family:inherit;color:var(--az)">
       </div>
     </div>
-    <button class="btn btnp btnf" onclick="addPeso()" style="margin-bottom:14px">Guardar peso ✓</button>
+    <button class="btn btnp btnf" onclick="addPeso()" style="margin-bottom:14px">Guardar peso ✓</button>`}
     ${pesos.length?`
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:14px">
       <div class="maci"><div class="macv" style="color:var(--t2);font-size:17px">${ST.pesoInicial}kg</div><div class="macl">Peso inicial</div></div>
