@@ -162,7 +162,7 @@ async function doLogin(){
 // DIAS[0..6] donde 0=lunes, 1=martes, ..., 6=domingo
 // Usa rutina_semanas[semana] si hay override, si no rutina_base
 function buildDIAS(semana) {
-  const NOMBRES = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  const NOMBRES = ['Lunes','Martes','Miérc.','Jueves','Viernes','Sáb.','Dom.'];
   const DIA_IDX = {'LUNES':0,'MARTES':1,'MIERCOLES':2,'MIÉRCOLES':2,'JUEVES':3,'VIERNES':4,'SABADO':5,'SÁBADO':5,'DOMINGO':6};
   const base = ST.p.rutinaDias || {};
   const semanas = ST.p.rutinaSemanas || {};
