@@ -343,11 +343,16 @@ window.addEventListener('DOMContentLoaded',async()=>{
     try{
       await loadClienteData();
       ST.semVer=ST.u.semana||1; // Reset to current week on load
-    showApp();
+      showApp();
       return;
     }catch(e){
       _tk=null;
       localStorage.removeItem('ef_tk');
+      // Sesión expirada — mostrar login (no dejar pantalla en blanco con "CL")
+      const lw=document.getElementById('lw');
+      if(lw)lw.style.display='flex';
+      const appEl=document.getElementById('app');
+      if(appEl)appEl.classList.remove('on');
     }
   }
 });
@@ -569,7 +574,10 @@ function buildEntHTML(di){
     <span>Viendo S${ST.semVer} — solo lectura</span>
     <button onclick="ST.semVer=${semActual};ST.ejStates={};document.getElementById('ct').innerHTML=renderEntreno()" style="background:var(--nr);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">Ir a actual</button>
   </div>`:''}`;
-  const dayBtns=DIAS.map((dd,i)=>`<button class="day-b${i===di?' on':''}${i===todayIdx?' today':''}${dd.rest?' rest':''}" onclick="curDay=${i};document.getElementById('ct').innerHTML=buildEntHTML(${i})">${dd.nom}<br><small style="font-size:9px;opacity:.6">${dd.tipo}</small></button>`).join('');
+  const dayBtns=DIAS.map((dd,i)=>`<button id="daybtn${i}" class="day-b${i===di?' on':''}${i===todayIdx?' today':''}${dd.rest?' rest':''}" onclick="curDay=${i};document.getElementById('ct').innerHTML=buildEntHTML(${i})">${dd.nom}<br><small style="font-size:9px;opacity:.6">${dd.tipo}</small></button>`).join('');
+
+  // Scroll al botón activo tras render (necesario en móvil para sábado/domingo)
+  setTimeout(()=>{const b=document.getElementById('daybtn'+di);if(b)b.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});},50);
 
   let body='';
   if(d.rest){
