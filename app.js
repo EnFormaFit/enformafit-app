@@ -602,7 +602,7 @@ function navDia(i){
   var s=document.getElementById('daysel');
   var bodyEl=document.getElementById('entbody');
   if(s&&bodyEl){
-    // Actualizar botones sin recrear el slider (mantiene scrollLeft)
+    // Actualizar solo la clase .on de los botones (sin scroll, caben todos en pantalla)
     s.querySelectorAll('.day-b').forEach(function(b,idx){
       b.classList.toggle('on',idx===i);
     });
@@ -622,28 +622,9 @@ function navDia(i){
       body+=`<button class="btn btnp btnf" onclick="guardarDia(${i})">Guardar entrenamiento ✓</button>`;
     }
     bodyEl.innerHTML=body;
-    // Scroll del slider al botón activo
-    // Como #daysel NO se destruyó, getBoundingClientRect da posiciones reales con el scrollLeft actual
-    var btn=document.getElementById('daybtn'+i);
-    if(btn){
-      var sr=s.getBoundingClientRect();
-      var br=btn.getBoundingClientRect();
-      // br.left - sr.left = distancia visual del botón desde el borde izquierdo del container
-      // Sumamos el scrollLeft actual para obtener la posición absoluta dentro del scroll
-      s.scrollLeft=s.scrollLeft+(br.left-sr.left)-(sr.width/2)+(br.width/2);
-    }
   } else {
     // Fallback: renderizado completo si no existe el DOM (primera carga)
     document.getElementById('ct').innerHTML=buildEntHTML(i);
-    setTimeout(function(){
-      var sl=document.getElementById('daysel');
-      var bn=document.getElementById('daybtn'+i);
-      if(sl&&bn){
-        var sr=sl.getBoundingClientRect();
-        var br=bn.getBoundingClientRect();
-        sl.scrollLeft=sl.scrollLeft+(br.left-sr.left)-(sr.width/2)+(br.width/2);
-      }
-    },50);
   }
 }
 

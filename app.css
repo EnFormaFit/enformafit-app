@@ -86,9 +86,8 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sa
 /* ENTRENO */
 .day-sticky{position:sticky;top:0;z-index:10;background:var(--bg);padding:8px 0 6px;margin:-14px -14px 12px;padding-left:14px;padding-right:14px;border-bottom:1px solid var(--bor2)}
 @media(min-width:768px){.day-sticky{margin:-20px -20px 14px;padding-left:20px;padding-right:20px}}
-.day-sel{display:flex;gap:6px;overflow-x:auto;overflow-y:visible;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.day-sel::-webkit-scrollbar{display:none}
-.day-b{flex-shrink:0;padding:7px 12px;border-radius:20px;border:1.5px solid var(--bor);background:#fff;font-size:12px;font-weight:600;color:var(--t2);cursor:pointer;font-family:inherit;text-align:center;line-height:1.3;transition:all .15s;touch-action:manipulation;-webkit-user-select:none}
+.day-sel{display:flex;gap:4px}
+.day-b{flex:1;min-width:0;padding:6px 2px;border-radius:10px;border:1.5px solid var(--bor);background:#fff;font-size:10px;font-weight:600;color:var(--t2);cursor:pointer;font-family:inherit;text-align:center;line-height:1.3;transition:all .15s;touch-action:manipulation;-webkit-user-select:none}
 .day-b.on{background:var(--az);border-color:var(--az);color:#fff}
 .day-b.today{border-color:var(--vd);color:var(--vd)}.day-b.today.on{background:var(--vd);border-color:var(--vd);color:#fff}
 .day-b.rest{color:var(--t3)}
