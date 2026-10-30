@@ -576,8 +576,17 @@ function buildEntHTML(di){
   </div>`:''}`;
   const dayBtns=DIAS.map((dd,i)=>`<button id="daybtn${i}" class="day-b${i===di?' on':''}${i===todayIdx?' today':''}${dd.rest?' rest':''}" onclick="curDay=${i};document.getElementById('ct').innerHTML=buildEntHTML(${i})">${dd.nom}<br><small style="font-size:9px;opacity:.6">${dd.tipo}</small></button>`).join('');
 
-  // Scroll al botón activo tras render (necesario en móvil para sábado/domingo)
-  setTimeout(()=>{const b=document.getElementById('daybtn'+di);if(b)b.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});},50);
+  // Scroll al botón activo en .day-sel (scrollIntoView falla en Safari con overflow-x:hidden en padre)
+  setTimeout(()=>{
+    const b=document.getElementById('daybtn'+di);
+    const sel=b&&b.parentElement;
+    if(b&&sel){
+      const btnLeft=b.offsetLeft;
+      const btnW=b.offsetWidth;
+      const selW=sel.offsetWidth;
+      sel.scrollLeft=btnLeft-(selW/2)+(btnW/2);
+    }
+  },30);
 
   let body='';
   if(d.rest){
