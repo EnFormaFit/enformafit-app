@@ -148,7 +148,7 @@ function buildEntHTML(di){
     <span>Viendo S${ST.semVer} — solo lectura</span>
     <button onclick="ST.semVer=${semActual};buildDIAS(ST.semVer);restoreEjStatesFromHistEnt(ST.semVer);buildDIAS(ST.semVer);document.getElementById('ct').innerHTML=renderEntreno()" style="background:var(--nr);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">Ir a actual</button>
   </div>`:''}`;
-  const dayBtns=DIAS.map((dd,i)=>`<button class="day-b${i===di?' on':''}${i===todayIdx?' today':''}${dd.rest?' rest':''}" onclick="curDay=${i};document.getElementById('ct').innerHTML=buildEntHTML(${i})">${dd.nom}</button>`).join('');
+  const dayBtns=DIAS.map((dd,i)=>`<button class="day-b${i===di?' on':''}${i===todayIdx?' today':''}${dd.rest?' rest':''}" onclick="curDay=${i};document.getElementById('ct').innerHTML=buildEntHTML(${i})">${dd.nom}<br><small style="font-size:9px;opacity:.6">${dd.tipo==='Descanso'?'Desc.':dd.tipo}</small></button>`).join('');
 
   let body='';
   if(d.rest){
