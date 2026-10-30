@@ -593,23 +593,58 @@ function buildEntHTML(di){
   return`<div style="min-height:100%" ontouchstart="_entTX=event.touches?event.touches[0].clientX:0" ontouchend="swipeEnt(event,${di})">
     ${semSel}
     <div class="day-sticky"><div id="daysel" class="day-sel">${dayBtns}</div></div>
-    ${body}
+    <div id="entbody">${body}</div>
   </div>`;
 }
 
 function navDia(i){
   curDay=i;
-  document.getElementById('ct').innerHTML=buildEntHTML(i);
-  setTimeout(function(){
-    var s=document.getElementById('daysel');
-    var b=document.getElementById('daybtn'+i);
-    if(!s||!b)return;
-    // offsetLeft relativo al propio scroll container (#daysel)
-    var bLeft=b.offsetLeft;
-    var p=b.offsetParent;
-    while(p&&p!==s){bLeft+=p.offsetLeft;p=p.offsetParent;}
-    s.scrollLeft=bLeft-(s.offsetWidth/2)+(b.offsetWidth/2);
-  },0);
+  var s=document.getElementById('daysel');
+  var bodyEl=document.getElementById('entbody');
+  if(s&&bodyEl){
+    // Actualizar botones sin recrear el slider (mantiene scrollLeft)
+    s.querySelectorAll('.day-b').forEach(function(b,idx){
+      b.classList.toggle('on',idx===i);
+    });
+    // Actualizar solo el cuerpo del entrenamiento
+    var d=DIAS[i];
+    var body='';
+    if(d.rest){
+      body=`<div class="card"><div class="cb" style="text-align:center;padding:28px 14px">
+      <div style="font-size:48px;margin-bottom:10px">😴</div>
+      <div style="font-size:17px;font-weight:700;margin-bottom:8px">Día de descanso</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:12px">El descanso es parte del entrenamiento. Es cuando el músculo crece y se recupera.</div>
+      <div class="alert avd" style="text-align:left">💡 Aprovecha para acumular tus <b>${ST.pasos.obj.toLocaleString('es')} pasos</b> diarios y seguir tu plan de nutrición.</div>
+    </div></div>`;
+    } else {
+      const grabIdxs=getGrabarIdxs(i);
+      body=d.ejercicios.map(function(ej,ei){return renderEj(ej,ei,i,grabIdxs);}).join('');
+      body+=`<button class="btn btnp btnf" onclick="guardarDia(${i})">Guardar entrenamiento ✓</button>`;
+    }
+    bodyEl.innerHTML=body;
+    // Scroll del slider al botón activo
+    // Como #daysel NO se destruyó, getBoundingClientRect da posiciones reales con el scrollLeft actual
+    var btn=document.getElementById('daybtn'+i);
+    if(btn){
+      var sr=s.getBoundingClientRect();
+      var br=btn.getBoundingClientRect();
+      // br.left - sr.left = distancia visual del botón desde el borde izquierdo del container
+      // Sumamos el scrollLeft actual para obtener la posición absoluta dentro del scroll
+      s.scrollLeft=s.scrollLeft+(br.left-sr.left)-(sr.width/2)+(br.width/2);
+    }
+  } else {
+    // Fallback: renderizado completo si no existe el DOM (primera carga)
+    document.getElementById('ct').innerHTML=buildEntHTML(i);
+    setTimeout(function(){
+      var sl=document.getElementById('daysel');
+      var bn=document.getElementById('daybtn'+i);
+      if(sl&&bn){
+        var sr=sl.getBoundingClientRect();
+        var br=bn.getBoundingClientRect();
+        sl.scrollLeft=sl.scrollLeft+(br.left-sr.left)-(sr.width/2)+(br.width/2);
+      }
+    },50);
+  }
 }
 
 function swipeEnt(e,di){
