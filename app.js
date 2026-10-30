@@ -576,17 +576,6 @@ function buildEntHTML(di){
   </div>`:''}`;
   const dayBtns=DIAS.map((dd,i)=>`<button id="daybtn${i}" class="day-b${i===di?' on':''}${i===todayIdx?' today':''}${dd.rest?' rest':''}" onclick="curDay=${i};document.getElementById('ct').innerHTML=buildEntHTML(${i})">${dd.nom}<br><small style="font-size:9px;opacity:.6">${dd.tipo}</small></button>`).join('');
 
-  // Scroll al botón activo en .day-sel (scrollIntoView falla en Safari con overflow-x:hidden en padre)
-  setTimeout(()=>{
-    const b=document.getElementById('daybtn'+di);
-    const sel=b&&b.parentElement;
-    if(b&&sel){
-      const btnLeft=b.offsetLeft;
-      const btnW=b.offsetWidth;
-      const selW=sel.offsetWidth;
-      sel.scrollLeft=btnLeft-(selW/2)+(btnW/2);
-    }
-  },30);
 
   let body='';
   if(d.rest){
@@ -603,7 +592,8 @@ function buildEntHTML(di){
   }
   return`<div style="min-height:100%" ontouchstart="_entTX=event.touches?event.touches[0].clientX:0" ontouchend="swipeEnt(event,${di})">
     ${semSel}
-    <div class="day-sticky"><div class="day-sel">${dayBtns}</div></div>
+    <div class="day-sticky"><div id="daysel" class="day-sel">${dayBtns}</div></div>
+    <img src="" style="display:none" onerror="(function(){var s=document.getElementById('daysel');var b=document.getElementById('daybtn${di}');if(s&&b)s.scrollLeft=b.offsetLeft-(s.offsetWidth/2)+(b.offsetWidth/2);})()">
     ${body}
   </div>`;
 }
