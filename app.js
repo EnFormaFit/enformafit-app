@@ -600,16 +600,16 @@ function buildEntHTML(di){
 function navDia(i){
   curDay=i;
   document.getElementById('ct').innerHTML=buildEntHTML(i);
-  // RAF garantiza que el browser ha pintado y los tamaños son reales
-  requestAnimationFrame(function(){
+  setTimeout(function(){
     var s=document.getElementById('daysel');
     var b=document.getElementById('daybtn'+i);
-    if(s&&b){
-      var sr=s.getBoundingClientRect();
-      var br=b.getBoundingClientRect();
-      s.scrollLeft+=br.left-sr.left-(sr.width/2)+(br.width/2);
-    }
-  });
+    if(!s||!b)return;
+    // offsetLeft relativo al propio scroll container (#daysel)
+    var bLeft=b.offsetLeft;
+    var p=b.offsetParent;
+    while(p&&p!==s){bLeft+=p.offsetLeft;p=p.offsetParent;}
+    s.scrollLeft=bLeft-(s.offsetWidth/2)+(b.offsetWidth/2);
+  },0);
 }
 
 function swipeEnt(e,di){
