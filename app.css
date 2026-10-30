@@ -32,7 +32,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sa
 .topbar img{height:28px;width:auto}
 
 .tav{width:32px;height:32px;border-radius:50%;background:var(--az);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
-.content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:14px 14px 20px}
+.content{flex:1;overflow-y:auto;overflow-x:clip;-webkit-overflow-scrolling:touch;padding:14px 14px 20px}
 @media(min-width:768px){.content{max-width:700px;margin:0 auto;padding:20px 20px 28px}}
 
 /* BOTTOM NAV */

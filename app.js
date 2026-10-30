@@ -574,7 +574,7 @@ function buildEntHTML(di){
     <span>Viendo S${ST.semVer} — solo lectura</span>
     <button onclick="ST.semVer=${semActual};ST.ejStates={};document.getElementById('ct').innerHTML=renderEntreno()" style="background:var(--nr);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">Ir a actual</button>
   </div>`:''}`;
-  const dayBtns=DIAS.map((dd,i)=>`<button id="daybtn${i}" class="day-b${i===di?' on':''}${i===todayIdx?' today':''}${dd.rest?' rest':''}" onclick="curDay=${i};document.getElementById('ct').innerHTML=buildEntHTML(${i})">${dd.nom}<br><small style="font-size:9px;opacity:.6">${dd.tipo}</small></button>`).join('');
+  const dayBtns=DIAS.map((dd,i)=>`<button id="daybtn${i}" class="day-b${i===di?' on':''}${i===todayIdx?' today':''}${dd.rest?' rest':''}" onclick="navDia(${i})">${dd.nom}<br><small style="font-size:9px;opacity:.6">${dd.tipo}</small></button>`).join('');
 
 
   let body='';
@@ -593,17 +593,25 @@ function buildEntHTML(di){
   return`<div style="min-height:100%" ontouchstart="_entTX=event.touches?event.touches[0].clientX:0" ontouchend="swipeEnt(event,${di})">
     ${semSel}
     <div class="day-sticky"><div id="daysel" class="day-sel">${dayBtns}</div></div>
-    <img src="" style="display:none" onerror="(function(){var s=document.getElementById('daysel');var b=document.getElementById('daybtn${di}');if(s&&b)s.scrollLeft=b.offsetLeft-(s.offsetWidth/2)+(b.offsetWidth/2);})()">
     ${body}
   </div>`;
+}
+
+function navDia(i){
+  curDay=i;
+  document.getElementById('ct').innerHTML=buildEntHTML(i);
+  // Scroll al botón activo — después del render, el #daysel ya existe
+  var s=document.getElementById('daysel');
+  var b=document.getElementById('daybtn'+i);
+  if(s&&b)s.scrollLeft=b.offsetLeft-(s.offsetWidth/2)+(b.offsetWidth/2);
 }
 
 function swipeEnt(e,di){
   if(!e.changedTouches)return;
   const dx=e.changedTouches[0].clientX-_entTX;
   if(Math.abs(dx)<55)return;
-  if(dx<0&&di<DIAS.length-1){curDay=di+1;document.getElementById('ct').innerHTML=buildEntHTML(di+1);}
-  else if(dx>0&&di>0){curDay=di-1;document.getElementById('ct').innerHTML=buildEntHTML(di-1);}
+  if(dx<0&&di<DIAS.length-1)navDia(di+1);
+  else if(dx>0&&di>0)navDia(di-1);
 }
 
 function getGrabarIdxs(di){
