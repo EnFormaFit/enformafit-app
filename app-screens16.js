@@ -1021,7 +1021,7 @@ ${(function(){
 
 let _pfGi=0,_pfPi=0;
 function triggerPF(gi,pi){_pfGi=gi;_pfPi=pi;document.getElementById('pfin').click();}
-function loadPF(inp){const f=inp.files[0];if(!f)return;_procesarFotoRev(f,function(b64){ST.rev.fotos['prog_'+_pfGi+'_'+_pfPi]=b64;save();render();});}
+function loadPF(inp){const f=inp.files[0];if(!f)return;toast('Procesando foto...','');_procesarFotoRev(f,function(b64){if(!b64){toast('Error al procesar la foto. Prueba con otra imagen.','rj');return;}ST.rev.fotos['prog_'+_pfGi+'_'+_pfPi]=b64;save();render();toast('Foto lista ✓','vd');});}
 function buildPesosList(pesos){
   var h='<div style="margin-top:8px">';
   [...pesos].reverse().forEach(function(p,ri){
@@ -1264,36 +1264,63 @@ function loadRF(inp){
   const f=inp.files[0];
   console.log('[loadRF] files:', inp.files.length, f?'name='+f.name+' type='+f.type+' size='+f.size:'NO FILE');
   if(!f)return;
-  _procesarFotoRev(f,function(b64){ST.rev.fotos['rev_'+_rfIdx]=b64;save();render();});
+  toast('Procesando foto...','');
+  _procesarFotoRev(f,function(b64){
+    if(!b64){toast('Error al procesar la foto. Prueba con otra imagen.','rj');return;}
+    ST.rev.fotos['rev_'+_rfIdx]=b64;
+    save();render();
+    toast('Foto lista ✓','vd');
+  });
+}
+
+// Enviar archivo al servidor para convertir con sharp (soporta HEIC, WebP, cualquier formato)
+function _convertirEnServidor(f,cb){
+  var fd=new FormData();
+  fd.append('foto',f);
+  fetch(API+'/api/entreno/convert-heic',{
+    method:'POST',
+    headers:typeof _tk!=='undefined'&&_tk?{Authorization:'Bearer '+_tk}:{},
+    body:fd
+  }).then(function(r){return r.json();}).then(function(j){
+    if(j.jpeg_b64){cb(j.jpeg_b64);}
+    else{console.error('[convert-heic] sin jpeg_b64:',j);cb(null);}
+  }).catch(function(err){
+    console.error('[convert-heic] fetch error:',err);cb(null);
+  });
 }
 
 function _procesarFotoRev(f,cb){
-  // Si es HEIC/HEIF → convertir en el servidor (sharp soporta HEIC nativamente)
   var nombre=(f.name||'').toLowerCase();
   var tipo=(f.type||'').toLowerCase();
-  console.log('[_procesarFotoRev] nombre:', nombre, '| tipo:', tipo, '| size:', f.size);
-  var esHeic=tipo==='image/heic'||tipo==='image/heif'||nombre.endsWith('.heic')||nombre.endsWith('.heif');
-  if(esHeic){
-    var fd=new FormData();
-    fd.append('foto',f);
-    fetch(API+'/api/entreno/convert-heic',{
-      method:'POST',
-      headers:typeof _tk!=='undefined'&&_tk?{Authorization:'Bearer '+_tk}:{},
-      body:fd
-    }).then(function(r){return r.json();}).then(function(j){
-      if(j.jpeg_b64){cb(j.jpeg_b64);}
-      else{console.error('[convert-heic] sin jpeg_b64:',j);_procesarFotoRevCanvas(f,cb);}
-    }).catch(function(err){
-      console.error('[convert-heic] fetch error:',err);
-      _procesarFotoRevCanvas(f,cb);
+  var size=f.size||0;
+  console.log('[_procesarFotoRev] nombre:',nombre,'| tipo:',tipo,'| size:',size);
+
+  // Detectar HEIC por tipo MIME o extensión
+  var esHeicExplicito=tipo==='image/heic'||tipo==='image/heif'||nombre.endsWith('.heic')||nombre.endsWith('.heif');
+
+  // También detectar: tipo vacío o desconocido + archivo grande (>800KB) = probable HEIC/RAW sin conversión automática
+  // Safari iOS a veces entrega HEIC con type='' o type='application/octet-stream'
+  var tipoDesconocido=tipo===''||tipo==='application/octet-stream'||(!tipo.startsWith('image/'));
+  var esProbableHeic=tipoDesconocido&&size>400*1024;
+
+  if(esHeicExplicito||esProbableHeic){
+    console.log('[_procesarFotoRev] → servidor (HEIC/desconocido)');
+    _convertirEnServidor(f,function(b64){
+      if(b64){cb(b64);}
+      else{
+        // Fallback: intentar canvas (puede funcionar si Safari convirtió a JPEG)
+        _procesarFotoRevCanvas(f,cb);
+      }
     });
     return;
   }
-  // No es HEIC → canvas normal
+
+  // JPEG/PNG/WebP normal → canvas
   _procesarFotoRevCanvas(f,cb);
 }
+
 function _procesarFotoRevCanvas(f,cb){
-  var MAX=900; // Reducido de 1200 para que las fotos b64 sean más ligeras (~200-400KB)
+  var MAX=900;
   if(typeof createImageBitmap==='function'){
     createImageBitmap(f).then(function(bmp){
       var w=bmp.width,h=bmp.height;
@@ -1306,12 +1333,26 @@ function _procesarFotoRevCanvas(f,cb){
       canvas.getContext('2d').drawImage(bmp,0,0,w,h);
       bmp.close&&bmp.close();
       cb(canvas.toDataURL('image/jpeg',0.75));
-    }).catch(function(){_procesarFotoRevFallback(f,cb);});
+    }).catch(function(err){
+      console.warn('[canvas] createImageBitmap falló:',err&&err.message||err);
+      // Si el canvas falla y el archivo es grande → probablemente formato no soportado → servidor
+      if(f.size>400*1024){
+        console.log('[_procesarFotoRev] canvas falló en archivo grande → servidor');
+        _convertirEnServidor(f,function(b64){
+          if(b64){cb(b64);}
+          else{_procesarFotoRevFallback(f,cb);}
+        });
+      } else {
+        _procesarFotoRevFallback(f,cb);
+      }
+    });
   } else {
     _procesarFotoRevFallback(f,cb);
   }
 }
+
 function _procesarFotoRevFallback(f,cb){
+  // Último recurso: FileReader + img element. Solo funciona si el navegador soporta el formato.
   var MAX=900;
   const reader=new FileReader();
   reader.onload=function(e){
@@ -1323,7 +1364,13 @@ function _procesarFotoRevFallback(f,cb){
     var _done=false;
     function _guardar(src){if(_done)return;_done=true;cb(src);}
     var _t=setTimeout(function(){_guardar(b64);},5000);
-    img.onerror=function(){clearTimeout(_t);_guardar(b64);};
+    img.onerror=function(){
+      clearTimeout(_t);
+      // Si el img no carga y el archivo es grande → no devolver b64 crudo (sería HEIC gigante)
+      // En su lugar devolver null para que el llamador decida
+      if(f.size>400*1024){console.warn('[fallback] img.onerror en archivo grande — posible HEIC sin convertir');_guardar(null);}
+      else{_guardar(b64);}
+    };
     img.onload=function(){
       clearTimeout(_t);
       if(_done)return;
@@ -1572,11 +1619,12 @@ function renderRevisionEdit(sem){
 }
 
 function triggerRevHistFoto(sem,pi){
-  var inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+  var inp=document.createElement('input');inp.type='file';inp.accept='image/*,.heic,.heif,image/heic,image/heif';
   inp.onchange=function(e){
     var file=e.target.files[0];if(!file)return;
     toast('Procesando foto...','');
     _procesarFotoRev(file,function(b64){
+      if(!b64){toast('Error al procesar la foto. Prueba con otra imagen.','rj');return;}
       if(!ST.revHistorial)ST.revHistorial={};
       if(!ST.revHistorial[sem])ST.revHistorial[sem]={medidas:{},fotos:{},preguntas:{}};
       ST.revHistorial[sem].fotos['rev_'+pi]=b64;
