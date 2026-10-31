@@ -125,19 +125,26 @@ const API='https://enformafit-backend-production.up.railway.app';
 let _tk=localStorage.getItem('ef_tk')||null;
 let _isPreview=false;
 
-async function api(method,path,body){
+async function api(method,path,body,timeoutMs){
   const opts={method,headers:{'Content-Type':'application/json'}};
   if(_tk)opts.headers['Authorization']='Bearer '+_tk;
   if(body)opts.body=JSON.stringify(body);
+  // Timeout: 120s por defecto para peticiones con body grande (fotos b64), 30s para el resto
+  var _ms=timeoutMs||(body&&typeof body==='object'&&body.foto_b64?120000:30000);
+  var ctrl=typeof AbortController!=='undefined'?new AbortController():null;
+  var _t=ctrl?setTimeout(function(){ctrl.abort();},_ms):null;
+  if(ctrl)opts.signal=ctrl.signal;
   let r;
   try{r=await fetch(API+path,opts);}
   catch(fetchErr){
+    if(_t)clearTimeout(_t);
     // Sin conexión
-    if(!navigator.onLine||fetchErr.message==='Failed to fetch'||fetchErr.message.includes('network')){
+    if(!navigator.onLine||fetchErr.message==='Failed to fetch'||fetchErr.message.includes('network')||fetchErr.name==='AbortError'){
       throw new Error('sin_conexion');
     }
     throw fetchErr;
   }
+  if(_t)clearTimeout(_t);
   const d=await r.json();
   if(d&&d.offline)throw new Error('sin_conexion');
   if(!r.ok)throw new Error(d.error||String(r.status));

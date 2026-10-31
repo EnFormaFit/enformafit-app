@@ -1277,15 +1277,25 @@ function loadRF(inp){
 function _convertirEnServidor(f,cb){
   var fd=new FormData();
   fd.append('foto',f);
+  // Timeout de 90s para fotos grandes en conexión móvil lenta
+  var ctrl=typeof AbortController!=='undefined'?new AbortController():null;
+  var _t=ctrl?setTimeout(function(){ctrl.abort();},90000):null;
   fetch(API+'/api/entreno/convert-heic',{
     method:'POST',
     headers:typeof _tk!=='undefined'&&_tk?{Authorization:'Bearer '+_tk}:{},
-    body:fd
-  }).then(function(r){return r.json();}).then(function(j){
+    body:fd,
+    signal:ctrl?ctrl.signal:undefined
+  }).then(function(r){
+    if(_t)clearTimeout(_t);
+    if(!r.ok){console.error('[convert-heic] HTTP',r.status);return null;}
+    return r.json();
+  }).then(function(j){
+    if(!j){cb(null);return;}
     if(j.jpeg_b64){cb(j.jpeg_b64);}
     else{console.error('[convert-heic] sin jpeg_b64:',j);cb(null);}
   }).catch(function(err){
-    console.error('[convert-heic] fetch error:',err);cb(null);
+    if(_t)clearTimeout(_t);
+    console.error('[convert-heic] fetch error:',err&&err.message||err);cb(null);
   });
 }
 
