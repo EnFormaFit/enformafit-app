@@ -1308,13 +1308,18 @@ function _procesarFotoRev(f,cb){
   // Detectar HEIC por tipo MIME o extensión
   var esHeicExplicito=tipo==='image/heic'||tipo==='image/heif'||nombre.endsWith('.heic')||nombre.endsWith('.heif');
 
-  // También detectar: tipo vacío o desconocido + archivo grande (>800KB) = probable HEIC/RAW sin conversión automática
+  // Foto muy grande (>5MB) → enviar siempre al servidor para normalizar, independientemente del tipo
+  // Cubre JPEG/PNG de alta resolución que saturarían el canvas o generarían b64 gigante
+  var esMuyGrande=size>5*1024*1024;
+
+  // También detectar: tipo vacío o desconocido + archivo grande (>400KB) = probable HEIC/RAW sin conversión automática
   // Safari iOS a veces entrega HEIC con type='' o type='application/octet-stream'
   var tipoDesconocido=tipo===''||tipo==='application/octet-stream'||(!tipo.startsWith('image/'));
   var esProbableHeic=tipoDesconocido&&size>400*1024;
 
-  if(esHeicExplicito||esProbableHeic){
-    console.log('[_procesarFotoRev] → servidor (HEIC/desconocido)');
+  if(esHeicExplicito||esProbableHeic||esMuyGrande){
+    var motivo=esHeicExplicito?'HEIC explícito':esProbableHeic?'tipo desconocido/grande':('JPEG/PNG grande '+Math.round(size/1024/1024)+'MB');
+    console.log('[_procesarFotoRev] → servidor ('+motivo+')');
     _convertirEnServidor(f,function(b64){
       if(b64){cb(b64);}
       else{
@@ -1325,7 +1330,7 @@ function _procesarFotoRev(f,cb){
     return;
   }
 
-  // JPEG/PNG/WebP normal → canvas
+  // JPEG/PNG/WebP normal y pequeño → canvas
   _procesarFotoRevCanvas(f,cb);
 }
 
@@ -1364,6 +1369,7 @@ function _procesarFotoRevCanvas(f,cb){
 function _procesarFotoRevFallback(f,cb){
   // Último recurso: FileReader + img element. Solo funciona si el navegador soporta el formato.
   var MAX=900;
+  console.log('[_procesarFotoRevFallback] size:',f.size,'tipo:',f.type);
   const reader=new FileReader();
   reader.onload=function(e){
     var b64=e.target.result;
@@ -1373,13 +1379,26 @@ function _procesarFotoRevFallback(f,cb){
     const img=new Image();
     var _done=false;
     function _guardar(src){if(_done)return;_done=true;cb(src);}
-    var _t=setTimeout(function(){_guardar(b64);},5000);
+    // Timeout más largo para fotos grandes; si se dispara → enviar al servidor para normalizar
+    var _timeoutMs=f.size>3*1024*1024?20000:10000;
+    var _t=setTimeout(function(){
+      console.warn('[fallback] timeout esperando img.onload, size:',f.size,'→ intentando servidor');
+      // Si el archivo es grande y no cargó → intentar en servidor en lugar de devolver b64 gigante
+      if(f.size>400*1024){
+        _convertirEnServidor(f,function(b64srv){_guardar(b64srv);});
+      } else {
+        _guardar(b64); // archivo pequeño: devolver tal cual
+      }
+    },_timeoutMs);
     img.onerror=function(){
       clearTimeout(_t);
       // Si el img no carga y el archivo es grande → no devolver b64 crudo (sería HEIC gigante)
-      // En su lugar devolver null para que el llamador decida
-      if(f.size>400*1024){console.warn('[fallback] img.onerror en archivo grande — posible HEIC sin convertir');_guardar(null);}
-      else{_guardar(b64);}
+      if(f.size>400*1024){
+        console.warn('[fallback] img.onerror en archivo grande → servidor');
+        _convertirEnServidor(f,function(b64srv){_guardar(b64srv);});
+      } else {
+        _guardar(b64);
+      }
     };
     img.onload=function(){
       clearTimeout(_t);
