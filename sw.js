@@ -1,13 +1,10 @@
 // EnFormaFit Service Worker — modo avión
 // Versión del cache (cambiar para forzar actualización)
-const CACHE_NAME = 'ef-v20261031';
+const CACHE_NAME = 'ef-v20261031b';
+// Solo cacheamos index.html — los JS/CSS se cachean dinámicamente con sus ?v= params
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/app.css',
-  '/app-data2.js',
-  '/app-core9.js',
-  '/app-screens16.js',
 ];
 
 // ── INSTALL: pre-cachear assets estáticos ───────────────────────────────────

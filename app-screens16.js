@@ -1575,23 +1575,14 @@ function triggerRevHistFoto(sem,pi){
   var inp=document.createElement('input');inp.type='file';inp.accept='image/*';
   inp.onchange=function(e){
     var file=e.target.files[0];if(!file)return;
-    var img2=new Image();
-    var reader=new FileReader();
-    reader.onload=function(ev){
-      img2.onload=function(){
-        var MAX=1200,w=img2.width,h=img2.height;
-        if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
-        var canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
-        canvas.getContext('2d').drawImage(img2,0,0,w,h);
-        var compressed=canvas.toDataURL('image/jpeg',0.75);
-        if(!ST.revHistorial)ST.revHistorial={};
-        if(!ST.revHistorial[sem])ST.revHistorial[sem]={medidas:{},fotos:{},preguntas:{}};
-        ST.revHistorial[sem].fotos['rev_'+pi]=compressed;
-        save();render();
-      };
-      img2.src=ev.target.result;
-    };
-    reader.readAsDataURL(file);
+    toast('Procesando foto...','');
+    _procesarFotoRev(file,function(b64){
+      if(!ST.revHistorial)ST.revHistorial={};
+      if(!ST.revHistorial[sem])ST.revHistorial[sem]={medidas:{},fotos:{},preguntas:{}};
+      ST.revHistorial[sem].fotos['rev_'+pi]=b64;
+      save();render();
+      toast('Foto lista ✓','vd');
+    });
   };
   inp.click();
 }
@@ -1620,15 +1611,39 @@ async function guardarRevAnterior(sem){
   var hist=ST.revHistorial[sem];
   save();
   if(_tk){
-    toast('Guardando...','');
-    // Preparar fotos como objeto rev_0..rev_3
+    toast('Subiendo fotos...','');
+    var fotosB64=hist.fotos||{};
     var fotosToSave={};
+    const POSES_ARR=['Frente','Perfil D.','Perfil I.','Espalda'];
+    // Subir fotos a Cloudinary (con fallback a b64)
     for(var i=0;i<4;i++){
-      var b64=hist.fotos&&(hist.fotos['rev_'+i]);
-      if(b64)fotosToSave['rev_'+i]=b64;
+      var b64=fotosB64['rev_'+i];
+      if(b64){
+        // Si ya es URL de Cloudinary, no re-subir
+        if(b64.startsWith('http')){
+          fotosToSave['rev_'+i]=b64;
+          continue;
+        }
+        toast('Subiendo fotos... ('+(i+1)+'/4)','');
+        try{
+          const r=await api('POST','/api/entreno/upload-foto',{foto_b64:b64,pose:POSES_ARR[i],semana:sem});
+          if(r&&r.url&&r.url.startsWith('http')){
+            fotosToSave['rev_'+i]=r.url;
+          } else {
+            fotosToSave['rev_'+i]=b64;
+          }
+        }catch(e){
+          fotosToSave['rev_'+i]=b64;
+        }
+      }
     }
+    toast('Guardando revisión...','');
     try {
       await api('POST','/api/entreno/revision',{bloque_id:ST.p.bloqueId||null,semana:sem,medidas:hist.medidas||{},preguntas:hist.preguntas||{},fotos:fotosToSave});
+      // Actualizar historial local con URLs de Cloudinary
+      if(!ST.revHistorial[sem])ST.revHistorial[sem]={};
+      ST.revHistorial[sem].fotos=fotosToSave;
+      save();
       toast('Revisión S'+sem+' guardada ✓','vd');
       ST._editandoRevSem=null;render();
     } catch(e) {
