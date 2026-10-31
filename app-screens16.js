@@ -1293,7 +1293,7 @@ function _procesarFotoRev(f,cb){
   _procesarFotoRevCanvas(f,cb);
 }
 function _procesarFotoRevCanvas(f,cb){
-  var MAX=1200;
+  var MAX=900; // Reducido de 1200 para que las fotos b64 sean más ligeras (~200-400KB)
   if(typeof createImageBitmap==='function'){
     createImageBitmap(f).then(function(bmp){
       var w=bmp.width,h=bmp.height;
@@ -1305,14 +1305,14 @@ function _procesarFotoRevCanvas(f,cb){
       canvas.width=w;canvas.height=h;
       canvas.getContext('2d').drawImage(bmp,0,0,w,h);
       bmp.close&&bmp.close();
-      cb(canvas.toDataURL('image/jpeg',0.82));
+      cb(canvas.toDataURL('image/jpeg',0.75));
     }).catch(function(){_procesarFotoRevFallback(f,cb);});
   } else {
     _procesarFotoRevFallback(f,cb);
   }
 }
 function _procesarFotoRevFallback(f,cb){
-  var MAX=1200;
+  var MAX=900;
   const reader=new FileReader();
   reader.onload=function(e){
     var b64=e.target.result;
@@ -1336,7 +1336,7 @@ function _procesarFotoRevFallback(f,cb){
       const canvas=document.createElement('canvas');
       canvas.width=w;canvas.height=h;
       canvas.getContext('2d').drawImage(img,0,0,w,h);
-      _guardar(canvas.toDataURL('image/jpeg',0.82));
+      _guardar(canvas.toDataURL('image/jpeg',0.75));
     };
     img.src=b64;
   };
@@ -1582,7 +1582,7 @@ function triggerRevHistFoto(sem,pi){
         if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
         var canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
         canvas.getContext('2d').drawImage(img2,0,0,w,h);
-        var compressed=canvas.toDataURL('image/jpeg',0.82);
+        var compressed=canvas.toDataURL('image/jpeg',0.75);
         if(!ST.revHistorial)ST.revHistorial={};
         if(!ST.revHistorial[sem])ST.revHistorial[sem]={medidas:{},fotos:{},preguntas:{}};
         ST.revHistorial[sem].fotos['rev_'+pi]=compressed;
