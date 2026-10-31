@@ -290,9 +290,14 @@ function toggleSer(key,si,di){
         completada:s.done
       };
       api('POST','/api/entreno/registrar-serie',_togPayload).catch(function(e){
-        console.error('[toggleSer] Error:',e.message||e);
-        toast('⚠️ Error guardando — reintentando...','rj');
-        setTimeout(function(){api('POST','/api/entreno/registrar-serie',_togPayload).catch(function(e2){console.error('[toggleSer] Retry fallido:',e2);});},2000);
+        if(e.message==='sin_conexion'){
+          // Encolar para sincronizar cuando regrese la red
+          if(typeof queueRequest==='function') queueRequest('POST','/api/entreno/registrar-serie',_togPayload);
+          // No mostrar error — datos ya guardados en local
+        } else {
+          console.error('[toggleSer] Error:',e.message||e);
+          toast('⚠️ Error guardando serie','rj');
+        }
       });
     }
   }

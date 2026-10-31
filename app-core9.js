@@ -129,8 +129,17 @@ async function api(method,path,body){
   const opts={method,headers:{'Content-Type':'application/json'}};
   if(_tk)opts.headers['Authorization']='Bearer '+_tk;
   if(body)opts.body=JSON.stringify(body);
-  const r=await fetch(API+path,opts);
+  let r;
+  try{r=await fetch(API+path,opts);}
+  catch(fetchErr){
+    // Sin conexión
+    if(!navigator.onLine||fetchErr.message==='Failed to fetch'||fetchErr.message.includes('network')){
+      throw new Error('sin_conexion');
+    }
+    throw fetchErr;
+  }
   const d=await r.json();
+  if(d&&d.offline)throw new Error('sin_conexion');
   if(!r.ok)throw new Error(d.error||String(r.status));
   return d;
 }
@@ -879,7 +888,14 @@ async function loadClienteData() {
     setTimeout(_postLoadRender, 2000); // red de seguridad si Railway tardó más
   } catch(e) {
     console.error('loadClienteData error:', e);
-    // No llamar render() aquí — la app (#app) está oculta por CSS hasta que showApp() la muestre.
+    if(e.message==='sin_conexion'||!navigator.onLine){
+      // Modo avión: usar datos cacheados en localStorage si existen
+      console.log('[Offline] Usando datos cacheados de localStorage');
+      _updateOfflineBanner&&_updateOfflineBanner();
+      // No borrar localStorage — los datos guardados permiten ver el plan
+      // showApp() se llama igual desde el caller
+      return;
+    }
     // Limpiar localStorage para evitar que versiones antiguas del JS restauren datos de otro cliente.
     try { localStorage.removeItem('ef8'); } catch(_){}
   }
@@ -926,6 +942,15 @@ window.addEventListener('DOMContentLoaded',async()=>{
       showApp();
       return;
     }catch(e){
+      if(e.message==='sin_conexion'||!navigator.onLine){
+        // Sin red pero hay token y datos locales: mostrar app en modo avión
+        if(ST&&ST.u&&ST.u.nombre){
+          ST.semVer=ST.u.semana||1;
+          showApp();
+          _updateOfflineBanner&&_updateOfflineBanner();
+          return;
+        }
+      }
       _tk=null;
       localStorage.removeItem('ef_tk');
     }
@@ -1425,3 +1450,91 @@ function aplicarCantidadesPersonalizadas(planAlimentos) {
 }
 
 
+
+// ── MODO AVIÓN / OFFLINE ──────────────────────────────────────────────────────
+
+// Cola de peticiones pendientes cuando se está offline
+var _pendingQueue = [];
+try { _pendingQueue = JSON.parse(localStorage.getItem('ef_pending')||'[]'); } catch(e){}
+
+function _savePendingQueue() {
+  try { localStorage.setItem('ef_pending', JSON.stringify(_pendingQueue.slice(-50))); } catch(e){}
+}
+
+// Encolar petición para sincronizar cuando haya red
+function queueRequest(method, path, body) {
+  _pendingQueue.push({ method, path, body, ts: Date.now() });
+  _savePendingQueue();
+}
+
+// Sincronizar cola cuando regresa la red
+async function syncPendingQueue() {
+  if (!_tk || !_pendingQueue.length) return;
+  var toSync = _pendingQueue.slice();
+  _pendingQueue = [];
+  _savePendingQueue();
+  var failed = [];
+  for (var i = 0; i < toSync.length; i++) {
+    var req = toSync[i];
+    try {
+      await api(req.method, req.path, req.body);
+    } catch(e) {
+      if (e.message === 'sin_conexion') {
+        failed.push(req); // Volver a encolar si sigue sin red
+      }
+      // Si es otro error (ej. 409), descartar
+    }
+  }
+  if (failed.length) {
+    _pendingQueue = failed.concat(_pendingQueue);
+    _savePendingQueue();
+  } else if (toSync.length > 0) {
+    toast('Datos sincronizados ✓', 'vd');
+  }
+}
+
+// Banner de estado offline
+function _updateOfflineBanner() {
+  var existing = document.getElementById('offline-banner');
+  if (!navigator.onLine) {
+    if (!existing) {
+      var b = document.createElement('div');
+      b.id = 'offline-banner';
+      b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#e65c4a;color:#fff;text-align:center;font-size:12px;font-weight:600;padding:4px 8px;letter-spacing:.3px';
+      b.textContent = '📵 Sin conexión — los cambios se guardarán en local';
+      document.body.appendChild(b);
+    }
+  } else {
+    if (existing) existing.remove();
+  }
+}
+
+window.addEventListener('online', function() {
+  _updateOfflineBanner();
+  syncPendingQueue();
+});
+window.addEventListener('offline', function() {
+  _updateOfflineBanner();
+});
+
+// Registrar Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js').then(function(reg) {
+      console.log('[SW] Registrado:', reg.scope);
+      // Escuchar updates
+      reg.addEventListener('updatefound', function() {
+        var newWorker = reg.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', function() {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('[SW] Nueva versión disponible');
+            }
+          });
+        }
+      });
+    }).catch(function(err) {
+      console.warn('[SW] No se pudo registrar:', err);
+    });
+  });
+}
