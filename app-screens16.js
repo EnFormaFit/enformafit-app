@@ -1381,25 +1381,34 @@ async function _doEnviarRev(){
     const fotosB64=ST.rev.fotos||{};
     const fotoUrls={};
     const POSES_ARR=['Frente','Perfil D.','Perfil I.','Espalda'];
-    toast('Subiendo fotos...','');
-    // 1. Subir cada foto a Cloudinary via /upload-foto
+    toast('Subiendo fotos... (1/4)','');
+    // 1. Subir cada foto a Cloudinary via /upload-foto (con fallback a b64 si falla)
+    let cloudinaryOk=true;
     for(let i=0;i<4;i++){
       const b64=fotosB64['rev_'+i];
       if(b64){
+        toast('Subiendo fotos... ('+(i+1)+'/4)','');
         try{
           const r=await api('POST','/api/entreno/upload-foto',{
             foto_b64:b64,pose:POSES_ARR[i],semana:nextRev
           });
-          if(r&&r.url&&r.url.startsWith('http'))fotoUrls['rev_'+i]=r.url;
-          else console.warn('[Cloudinary] foto',i,'no devolvió URL http');
+          if(r&&r.url&&r.url.startsWith('http')){
+            fotoUrls['rev_'+i]=r.url;
+          } else {
+            console.warn('[Cloudinary] foto',i,'no devolvió URL http, usando b64');
+            fotoUrls['rev_'+i]=b64;
+            cloudinaryOk=false;
+          }
         }catch(e){
-          console.warn('[Cloudinary] Error subiendo foto',i,e);
-          toast('⚠️ Error foto '+(i+1)+': '+(e&&e.message?e.message:'sin conexión'),'rj');
-          return; // No continuar si falla una foto
+          // Fallback: guardar b64 directamente en lugar de bloquear
+          console.warn('[Cloudinary] Error foto',i,e.message||e,'→ usando b64 fallback');
+          fotoUrls['rev_'+i]=b64;
+          cloudinaryOk=false;
         }
       }
     }
-    // 2. Guardar revisión con URLs de Cloudinary
+    if(!cloudinaryOk) console.warn('[Rev] Algunas fotos no subieron a Cloudinary, guardadas como b64');
+    // 2. Guardar revisión (con URLs de Cloudinary o b64 de fallback)
     toast('Guardando revisión...','');
     try {
       await api('POST','/api/entreno/revision',{
