@@ -1287,10 +1287,17 @@ function _convertirEnServidor(f,cb){
     signal:ctrl?ctrl.signal:undefined
   }).then(function(r){
     if(_t)clearTimeout(_t);
-    if(!r.ok){console.error('[convert-heic] HTTP',r.status);return null;}
+    if(r&&r.status===413){
+      // Archivo demasiado grande para el servidor (ProRAW)
+      return r.json().then(function(j){
+        toast(j.error||'Foto demasiado grande. Desactiva ProRAW en Ajustes > Cámara.','rj');
+        return {_tooBig:true};
+      });
+    }
+    if(!r||!r.ok){console.error('[convert-heic] HTTP',r&&r.status);return null;}
     return r.json();
   }).then(function(j){
-    if(!j){cb(null);return;}
+    if(!j||j._tooBig){cb(null);return;}
     if(j.jpeg_b64){cb(j.jpeg_b64);}
     else{console.error('[convert-heic] sin jpeg_b64:',j);cb(null);}
   }).catch(function(err){
@@ -1303,34 +1310,36 @@ function _procesarFotoRev(f,cb){
   var nombre=(f.name||'').toLowerCase();
   var tipo=(f.type||'').toLowerCase();
   var size=f.size||0;
-  console.log('[_procesarFotoRev] nombre:',nombre,'| tipo:',tipo,'| size:',size);
+  console.log('[_procesarFotoRev] nombre:',nombre,'| tipo:',tipo,'| size:',size,'('+Math.round(size/1024/1024*10)/10+'MB)');
+
+  // Límite absoluto: más de 50MB no tiene sentido para una foto de progreso y podría crashear el servidor
+  if(size>50*1024*1024){
+    console.error('[_procesarFotoRev] archivo demasiado grande:',size);
+    toast('La foto es demasiado grande (>50MB). Usa el modo foto normal del iPhone, no ProRAW.','rj');
+    cb(null);
+    return;
+  }
 
   // Detectar HEIC por tipo MIME o extensión
   var esHeicExplicito=tipo==='image/heic'||tipo==='image/heif'||nombre.endsWith('.heic')||nombre.endsWith('.heif');
 
-  // Foto muy grande (>5MB) → enviar siempre al servidor para normalizar, independientemente del tipo
-  // Cubre JPEG/PNG de alta resolución que saturarían el canvas o generarían b64 gigante
-  var esMuyGrande=size>5*1024*1024;
-
-  // También detectar: tipo vacío o desconocido + archivo grande (>400KB) = probable HEIC/RAW sin conversión automática
-  // Safari iOS a veces entrega HEIC con type='' o type='application/octet-stream'
+  // Tipo vacío o desconocido + archivo grande = probable HEIC/RAW (iPhone "Mantener originales")
   var tipoDesconocido=tipo===''||tipo==='application/octet-stream'||(!tipo.startsWith('image/'));
   var esProbableHeic=tipoDesconocido&&size>400*1024;
 
-  if(esHeicExplicito||esProbableHeic||esMuyGrande){
-    var motivo=esHeicExplicito?'HEIC explícito':esProbableHeic?'tipo desconocido/grande':('JPEG/PNG grande '+Math.round(size/1024/1024)+'MB');
-    console.log('[_procesarFotoRev] → servidor ('+motivo+')');
+  // HEIC/desconocido → SIEMPRE al servidor (el canvas no puede decodificarlos)
+  if(esHeicExplicito||esProbableHeic){
+    console.log('[_procesarFotoRev] → servidor (HEIC/desconocido, '+Math.round(size/1024/1024*10)/10+'MB)');
     _convertirEnServidor(f,function(b64){
       if(b64){cb(b64);}
-      else{
-        // Fallback: intentar canvas (puede funcionar si Safari convirtió a JPEG)
-        _procesarFotoRevCanvas(f,cb);
-      }
+      else{_procesarFotoRevCanvas(f,cb);}
     });
     return;
   }
 
-  // JPEG/PNG/WebP normal y pequeño → canvas
+  // JPEG/PNG/WebP de cualquier tamaño → canvas
+  // createImageBitmap aguanta bien hasta 40-50MB en dispositivos modernos
+  // y reduce todo a MAX=900px antes de generar el b64 → nunca se envía el original grande
   _procesarFotoRevCanvas(f,cb);
 }
 
@@ -1478,13 +1487,20 @@ async function _doEnviarRev(){
             fotoUrls['rev_'+i]=r.url;
           } else {
             console.warn('[Cloudinary] foto',i,'no devolvió URL http, usando b64');
-            fotoUrls['rev_'+i]=b64;
+            // Solo guardar b64 como fallback si no es demasiado grande (>3MB en b64 = >2.25MB imagen)
+            if(b64&&b64.length<4*1024*1024){fotoUrls['rev_'+i]=b64;}
             cloudinaryOk=false;
           }
         }catch(e){
-          // Fallback: guardar b64 directamente en lugar de bloquear
-          console.warn('[Cloudinary] Error foto',i,e.message||e,'→ usando b64 fallback');
-          fotoUrls['rev_'+i]=b64;
+          // Si el error es "demasiado grande" (413) → no guardar b64 gigante en DB
+          if(e.message&&e.message.toLowerCase().includes('grande')){
+            console.warn('[Cloudinary] foto',i,'demasiado grande para guardar en DB — omitiendo');
+            toast('Foto '+(i+1)+' demasiado grande. Desactiva ProRAW en Ajustes > Cámara.','rj');
+          } else {
+            // Fallback: guardar b64 solo si es pequeño
+            console.warn('[Cloudinary] Error foto',i,e.message||e,'→ fallback b64');
+            if(b64&&b64.length<4*1024*1024){fotoUrls['rev_'+i]=b64;}
+          }
           cloudinaryOk=false;
         }
       }
