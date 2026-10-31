@@ -1353,7 +1353,8 @@ function enviarRev(){
   var nMeds=Object.keys(medidas).filter(function(k){return medidas[k]!==''&&medidas[k]!==null&&medidas[k]!==undefined;}).length;
   var PP=tipo==='programa'?5:7;
   var nPregs=Object.values(preguntas).filter(function(v){return v&&v.trim();}).length;
-  if(nFotos<4){toast('Sube las 4 fotos (frente, perfiles y espalda)','rj');ST.rev.step=0;render();return;}
+  // Fotos opcionales temporalmente — no bloquear el envío si hay problemas técnicos
+  // if(nFotos<4){toast('Sube las 4 fotos (frente, perfiles y espalda)','rj');ST.rev.step=0;render();return;}
   if(nMeds<9){toast('Rellena todas las medidas corporales','rj');ST.rev.step=1;render();return;}
   if(nPregs<PP){toast('Responde todas las preguntas','rj');ST.rev.step=2;render();return;}
   _doEnviarRev();
