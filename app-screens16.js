@@ -1294,7 +1294,14 @@ function _convertirEnServidor(f,cb){
         return {_tooBig:true};
       });
     }
-    if(!r||!r.ok){console.error('[convert-heic] HTTP',r&&r.status);return null;}
+    if(!r||!r.ok){
+      var st=r&&r.status;
+      // Leer cuerpo del error para diagnóstico
+      return (r?r.json().catch(function(){return{};}):Promise.resolve({})).then(function(ej){
+        console.error('[convert-heic] HTTP',st,'— servidor dijo:',JSON.stringify(ej));
+        return null;
+      });
+    }
     return r.json();
   }).then(function(j){
     if(!j||j._tooBig){cb(null);return;}
@@ -1323,9 +1330,10 @@ function _procesarFotoRev(f,cb){
   // Detectar HEIC por tipo MIME o extensión
   var esHeicExplicito=tipo==='image/heic'||tipo==='image/heif'||nombre.endsWith('.heic')||nombre.endsWith('.heif');
 
-  // Tipo vacío o desconocido + archivo grande = probable HEIC/RAW (iPhone "Mantener originales")
+  // Tipo vacío o desconocido = probable HEIC/RAW (iPhone "Mantener originales" o "Alta eficiencia")
+  // Antes se exigía size>400KB pero HEIC comprimido puede ser <400KB igualmente
   var tipoDesconocido=tipo===''||tipo==='application/octet-stream'||(!tipo.startsWith('image/'));
-  var esProbableHeic=tipoDesconocido&&size>400*1024;
+  var esProbableHeic=tipoDesconocido&&size>10*1024; // >10KB para filtrar archivos vacíos/corruptos
 
   // HEIC/desconocido → SIEMPRE al servidor (el canvas no puede decodificarlos)
   if(esHeicExplicito||esProbableHeic){
