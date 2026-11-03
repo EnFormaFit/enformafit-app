@@ -11,11 +11,20 @@ var _MEAL_NAMES={desayuno:'🌅 Desayuno',comida:'☀️ Comida',cena:'🌙 Cena
 
 // ── ENTRENO ──
 let curDay=null,_entTX=0;
+// Día-del-calendario (0-6) en el que se fijó curDay — para detectar cambio de día
+let _curDayDow=null;
 
 function renderEntreno(){
   if(!ST.ejStates)ST.ejStates={};
+  var _todayDow=new Date().getDay();
+  // Resetear curDay si el día del calendario cambió (app abierta de un día para otro)
+  if(curDay!==null&&_curDayDow!==null&&_curDayDow!==_todayDow){
+    curDay=null;
+    _curDayDow=null;
+  }
   if(curDay===null){
-    var _todayIdx=[6,0,1,2,3,4,5][new Date().getDay()];
+    var _todayIdx=[6,0,1,2,3,4,5][_todayDow];
+    _curDayDow=_todayDow; // recordar el día en que se fijó
     if(DIAS[_todayIdx]&&!DIAS[_todayIdx].rest){
       curDay=_todayIdx;
     } else {
