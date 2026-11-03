@@ -833,10 +833,13 @@ async function loadClienteData() {
       try {
         var _lsSnap2 = JSON.parse(localStorage.getItem('ef8')||'{}');
         if (_lsSnap2.ejStates && Object.keys(_lsSnap2.ejStates).length > 0) {
-          // Merge: localStorage has priority for all fields including rir
+          // Merge: localStorage has priority for kg/reps/rir, BUT only same semana
+          var _semActualMerge = ST.semVer || ST.u.semana || 1;
           Object.keys(_lsSnap2.ejStates).forEach(function(k) {
             if (ST.ejStates[k]) {
-              // For each serie, localStorage values take priority
+              var lsEj = _lsSnap2.ejStates[k];
+              // Solo mergear si la semana coincide — evita contaminar semana nueva con done:true de semana anterior
+              var semCoincide = !lsEj._sem || lsEj._sem === _semActualMerge;
               (_lsSnap2.ejStates[k].series||[]).forEach(function(lsSerie, si) {
                 if (ST.ejStates[k].series && ST.ejStates[k].series[si]) {
                   // rir: use localStorage only if it has a real value (not empty string)
@@ -844,8 +847,8 @@ async function loadClienteData() {
                   // kg/reps: use localStorage if it has a value
                   if (lsSerie.kg) ST.ejStates[k].series[si].kg = lsSerie.kg;
                   if (lsSerie.repsH) ST.ejStates[k].series[si].repsH = lsSerie.repsH;
-                  // done: keep true if either has true
-                  if (lsSerie.done) ST.ejStates[k].series[si].done = true;
+                  // done: solo restaurar si la semana coincide (evita done:true de semana pasada)
+                  if (lsSerie.done && semCoincide) ST.ejStates[k].series[si].done = true;
                 }
               });
             }
@@ -857,9 +860,13 @@ async function loadClienteData() {
     // This restores rir and other user values that BD restore may have cleared
     try {
       if (_ejStatesSnapshot && Object.keys(_ejStatesSnapshot).length > 0) {
+        var _semActualSnap = ST.semVer || ST.u.semana || 1;
         Object.keys(_ejStatesSnapshot).forEach(function(k) {
           if (!ST.ejStates[k]) return;
-          var snapSeries = _ejStatesSnapshot[k].series || [];
+          var snapEj = _ejStatesSnapshot[k];
+          // Solo mergear done:true si la semana coincide
+          var semCoincideSnap = !snapEj._sem || snapEj._sem === _semActualSnap;
+          var snapSeries = snapEj.series || [];
           snapSeries.forEach(function(snapS, si) {
             if (!ST.ejStates[k].series[si]) return;
             var cur = ST.ejStates[k].series[si];
@@ -868,8 +875,8 @@ async function loadClienteData() {
             // kg/reps: restore if snapshot has value and current doesn't
             if (snapS.kg && !cur.kg) cur.kg = snapS.kg;
             if (snapS.repsH && !cur.repsH) cur.repsH = snapS.repsH;
-            // done: keep true
-            if (snapS.done) cur.done = true;
+            // done: solo restaurar si la semana coincide (evita done:true de semana pasada)
+            if (snapS.done && semCoincideSnap) cur.done = true;
           });
         });
       }
