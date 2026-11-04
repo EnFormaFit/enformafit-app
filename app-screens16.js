@@ -383,14 +383,19 @@ function _showHistSem(sem,sems){
 // showHistSem removed — replaced by _showHistSem which loads from BD
 function closeHist(){document.getElementById('histModal').classList.remove('show');}
 
-// Timer
-let _timID=null,_timSec=0;
+// Timer — usa Date.now() para que no se pare al minimizar la app
+let _timID=null,_timEnd=0;
 function startTimer(sec){
-  _timSec=sec;const d=document.getElementById('timDiv');d.classList.add('show');
+  const d=document.getElementById('timDiv');d.classList.add('show');
   clearInterval(_timID);
-  const upd=()=>{_timSec--;document.getElementById('timN').textContent=Math.floor(_timSec/60)+':'+(String(_timSec%60).padStart(2,'0'));if(_timSec<=0){clearInterval(_timID);d.classList.remove('show');toast('¡Siguiente serie!','vd');}};
-  document.getElementById('timN').textContent=Math.floor(sec/60)+':'+(String(sec%60).padStart(2,'0'));
-  _timID=setInterval(upd,1000);
+  _timEnd=Date.now()+sec*1000;
+  const upd=()=>{
+    const rem=Math.max(0,Math.round((_timEnd-Date.now())/1000));
+    document.getElementById('timN').textContent=Math.floor(rem/60)+':'+(String(rem%60).padStart(2,'0'));
+    if(rem<=0){clearInterval(_timID);d.classList.remove('show');toast('¡Siguiente serie!','vd');}
+  };
+  upd();
+  _timID=setInterval(upd,500);
 }
 function stopTimer(){clearInterval(_timID);document.getElementById('timDiv').classList.remove('show');}
 
