@@ -524,7 +524,7 @@ function renderNutricion(){
     </div>
     ${tab!=='lista'?`<div class="day-tabs">${tab==='menu'?dayTabs:dayTabsNav}</div>`:''}
   </div>
-  <div class="nut-body">${_bannerBloquePendiente()}${pncBanner}${body}</div>`;
+  <div class="nut-body">${pncBanner}${body}</div>`;
 }
 
 function renderMenuDia(di){
