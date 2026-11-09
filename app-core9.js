@@ -759,10 +759,17 @@ async function loadClienteData() {
               }
               if (!ST.ejStates[key].series[si]) ST.ejStates[key].series[si] = {kg:'',repsH:'',done:false,rir:''};
               var existing = ST.ejStates[key].series[si];
-              // kg y reps: solo si localStorage no tiene valor (localStorage tiene prioridad)
+              // kg y reps: BD tiene prioridad sobre localStorage de semana diferente.
+              // Si el ejState existente tiene _sem de otra semana, BD sobreescribe siempre.
+              // Si el _sem coincide (misma semana), localStorage mantiene prioridad (el usuario ya introdujo datos).
+              var ejStateSem = ST.ejStates[key]._sem; // _sem está en el objeto padre, no en la serie
+              // Si _sem no existe o no coincide con la semana actual, BD tiene prioridad
+              var existingSemCoincide = ejStateSem === semActual;
+              var existingKgEsSemActual = existingSemCoincide && existing.kg;
+              var existingRepsEsSemActual = existingSemCoincide && existing.repsH;
               var rowKg = parseFloat(row.kg) || 0;
-              if (rowKg > 0 && !existing.kg) existing.kg = String(rowKg); // parseFloat quita .00 innecesarios
-              if (row.reps_reales && row.reps_reales > 0 && !existing.repsH) existing.repsH = String(parseInt(row.reps_reales));
+              if (rowKg > 0 && !existingKgEsSemActual) existing.kg = String(rowKg); // parseFloat quita .00 innecesarios
+              if (row.reps_reales && row.reps_reales > 0 && !existingRepsEsSemActual) existing.repsH = String(parseInt(row.reps_reales));
               // RIR: siempre restaurar desde BD si el campo está vacío
               if (row.rir_real !== null && row.rir_real !== undefined && (existing.rir === '' || existing.rir === undefined || existing.rir === null)) existing.rir = String(parseInt(row.rir_real));
               if (row.completada) existing.done = true;
@@ -838,15 +845,15 @@ async function loadClienteData() {
           Object.keys(_lsSnap2.ejStates).forEach(function(k) {
             if (ST.ejStates[k]) {
               var lsEj = _lsSnap2.ejStates[k];
-              // Solo mergear si la semana coincide — evita contaminar semana nueva con done:true de semana anterior
-              var semCoincide = !lsEj._sem || lsEj._sem === _semActualMerge;
+              // Solo mergear si la semana coincide exactamente — _sem sin valor no es "coincide"
+              var semCoincide = lsEj._sem === _semActualMerge;
               (_lsSnap2.ejStates[k].series||[]).forEach(function(lsSerie, si) {
                 if (ST.ejStates[k].series && ST.ejStates[k].series[si]) {
                   // rir: use localStorage only if it has a real value (not empty string)
                   if (lsSerie.rir !== undefined && lsSerie.rir !== '' && lsSerie.rir !== null) ST.ejStates[k].series[si].rir = lsSerie.rir;
-                  // kg/reps: use localStorage if it has a value
-                  if (lsSerie.kg) ST.ejStates[k].series[si].kg = lsSerie.kg;
-                  if (lsSerie.repsH) ST.ejStates[k].series[si].repsH = lsSerie.repsH;
+                  // kg/reps: use localStorage solo si la semana coincide (evita datos de semana anterior)
+                  if (lsSerie.kg && semCoincide) ST.ejStates[k].series[si].kg = lsSerie.kg;
+                  if (lsSerie.repsH && semCoincide) ST.ejStates[k].series[si].repsH = lsSerie.repsH;
                   // done: solo restaurar si la semana coincide (evita done:true de semana pasada)
                   if (lsSerie.done && semCoincide) ST.ejStates[k].series[si].done = true;
                 }
@@ -864,17 +871,17 @@ async function loadClienteData() {
         Object.keys(_ejStatesSnapshot).forEach(function(k) {
           if (!ST.ejStates[k]) return;
           var snapEj = _ejStatesSnapshot[k];
-          // Solo mergear done:true si la semana coincide
-          var semCoincideSnap = !snapEj._sem || snapEj._sem === _semActualSnap;
+          // Solo mergear si la semana coincide exactamente — _sem sin valor no es "coincide"
+          var semCoincideSnap = snapEj._sem === _semActualSnap;
           var snapSeries = snapEj.series || [];
           snapSeries.forEach(function(snapS, si) {
             if (!ST.ejStates[k].series[si]) return;
             var cur = ST.ejStates[k].series[si];
             // rir: restore from snapshot only if it has a real value
             if (snapS.rir !== undefined && snapS.rir !== '' && snapS.rir !== null) cur.rir = snapS.rir;
-            // kg/reps: restore if snapshot has value and current doesn't
-            if (snapS.kg && !cur.kg) cur.kg = snapS.kg;
-            if (snapS.repsH && !cur.repsH) cur.repsH = snapS.repsH;
+            // kg/reps: restore solo si la semana coincide (evita datos de semana anterior contaminando semana nueva)
+            if (snapS.kg && !cur.kg && semCoincideSnap) cur.kg = snapS.kg;
+            if (snapS.repsH && !cur.repsH && semCoincideSnap) cur.repsH = snapS.repsH;
             // done: solo restaurar si la semana coincide (evita done:true de semana pasada)
             if (snapS.done && semCoincideSnap) cur.done = true;
           });
