@@ -491,6 +491,9 @@ async function loadClienteData() {
     }
   } catch(e) {}
 
+  // Lanzar fetch de historial YA — en paralelo con perfil y plan para no esperar la cadena completa
+  var _historialPromise = api('GET', '/api/entreno/mi-historial').catch(function(e){ console.warn('[hist prefetch]', e && e.message); return null; });
+
   try {
     // ── 1. Perfil básico del usuario ────────────────────────────────────────
     const perfil = await api('GET', '/api/clientes/me/perfil');
@@ -708,11 +711,11 @@ async function loadClienteData() {
       }
     } catch(e) { console.warn('[CI load]', e); }
 
-    // Cargar historial completo desde BD (una sola llamada — sin params devuelve todo)
+    // Cargar historial completo desde BD (lanzado en paralelo al inicio — ahora solo esperamos el resultado)
     // Puebla histEnt (para "Anterior" y semanas pasadas) y ejStates (semana actual)
     try {
       var semActual = ST.semVer || ST.u.semana || 1;
-      var histBD = await api('GET', '/api/entreno/mi-historial');
+      var histBD = await _historialPromise;
       if (histBD && Array.isArray(histBD) && histBD.length) {
         histBD.forEach(function(row) {
           var nom = row.ejercicio;
