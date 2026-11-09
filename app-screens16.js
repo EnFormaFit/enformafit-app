@@ -20,13 +20,67 @@ function _bannerBloquePendiente(){
   var fi=bp.fecha_inicio.split('T')[0];
   var partes=fi.split('-');
   var fechaStr=partes[2]+'/'+partes[1]+'/'+partes[0];
-  return`<div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+  return`<div onclick="verRutinaPendiente()" style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;active:opacity:0.8">
     <div style="font-size:18px">📦</div>
     <div style="flex:1">
       <div style="font-size:13px;font-weight:700;color:#166534">Nuevo bloque desde el ${fechaStr}</div>
-      <div style="font-size:11px;color:#15803d;margin-top:2px">Tu plan se actualiza automáticamente ese día</div>
+      <div style="font-size:11px;color:#15803d;margin-top:2px">Toca para ver los ejercicios del próximo bloque</div>
     </div>
+    <div style="font-size:16px;color:#16a34a">›</div>
   </div>`;
+}
+
+async function verRutinaPendiente(){
+  // Mostrar modal con los ejercicios del bloque pendiente
+  var bp=ST.bloquePendiente;
+  if(!bp||!bp.fecha_inicio)return;
+  var fi=bp.fecha_inicio.split('T')[0];
+  var partes=fi.split('-');
+  var fechaStr=partes[2]+'/'+partes[1]+'/'+partes[0];
+  // Mostrar modal de carga
+  var modal=document.createElement('div');
+  modal.id='modal-rut-pend';
+  modal.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center';
+  modal.innerHTML='<div style="background:#fff;border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow-y:auto;padding:20px 16px 32px">'
+    +'<div style="text-align:center;padding:20px"><div style="font-size:24px">📦</div><div style="color:#166534;font-weight:700">Cargando próximo bloque…</div></div>'
+    +'</div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click',function(e){if(e.target===modal){modal.remove();}});
+  try{
+    var data=await api('GET','/api/entreno/mi-rutina-pendiente');
+    if(!data||!data.rutina_base){
+      modal.querySelector('div>div').innerHTML='<div style="text-align:center;padding:20px;color:#888">No hay ejercicios configurados aún para el próximo bloque.</div>';
+      return;
+    }
+    var rb=data.rutina_base;
+    var DIAS_NOM=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+    var diasH=DIAS_NOM.map(function(nom,di){
+      var ejes=rb[String(di)]||rb[di]||[];
+      var esDescanso=!ejes||ejes.length===0;
+      var ejH=esDescanso
+        ?'<p style="color:#aaa;font-size:12px;margin:0">Día de descanso</p>'
+        :ejes.map(function(ej){
+          var n=ej.nom||ej.nombre||ej;
+          var s=ej.sets||ej.series||3;
+          var r=ej.reps||'?';
+          return'<div style="padding:5px 0;border-bottom:1px solid #f0f0f0;font-size:13px"><span style="color:#111">'+n+'</span> <span style="color:#888;font-size:11px">'+s+'×'+r+'</span></div>';
+        }).join('');
+      return'<div style="margin-bottom:14px">'
+        +'<div style="font-weight:700;font-size:12px;color:#166534;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">'+nom+(esDescanso?' 😴':'')+'</div>'
+        +ejH
+        +'</div>';
+    }).join('');
+    modal.querySelector('div>div').innerHTML=
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
+        +'<div><div style="font-size:18px;font-weight:800;color:#111">Próximo bloque</div>'
+        +'<div style="font-size:12px;color:#166534">Empieza el '+fechaStr+'</div></div>'
+        +'<button onclick="document.getElementById(\'modal-rut-pend\').remove()" style="background:none;border:none;font-size:22px;color:#888;cursor:pointer;line-height:1">×</button>'
+      +'</div>'
+      +'<div style="font-size:12px;color:#888;margin-bottom:14px;padding:8px;background:#f0fdf4;border-radius:8px;border-left:3px solid #86efac">Tu plan de ejercicios del próximo bloque. Empieza automáticamente el '+fechaStr+'.</div>'
+      +diasH;
+  }catch(e){
+    modal.querySelector('div>div').innerHTML='<div style="text-align:center;padding:20px;color:#e44">Error al cargar: '+(e&&e.message||'')+'</div>';
+  }
 }
 
 function renderEntreno(){
