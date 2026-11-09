@@ -14,6 +14,21 @@ let curDay=null,_entTX=0;
 // Día-del-calendario (0-6) en el que se fijó curDay — para detectar cambio de día
 let _curDayDow=null;
 
+function _bannerBloquePendiente(){
+  var bp=ST.bloquePendiente;
+  if(!bp||!bp.fecha_inicio)return'';
+  var fi=bp.fecha_inicio.split('T')[0];
+  var partes=fi.split('-');
+  var fechaStr=partes[2]+'/'+partes[1]+'/'+partes[0];
+  return`<div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+    <div style="font-size:18px">📦</div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:700;color:#166534">Nuevo bloque desde el ${fechaStr}</div>
+      <div style="font-size:11px;color:#15803d;margin-top:2px">Tu plan se actualiza automáticamente ese día</div>
+    </div>
+  </div>`;
+}
+
 function renderEntreno(){
   if(!ST.ejStates)ST.ejStates={};
   var _todayDow=new Date().getDay();
@@ -173,6 +188,7 @@ function buildEntHTML(di){
     body+=`<button class="btn btnp btnf" onclick="guardarDia(${di})">Guardar entrenamiento ✓</button>`;
   }
   return`<div style="min-height:100%" ontouchstart="_entTX=event.touches?event.touches[0].clientX:0" ontouchend="swipeEnt(event,${di})">
+    ${_bannerBloquePendiente()}
     ${semSel}
     <div class="day-sticky"><div class="day-sel">${dayBtns}</div></div>
     ${body}
@@ -454,7 +470,7 @@ function renderNutricion(){
     </div>
     ${tab!=='lista'?`<div class="day-tabs">${tab==='menu'?dayTabs:dayTabsNav}</div>`:''}
   </div>
-  <div class="nut-body">${pncBanner}${body}</div>`;
+  <div class="nut-body">${_bannerBloquePendiente()}${pncBanner}${body}</div>`;
 }
 
 function renderMenuDia(di){

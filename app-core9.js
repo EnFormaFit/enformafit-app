@@ -24,6 +24,7 @@ const ST={
   copyTargets:[],copyFrom:-1,
   listaCheck:{},
   pendingNutChanges:null,
+  bloquePendiente:null,
   revHistorial:{},
   _editandoRevSem:null,
 };
@@ -494,6 +495,20 @@ async function loadClienteData() {
   // Lanzar fetch de historial YA — en paralelo con perfil y plan para no esperar la cadena completa
   var _historialPromise = api('GET', '/api/entreno/mi-historial').catch(function(e){ console.warn('[hist prefetch]', e && e.message); return null; });
 
+  // Lanzar comprobación de bloque pendiente en paralelo (activación automática si llegó la fecha)
+  var _bloquePendientePromise = api('POST', '/api/clientes/me/activar-bloque-pendiente', {})
+    .then(function(r){
+      if (r && r.activado) {
+        console.log('[BLOQUE] Bloque pendiente activado automáticamente:', r.bloque && r.bloque.numero_bloque);
+      }
+      return r;
+    })
+    .catch(function(e){ console.warn('[bloque-pend]', e && e.message); return null; });
+
+  // Lanzar fetch de bloque pendiente (para banner) en paralelo
+  var _bloquePendienteInfoPromise = api('GET', '/api/clientes/me/bloque-pendiente')
+    .catch(function(e){ return null; });
+
   try {
     // ── 1. Perfil básico del usuario ────────────────────────────────────────
     const perfil = await api('GET', '/api/clientes/me/perfil');
@@ -891,6 +906,22 @@ async function loadClienteData() {
         });
       }
     } catch(eMerge) {}
+
+    // Cargar info del bloque pendiente (para banner en la app)
+    try {
+      var _bpActivado = await _bloquePendientePromise;
+      if (_bpActivado && _bpActivado.activado) {
+        // El bloque se activó — recargar datos completos
+        console.log('[BLOQUE] Recargando tras activación automática');
+        ST.bloquePendiente = null;
+        save();
+        loadClienteData(); // recarga completa
+        return;
+      }
+      var _bpInfo = await _bloquePendienteInfoPromise;
+      ST.bloquePendiente = _bpInfo || null;
+    } catch(eBp) { ST.bloquePendiente = null; }
+
     save(); // save all including ejStates
     render();
     // Re-render tras carga de BD para que la pantalla activa refleje los datos
