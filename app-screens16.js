@@ -90,12 +90,32 @@ function _renderModalPendiente(fechaStr,semanas,rs,semActual){
   // Datos de la semana seleccionada (con fallback a base)
   var semData=rs[semActual]||rs[String(semActual)]||rs[1]||rs['1']||{};
 
-  // Días con ejercicios
-  var diasH=DIAS_NOM.map(function(nom,di){
+  // Días con ejercicios — tabs horizontales por día
+  var diasConEj=[];
+  DIAS_NOM.forEach(function(nom,di){
     var ejes=semData[String(di)]||semData[di]||[];
-    var esDescanso=!ejes||ejes.length===0;
-    if(esDescanso)return'';
-    var ejsH=ejes.map(function(ej,ei){
+    if(ejes&&ejes.length>0) diasConEj.push({nom:nom,di:di,ejes:ejes});
+  });
+
+  // Tab selector de días (si no hay día activo guardado o está fuera de rango, usar el primero)
+  if(!window._pendDiaActual||diasConEj.findIndex(function(d){return d.di===window._pendDiaActual;})<0){
+    window._pendDiaActual=diasConEj.length?diasConEj[0].di:0;
+  }
+  var diaActual=window._pendDiaActual;
+  var diaData=diasConEj.find(function(d){return d.di===diaActual;})||diasConEj[0]||null;
+
+  var diaTabs=diasConEj.map(function(d){
+    var activo=d.di===diaActual;
+    return'<button onclick="window._pendDiaActual='+d.di+';_renderModalPendiente(\''+fechaStr+'\','+semanas+',_pendRS,'+semActual+')" style="'
+      +'flex-shrink:0;padding:7px 14px;border-radius:20px;border:1.5px solid '+(activo?'#16a34a':'#e5e7eb')+';'
+      +'background:'+(activo?'#16a34a':'#fff')+';color:'+(activo?'#fff':'#374151')+';'
+      +'font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">'+d.nom+'</button>';
+  }).join('');
+
+  // Ejercicios del día seleccionado
+  var ejsH='';
+  if(diaData){
+    ejsH=diaData.ejes.map(function(ej,ei){
       var n=ej.nom||ej.nombre||String(ej);
       var sets=ej.sets||3;
       var reps=ej.reps||'?';
@@ -105,45 +125,47 @@ function _renderModalPendiente(fechaStr,semanas,rs,semActual){
       var restSec=String(rest%60).padStart(2,'0');
       var acl=ej.acl||ej.aclaraciones||'';
       var url=ej.url||'';
-      return'<div style="padding:10px 0;border-bottom:1px solid #f3f4f6">'
-        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
-          +'<div style="flex:1">'
-            +'<div style="font-size:13px;font-weight:700;color:#111;line-height:1.3">'+ei+1+'. '+n+'</div>'
-            +'<div style="font-size:11px;color:#6b7280;margin-top:3px">'+sets+' series · '+reps+' reps · RIR '+rir+' · '+restMin+':'+restSec+' desc</div>'
-            +(acl?'<div style="font-size:11px;color:#9ca3af;margin-top:2px;font-style:italic">'+acl+'</div>':'')
+      var num=(ei+1);
+      return'<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f3f4f6;align-items:flex-start">'
+        +'<div style="flex-shrink:0;width:24px;height:24px;border-radius:50%;background:#f0fdf4;border:1.5px solid #bbf7d0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#166534;margin-top:1px">'+num+'</div>'
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:14px;font-weight:700;color:#111;line-height:1.3;margin-bottom:4px">'+n+'</div>'
+          +'<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:'+(acl?'5':'0')+'px">'
+            +'<span style="background:#f3f4f6;border-radius:5px;padding:3px 7px;font-size:11px;color:#374151;font-weight:600">💪 '+sets+' series</span>'
+            +'<span style="background:#f3f4f6;border-radius:5px;padding:3px 7px;font-size:11px;color:#374151;font-weight:600">🔁 '+reps+' reps</span>'
+            +'<span style="background:#f3f4f6;border-radius:5px;padding:3px 7px;font-size:11px;color:#374151;font-weight:600">RIR '+rir+'</span>'
+            +'<span style="background:#f3f4f6;border-radius:5px;padding:3px 7px;font-size:11px;color:#374151;font-weight:600">⏱ '+restMin+':'+restSec+'</span>'
           +'</div>'
-          +(url?'<a href="'+url+'" target="_blank" style="flex-shrink:0;background:#ef4444;color:#fff;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:700;text-decoration:none;line-height:1.2;display:flex;align-items:center;gap:3px"><span>▶</span> Ver</a>':'')
+          +(acl?'<div style="font-size:11px;color:#9ca3af;line-height:1.4;font-style:italic">'+acl+'</div>':'')
         +'</div>'
+        +(url?'<a href="'+url+'" target="_blank" onclick="event.stopPropagation()" style="flex-shrink:0;background:#ef4444;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:4px;margin-top:2px">▶ Ver</a>':'')
       +'</div>';
     }).join('');
-    return'<div style="margin-bottom:4px">'
-      +'<div style="font-weight:800;font-size:11px;color:#166534;text-transform:uppercase;letter-spacing:.6px;padding:10px 0 4px;border-bottom:2px solid #d1fae5">'+nom+'</div>'
-      +ejsH
-      +'</div>';
-  }).filter(Boolean).join('');
-
-  if(!diasH){
-    diasH='<div style="text-align:center;padding:24px;color:#9ca3af;font-size:13px">Sin ejercicios configurados para S'+semActual+'</div>';
+  } else {
+    ejsH='<div style="text-align:center;padding:24px;color:#9ca3af;font-size:13px">Sin ejercicios configurados para S'+semActual+'</div>';
   }
 
+  // Guardar rs en variable global temporal para que los botones de día puedan llamar _renderModalPendiente
+  window._pendRS=rs;
+
   inner.innerHTML=
-    // Header fijo
     '<div style="padding:16px 16px 0;flex-shrink:0">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
         +'<div><div style="font-size:17px;font-weight:800;color:#111">📦 Próximo bloque</div>'
-        +'<div style="font-size:11px;color:#16a34a;font-weight:600">Empieza el '+fechaStr+'</div></div>'
-        +'<button onclick="document.getElementById(\'modal-rut-pend\').remove()" style="background:#f3f4f6;border:none;width:30px;height:30px;border-radius:50%;font-size:16px;color:#6b7280;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit">×</button>'
+        +'<div style="font-size:11px;color:#16a34a;font-weight:600;margin-top:2px">Empieza el '+fechaStr+'</div></div>'
+        +'<button onclick="document.getElementById(\'modal-rut-pend\').remove()" style="background:#f3f4f6;border:none;width:32px;height:32px;border-radius:50%;font-size:18px;color:#6b7280;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit">×</button>'
       +'</div>'
-      +'<div style="font-size:11px;color:#6b7280;padding:7px 10px;background:#f0fdf4;border-radius:7px;border-left:3px solid #86efac;margin:10px 0 8px">👁 Vista previa — sin campos de registro</div>'
-      // Selector semanas horizontal scroll
-      +'<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;-webkit-overflow-scrolling:touch;scrollbar-width:none">'+semBtns+'</div>'
+      // Selector semanas
+      +'<div style="display:flex;gap:5px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-bottom:6px">'+semBtns+'</div>'
+      // Tabs de días
+      +(diasConEj.length?'<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:12px;-webkit-overflow-scrolling:touch;scrollbar-width:none">'+diaTabs+'</div>':'')
     +'</div>'
-    // Scroll área ejercicios
-    +'<div style="overflow-y:auto;padding:0 16px 32px;flex:1">'+diasH+'</div>';
+    +'<div style="overflow-y:auto;padding:0 16px 32px;flex:1">'+ejsH+'</div>';
 }
 
 function _cambiarSemPend(s){
   _pendSemActual=s;
+  window._pendDiaActual=null; // resetear día al cambiar semana
   if(!_pendData)return;
   var bp=ST.bloquePendiente;
   var fi=(bp&&bp.fecha_inicio?bp.fecha_inicio:'').split('T')[0];
