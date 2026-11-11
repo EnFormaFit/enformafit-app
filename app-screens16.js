@@ -129,7 +129,7 @@ function _renderModalPendiente(fechaStr,semanas,rs,semActual){
       var restMin=Math.floor(rest/60);
       var restSec=String(rest%60).padStart(2,'0');
       var acl=ej.acl||ej.aclaraciones||'';
-      var url=ej.url||'';
+      var url=ej.url||ej.video||ej.link||ej.yt||'';
       var ytBtn=url?'<a href="'+url+'" target="_blank" class="ejyt">▶ Ver</a>':'';
       return'<div class="ejcard">'
         +'<div class="ejhead">'
