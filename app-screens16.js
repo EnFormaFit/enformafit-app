@@ -89,8 +89,6 @@ function _renderModalPendiente(fechaStr,semanas,rs,semActual){
 
   // Datos de la semana seleccionada (con fallback a base)
   var semData=rs[semActual]||rs[String(semActual)]||rs[1]||rs['1']||{};
-  // DEBUG: ver qué campos tienen los ejercicios del primer día con datos
-  try{var _dbgDia=Object.keys(semData)[0];if(_dbgDia){var _dbgEj=(semData[_dbgDia]||[])[0];if(_dbgEj)console.log('[PEND DEBUG] ej[0] keys:',Object.keys(_dbgEj),'url:',_dbgEj.url,'video:',_dbgEj.video);}}catch(e){}
 
   // Construir mapa completo de días (como DIAS en el bloque activo) con todos los 7 días
   var DIAS_NOM_CORTOS=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
