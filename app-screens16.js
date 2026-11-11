@@ -90,31 +90,36 @@ function _renderModalPendiente(fechaStr,semanas,rs,semActual){
   // Datos de la semana seleccionada (con fallback a base)
   var semData=rs[semActual]||rs[String(semActual)]||rs[1]||rs['1']||{};
 
-  // Días con ejercicios — tabs horizontales por día
-  var diasConEj=[];
-  DIAS_NOM.forEach(function(nom,di){
+  // Construir mapa completo de días (como DIAS en el bloque activo) con todos los 7 días
+  var DIAS_NOM_CORTOS=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  var todosLosDias=DIAS_NOM.map(function(nom,di){
     var ejes=semData[String(di)]||semData[di]||[];
-    if(ejes&&ejes.length>0) diasConEj.push({nom:nom,di:di,ejes:ejes});
+    return{nom:nom,nomC:DIAS_NOM_CORTOS[di],di:di,rest:!ejes||ejes.length===0,ejes:ejes};
   });
 
-  // Tab selector de días (si no hay día activo guardado o está fuera de rango, usar el primero)
-  if(!window._pendDiaActual||diasConEj.findIndex(function(d){return d.di===window._pendDiaActual;})<0){
-    window._pendDiaActual=diasConEj.length?diasConEj[0].di:0;
+  // Tab activo: si no hay guardado o es descanso, coger primer día con ejercicios
+  var diasEntrenamiento=todosLosDias.filter(function(d){return !d.rest;});
+  if(window._pendDiaActual===null||window._pendDiaActual===undefined){
+    window._pendDiaActual=diasEntrenamiento.length?diasEntrenamiento[0].di:0;
   }
   var diaActual=window._pendDiaActual;
-  var diaData=diasConEj.find(function(d){return d.di===diaActual;})||diasConEj[0]||null;
+  var diaData=todosLosDias[diaActual]||todosLosDias[0];
 
-  var diaTabs=diasConEj.map(function(d){
-    var activo=d.di===diaActual;
-    return'<button onclick="window._pendDiaActual='+d.di+';_renderModalPendiente(\''+fechaStr+'\','+semanas+',_pendRS,'+semActual+')" style="'
-      +'flex-shrink:0;padding:7px 14px;border-radius:20px;border:1.5px solid '+(activo?'#16a34a':'#e5e7eb')+';'
-      +'background:'+(activo?'#16a34a':'#fff')+';color:'+(activo?'#fff':'#374151')+';'
-      +'font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">'+d.nom+'</button>';
+  // Tabs de días — exactamente igual que .day-b en el bloque activo
+  var dayTabs=todosLosDias.map(function(d){
+    var on=d.di===diaActual;
+    return'<button class="day-b'+(on?' on':'')+(d.rest?' rest':'')+'" onclick="window._pendDiaActual='+d.di+';_renderModalPendiente(\''+fechaStr+'\','+semanas+',_pendRS,'+semActual+')">'+d.nomC+'<br><small style="font-size:9px;opacity:.6">'+(d.rest?'Desc.':'Entr.')+'</small></button>';
   }).join('');
 
-  // Ejercicios del día seleccionado
+  // Tarjetas de ejercicio — mismo HTML que renderEj() pero sin inputs ni botón guardar
   var ejsH='';
-  if(diaData){
+  if(diaData.rest){
+    ejsH='<div class="card"><div class="cb" style="text-align:center;padding:28px 14px">'
+      +'<div style="font-size:48px;margin-bottom:10px">😴</div>'
+      +'<div style="font-size:17px;font-weight:700;margin-bottom:8px">Día de descanso</div>'
+      +'<div style="font-size:13px;color:var(--t2);line-height:1.6">El descanso es parte del entrenamiento. Es cuando el músculo crece y se recupera.</div>'
+      +'</div></div>';
+  } else {
     ejsH=diaData.ejes.map(function(ej,ei){
       var n=ej.nom||ej.nombre||String(ej);
       var sets=ej.sets||3;
@@ -125,42 +130,42 @@ function _renderModalPendiente(fechaStr,semanas,rs,semActual){
       var restSec=String(rest%60).padStart(2,'0');
       var acl=ej.acl||ej.aclaraciones||'';
       var url=ej.url||'';
-      var num=(ei+1);
-      return'<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f3f4f6;align-items:flex-start">'
-        +'<div style="flex-shrink:0;width:24px;height:24px;border-radius:50%;background:#f0fdf4;border:1.5px solid #bbf7d0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#166534;margin-top:1px">'+num+'</div>'
-        +'<div style="flex:1;min-width:0">'
-          +'<div style="font-size:14px;font-weight:700;color:#111;line-height:1.3;margin-bottom:4px">'+n+'</div>'
-          +'<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:'+(acl?'5':'0')+'px">'
-            +'<span style="background:#f3f4f6;border-radius:5px;padding:3px 7px;font-size:11px;color:#374151;font-weight:600">💪 '+sets+' series</span>'
-            +'<span style="background:#f3f4f6;border-radius:5px;padding:3px 7px;font-size:11px;color:#374151;font-weight:600">🔁 '+reps+' reps</span>'
-            +'<span style="background:#f3f4f6;border-radius:5px;padding:3px 7px;font-size:11px;color:#374151;font-weight:600">RIR '+rir+'</span>'
-            +'<span style="background:#f3f4f6;border-radius:5px;padding:3px 7px;font-size:11px;color:#374151;font-weight:600">⏱ '+restMin+':'+restSec+'</span>'
+      var ytBtn=url?'<a href="'+url+'" target="_blank" class="ejyt">▶ Ver</a>':'';
+      return'<div class="ejcard">'
+        +'<div class="ejhead">'
+          +'<div class="ejnum">'+(ei+1)+'</div>'
+          +'<div style="flex:1">'
+            +'<div class="ejnom">'+n+'</div>'
+            +'<div class="ejmeta">'+sets+' series · '+reps+' reps · RIR '+rir+' · '+restMin+':'+restSec+'min desc.</div>'
+            +(acl?'<div class="ejacl">'+acl+'</div>':'')
+            +(ytBtn?'<div style="margin-top:4px">'+ytBtn+'</div>':'')
           +'</div>'
-          +(acl?'<div style="font-size:11px;color:#9ca3af;line-height:1.4;font-style:italic">'+acl+'</div>':'')
         +'</div>'
-        +(url?'<a href="'+url+'" target="_blank" onclick="event.stopPropagation()" style="flex-shrink:0;background:#ef4444;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:4px;margin-top:2px">▶ Ver</a>':'')
       +'</div>';
     }).join('');
-  } else {
-    ejsH='<div style="text-align:center;padding:24px;color:#9ca3af;font-size:13px">Sin ejercicios configurados para S'+semActual+'</div>';
+    if(!ejsH) ejsH='<div style="text-align:center;padding:24px;color:var(--t3);font-size:13px">Sin ejercicios para S'+semActual+'</div>';
   }
 
-  // Guardar rs en variable global temporal para que los botones de día puedan llamar _renderModalPendiente
+  // Guardar rs para que los botones de tab de día puedan llamar _renderModalPendiente
   window._pendRS=rs;
 
   inner.innerHTML=
+    // Header
     '<div style="padding:16px 16px 0;flex-shrink:0">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
-        +'<div><div style="font-size:17px;font-weight:800;color:#111">📦 Próximo bloque</div>'
-        +'<div style="font-size:11px;color:#16a34a;font-weight:600;margin-top:2px">Empieza el '+fechaStr+'</div></div>'
-        +'<button onclick="document.getElementById(\'modal-rut-pend\').remove()" style="background:#f3f4f6;border:none;width:32px;height:32px;border-radius:50%;font-size:18px;color:#6b7280;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit">×</button>'
+        +'<div>'
+          +'<div style="font-size:17px;font-weight:800;color:var(--t1)">📦 Próximo bloque</div>'
+          +'<div style="font-size:11px;color:#16a34a;font-weight:600;margin-top:2px">Empieza el '+fechaStr+' · Solo lectura</div>'
+        +'</div>'
+        +'<button onclick="document.getElementById(\'modal-rut-pend\').remove()" style="background:var(--bg2);border:none;width:32px;height:32px;border-radius:50%;font-size:18px;color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit">×</button>'
       +'</div>'
-      // Selector semanas
-      +'<div style="display:flex;gap:5px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-bottom:6px">'+semBtns+'</div>'
-      // Tabs de días
-      +(diasConEj.length?'<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:12px;-webkit-overflow-scrolling:touch;scrollbar-width:none">'+diaTabs+'</div>':'')
+      // Selector semanas — igual que en el bloque activo
+      +'<div style="display:flex;gap:5px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch;scrollbar-width:none">'+semBtns+'</div>'
     +'</div>'
-    +'<div style="overflow-y:auto;padding:0 16px 32px;flex:1">'+ejsH+'</div>';
+    // Tabs de días — misma clase que el bloque activo
+    +'<div class="day-strip" style="flex-shrink:0;padding:0 10px">'+dayTabs+'</div>'
+    // Ejercicios
+    +'<div style="overflow-y:auto;padding:8px 10px 40px;flex:1">'+ejsH+'</div>';
 }
 
 function _cambiarSemPend(s){
