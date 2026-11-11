@@ -30,57 +30,129 @@ function _bannerBloquePendiente(){
   </div>`;
 }
 
+// Cache para datos de bloque pendiente (evitar recarga cada vez)
+var _pendData=null;
+var _pendSemActual=1;
+
 async function verRutinaPendiente(){
-  // Mostrar modal con los ejercicios del bloque pendiente
   var bp=ST.bloquePendiente;
   if(!bp||!bp.fecha_inicio)return;
   var fi=bp.fecha_inicio.split('T')[0];
   var partes=fi.split('-');
   var fechaStr=partes[2]+'/'+partes[1]+'/'+partes[0];
-  // Mostrar modal de carga
+  // Crear modal con loader
   var modal=document.createElement('div');
   modal.id='modal-rut-pend';
-  modal.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center';
-  modal.innerHTML='<div style="background:#fff;border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow-y:auto;padding:20px 16px 32px">'
-    +'<div style="text-align:center;padding:20px"><div style="font-size:24px">📦</div><div style="color:#166534;font-weight:700">Cargando próximo bloque…</div></div>'
+  modal.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:flex-end;justify-content:center';
+  modal.innerHTML='<div id="modal-rut-pend-inner" style="background:#fff;border-radius:16px 16px 0 0;width:100%;max-height:92vh;display:flex;flex-direction:column;overflow:hidden">'
+    +'<div style="text-align:center;padding:32px 20px"><div style="font-size:30px">📦</div><div style="color:#166534;font-weight:700;margin-top:8px">Cargando próximo bloque…</div></div>'
     +'</div>';
   document.body.appendChild(modal);
-  modal.addEventListener('click',function(e){if(e.target===modal){modal.remove();}});
+  modal.addEventListener('click',function(e){if(e.target===modal)modal.remove();});
   try{
-    var data=await api('GET','/api/entreno/mi-rutina-pendiente');
-    if(!data||!data.rutina_base){
-      modal.querySelector('div>div').innerHTML='<div style="text-align:center;padding:20px;color:#888">No hay ejercicios configurados aún para el próximo bloque.</div>';
+    if(!_pendData){
+      _pendData=await api('GET','/api/entreno/mi-rutina-pendiente');
+    }
+    var data=_pendData;
+    if(!data){
+      document.getElementById('modal-rut-pend-inner').innerHTML='<div style="text-align:center;padding:32px;color:#888">No hay bloque en preparación.</div>';
       return;
     }
-    var rb=data.rutina_base;
-    var DIAS_NOM=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-    var diasH=DIAS_NOM.map(function(nom,di){
-      var ejes=rb[String(di)]||rb[di]||[];
-      var esDescanso=!ejes||ejes.length===0;
-      var ejH=esDescanso
-        ?'<p style="color:#aaa;font-size:12px;margin:0">Día de descanso</p>'
-        :ejes.map(function(ej){
-          var n=ej.nom||ej.nombre||ej;
-          var s=ej.sets||ej.series||3;
-          var r=ej.reps||'?';
-          return'<div style="padding:5px 0;border-bottom:1px solid #f0f0f0;font-size:13px"><span style="color:#111">'+n+'</span> <span style="color:#888;font-size:11px">'+s+'×'+r+'</span></div>';
-        }).join('');
-      return'<div style="margin-bottom:14px">'
-        +'<div style="font-weight:700;font-size:12px;color:#166534;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">'+nom+(esDescanso?' 😴':'')+'</div>'
-        +ejH
-        +'</div>';
-    }).join('');
-    modal.querySelector('div>div').innerHTML=
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
-        +'<div><div style="font-size:18px;font-weight:800;color:#111">Próximo bloque</div>'
-        +'<div style="font-size:12px;color:#166534">Empieza el '+fechaStr+'</div></div>'
-        +'<button onclick="document.getElementById(\'modal-rut-pend\').remove()" style="background:none;border:none;font-size:22px;color:#888;cursor:pointer;line-height:1">×</button>'
-      +'</div>'
-      +'<div style="font-size:12px;color:#888;margin-bottom:14px;padding:8px;background:#f0fdf4;border-radius:8px;border-left:3px solid #86efac">Tu plan de ejercicios del próximo bloque. Empieza automáticamente el '+fechaStr+'.</div>'
-      +diasH;
+    // Construir mapa de semanas: semana 1 = rutina_base, resto en rutina_semanas
+    var semanas=data.semanas||13;
+    var rs=data.rutina_semanas||{};
+    var rb=data.rutina_base||{};
+    // Si sem 1 no está en rutina_semanas, usar rutina_base como sem 1
+    if(!rs[1]&&!rs['1']&&rb&&Object.keys(rb).length>0) rs[1]=rb;
+    _pendSemActual=Math.min(_pendSemActual,semanas);
+    _renderModalPendiente(fechaStr,semanas,rs,_pendSemActual);
   }catch(e){
-    modal.querySelector('div>div').innerHTML='<div style="text-align:center;padding:20px;color:#e44">Error al cargar: '+(e&&e.message||'')+'</div>';
+    var inner=document.getElementById('modal-rut-pend-inner');
+    if(inner)inner.innerHTML='<div style="text-align:center;padding:32px;color:#e44">Error al cargar: '+(e&&e.message||e)+'</div>';
   }
+}
+
+function _renderModalPendiente(fechaStr,semanas,rs,semActual){
+  var inner=document.getElementById('modal-rut-pend-inner');
+  if(!inner)return;
+  var DIAS_NOM=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+
+  // Selector de semanas
+  var semBtns=Array.from({length:semanas},function(_,i){
+    var s=i+1;
+    var activo=s===semActual;
+    return'<button onclick="_cambiarSemPend('+s+')" style="'
+      +'flex-shrink:0;padding:6px 12px;border-radius:20px;border:1.5px solid '+(activo?'#16a34a':'#d1d5db')+';'
+      +'background:'+(activo?'#16a34a':'transparent')+';color:'+(activo?'#fff':'#374151')+';'
+      +'font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">S'+s+'</button>';
+  }).join('');
+
+  // Datos de la semana seleccionada (con fallback a base)
+  var semData=rs[semActual]||rs[String(semActual)]||rs[1]||rs['1']||{};
+
+  // Días con ejercicios
+  var diasH=DIAS_NOM.map(function(nom,di){
+    var ejes=semData[String(di)]||semData[di]||[];
+    var esDescanso=!ejes||ejes.length===0;
+    if(esDescanso)return'';
+    var ejsH=ejes.map(function(ej,ei){
+      var n=ej.nom||ej.nombre||String(ej);
+      var sets=ej.sets||3;
+      var reps=ej.reps||'?';
+      var rir=ej.rir!==undefined&&ej.rir!==null?ej.rir:2;
+      var rest=ej.rest||120;
+      var restMin=Math.floor(rest/60);
+      var restSec=String(rest%60).padStart(2,'0');
+      var acl=ej.acl||ej.aclaraciones||'';
+      var url=ej.url||'';
+      return'<div style="padding:10px 0;border-bottom:1px solid #f3f4f6">'
+        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+          +'<div style="flex:1">'
+            +'<div style="font-size:13px;font-weight:700;color:#111;line-height:1.3">'+ei+1+'. '+n+'</div>'
+            +'<div style="font-size:11px;color:#6b7280;margin-top:3px">'+sets+' series · '+reps+' reps · RIR '+rir+' · '+restMin+':'+restSec+' desc</div>'
+            +(acl?'<div style="font-size:11px;color:#9ca3af;margin-top:2px;font-style:italic">'+acl+'</div>':'')
+          +'</div>'
+          +(url?'<a href="'+url+'" target="_blank" style="flex-shrink:0;background:#ef4444;color:#fff;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:700;text-decoration:none;line-height:1.2;display:flex;align-items:center;gap:3px"><span>▶</span> Ver</a>':'')
+        +'</div>'
+      +'</div>';
+    }).join('');
+    return'<div style="margin-bottom:4px">'
+      +'<div style="font-weight:800;font-size:11px;color:#166534;text-transform:uppercase;letter-spacing:.6px;padding:10px 0 4px;border-bottom:2px solid #d1fae5">'+nom+'</div>'
+      +ejsH
+      +'</div>';
+  }).filter(Boolean).join('');
+
+  if(!diasH){
+    diasH='<div style="text-align:center;padding:24px;color:#9ca3af;font-size:13px">Sin ejercicios configurados para S'+semActual+'</div>';
+  }
+
+  inner.innerHTML=
+    // Header fijo
+    '<div style="padding:16px 16px 0;flex-shrink:0">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+        +'<div><div style="font-size:17px;font-weight:800;color:#111">📦 Próximo bloque</div>'
+        +'<div style="font-size:11px;color:#16a34a;font-weight:600">Empieza el '+fechaStr+'</div></div>'
+        +'<button onclick="document.getElementById(\'modal-rut-pend\').remove()" style="background:#f3f4f6;border:none;width:30px;height:30px;border-radius:50%;font-size:16px;color:#6b7280;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit">×</button>'
+      +'</div>'
+      +'<div style="font-size:11px;color:#6b7280;padding:7px 10px;background:#f0fdf4;border-radius:7px;border-left:3px solid #86efac;margin:10px 0 8px">👁 Vista previa — sin campos de registro</div>'
+      // Selector semanas horizontal scroll
+      +'<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;-webkit-overflow-scrolling:touch;scrollbar-width:none">'+semBtns+'</div>'
+    +'</div>'
+    // Scroll área ejercicios
+    +'<div style="overflow-y:auto;padding:0 16px 32px;flex:1">'+diasH+'</div>';
+}
+
+function _cambiarSemPend(s){
+  _pendSemActual=s;
+  if(!_pendData)return;
+  var bp=ST.bloquePendiente;
+  var fi=(bp&&bp.fecha_inicio?bp.fecha_inicio:'').split('T')[0];
+  var partes=fi.split('-');
+  var fechaStr=partes[2]+'/'+partes[1]+'/'+partes[0];
+  var rs=_pendData.rutina_semanas||{};
+  var rb=_pendData.rutina_base||{};
+  if(!rs[1]&&!rs['1']&&rb&&Object.keys(rb).length>0) rs[1]=rb;
+  _renderModalPendiente(fechaStr,_pendData.semanas||13,rs,s);
 }
 
 function renderEntreno(){
