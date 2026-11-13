@@ -601,7 +601,7 @@ function renderNutricion(){
         <div style="font-weight:800;font-size:14px;margin-bottom:4px">Tu entrenador actualizó tu plan nutricional</div>
         <div style="font-size:12px;opacity:.9;margin-bottom:8px">Fecha: ${pnc.fecha}</div>
         ${(pnc.cambios||[]).map(c=>`<div style="font-size:12px;background:rgba(255,255,255,.2);border-radius:6px;padding:4px 8px;margin-bottom:3px">• ${c}</div>`).join('')}
-        <div style="font-size:11px;opacity:.8;margin-top:8px">Entra a cada comida y actualiza los alimentos marcados en naranja.</div>
+        <div style="font-size:11px;opacity:.8;margin-top:8px">Asegúrate de ajustar las cantidades en las comidas afectadas.</div>
       </div>
       <button onclick="ST.pendingNutChanges.leido=true;save();api('POST','/api/clientes/me/nut-changes-leido',{}).catch(()=>{});render()" style="background:rgba(255,255,255,.3);border:none;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer">✓ Entendido</button>
     </div>
