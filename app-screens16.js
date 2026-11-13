@@ -1901,8 +1901,9 @@ async function guardarRevAnterior(sem){
     var fotosToSave={};
     const POSES_ARR=['Frente','Perfil D.','Perfil I.','Espalda'];
     // Subir fotos a Cloudinary (con fallback a b64)
+    // Leer tanto claves 'rev_N' como claves posicionales ('frente','perfil_d','perfil_i','espalda')
     for(var i=0;i<4;i++){
-      var b64=fotosB64['rev_'+i];
+      var b64=fotosB64['rev_'+i]||fotosB64[_FOTO_POS_KEYS[i]]||null;
       if(b64){
         // Si ya es URL de Cloudinary, no re-subir
         if(b64.startsWith('http')){
@@ -1922,9 +1923,12 @@ async function guardarRevAnterior(sem){
         }
       }
     }
+    // fotos_clear=true indica que el usuario borró fotos explícitamente
+    // El backend respeta este flag y guarda {} en lugar de mantener las existentes
+    var fotoClear=Object.keys(fotosB64).length===0;
     toast('Guardando revisión...','');
     try {
-      await api('POST','/api/entreno/revision',{bloque_id:ST.p.bloqueId||null,semana:sem,medidas:hist.medidas||{},preguntas:hist.preguntas||{},fotos:fotosToSave});
+      await api('POST','/api/entreno/revision',{bloque_id:ST.p.bloqueId||null,semana:sem,medidas:hist.medidas||{},preguntas:hist.preguntas||{},fotos:fotosToSave,fotos_clear:fotoClear});
       // Actualizar historial local con URLs de Cloudinary
       if(!ST.revHistorial[sem])ST.revHistorial[sem]={};
       ST.revHistorial[sem].fotos=fotosToSave;
