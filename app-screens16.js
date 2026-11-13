@@ -1401,7 +1401,7 @@ function renderRevision(){
     ['Frente','Perfil D.','Perfil I.','Espalda'].forEach(function(pos,pi){const f=getFoto(fotos,pi);
       content+=`<div class="rfb ${f?'done':''}" style="position:relative" onclick="${f?'':'triggerRF('+pi+')'}">
         ${f
-          ?`<img src="${f}"><button onclick="event.stopPropagation();if(confirm('¿Borrar esta foto?')){delete ST.rev.fotos['rev_'+${pi}];save();render();}" style="position:absolute;top:4px;left:4px;background:rgba(220,30,30,.85);border:none;border-radius:50%;width:26px;height:26px;color:#fff;font-size:13px;cursor:pointer;z-index:3">🗑</button><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:600;text-align:center;padding:3px">${pos}</div>`
+          ?`<img src="${f}"><button onclick="event.stopPropagation();if(confirm('¿Borrar esta foto?')){delete ST.rev.fotos['rev_'+${pi}];delete ST.rev.fotos[_FOTO_POS_KEYS[${pi}]];save();render();}" style="position:absolute;top:4px;left:4px;background:rgba(220,30,30,.85);border:none;border-radius:50%;width:26px;height:26px;color:#fff;font-size:13px;cursor:pointer;z-index:3">🗑</button><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:600;text-align:center;padding:3px">${pos}</div>`
           :`<div onclick="triggerRF(${pi})" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer"><div style="font-size:24px">📷</div><div class="rfb-lbl">${pos}</div></div>`}
       </div>`;
     });
@@ -1876,6 +1876,7 @@ function revHistDelFoto(btn){
   if(!confirm('¿Borrar esta foto?'))return;
   if(!ST.revHistorial||!ST.revHistorial[sem])return;
   delete ST.revHistorial[sem].fotos['rev_'+pi];
+  delete ST.revHistorial[sem].fotos[_FOTO_POS_KEYS[pi]];
   save();render();
 }
 
