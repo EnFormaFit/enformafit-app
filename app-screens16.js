@@ -1008,13 +1008,17 @@ function buildMedidasTable(revSems,hist){
   // Si el bloque activo no tiene datos, buscar medidas de inicio en bloques anteriores
   var hasAny=cols.some(function(c){return Object.keys(c.meds).length>0;});
   if(!hasAny){
-    // Buscar en revBloques el primer bloque con medidas S0
-    var blqPrev=(ST.revBloques||[]).filter(function(bl){return bl.estado!=='activo'&&bl.rows&&bl.rows.length>0;});
-    blqPrev.forEach(function(bl){
+    var allBloques=ST.revBloques||[];
+    var blqPrev=allBloques.filter(function(bl){return bl.estado!=='activo'&&bl.rows&&bl.rows.length>0;});
+    blqPrev.forEach(function(bl,i){
+      // Buscar S0; si no existe, usar la última semana de ese bloque (= inicio del siguiente)
       var row0=bl.rows.find(function(r){return r.semana===0;});
-      if(row0){var m=row0.medidas||{};if(typeof m==='string'){try{m=JSON.parse(m);}catch(e){m={};}}
+      if(!row0) row0=bl.rows.reduce(function(best,r){return(!best||r.semana>best.semana)?r:best;},null);
+      if(row0){
+        var m=row0.medidas||{};
+        if(typeof m==='string'){try{m=JSON.parse(m);}catch(e){m={};}}
         if(Object.keys(m).length>0&&!cols.some(function(c){return c.nb===bl.numero_bloque;})){
-          cols=[{rs:0,meds:m,label:'Inicio B'+bl.numero_bloque,nb:bl.numero_bloque},...cols];
+          cols=[{rs:row0.semana,meds:m,label:'Inicio B'+bl.numero_bloque,nb:bl.numero_bloque},...cols];
         }
       }
     });
@@ -1225,10 +1229,25 @@ function renderProgreso(){
       return fMap;
     });
 
-    // También obtener fotos de INICIO (S0) para columna fija izquierda
-    const fotosInicioApp=revBloques.map(bl=>{
+    // Helper: obtener la fila de "Inicio" de un bloque.
+    // Regla: S0 del propio bloque si existe; si no, la última semana del bloque anterior.
+    function _getInicioRow(bl, blIndex){
+      var row0=bl.rows.find(function(r){return r.semana===0;});
+      if(row0) return row0;
+      // Si no hay S0, buscar la fila de mayor semana del bloque anterior
+      if(blIndex>0){
+        var blPrev=revBloques[blIndex-1];
+        if(blPrev&&blPrev.rows&&blPrev.rows.length>0){
+          return blPrev.rows.reduce(function(best,r){return(!best||r.semana>best.semana)?r:best;},null);
+        }
+      }
+      return null;
+    }
+
+    // También obtener fotos de INICIO para columna fija izquierda
+    const fotosInicioApp=revBloques.map(function(bl,blIndex){
       if(semSelApp===0) return null; // ya se muestra en la selección normal
-      const row0=bl.rows.find(r=>r.semana===0);
+      const row0=_getInicioRow(bl,blIndex);
       const fMap=_rowFotos(row0);
       if(bl.estado==='activo'&&Object.keys(fMap).length===0){
         // Intentar desde ST.revHistorial[0]
