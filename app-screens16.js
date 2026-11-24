@@ -1103,7 +1103,7 @@ function renderProgreso(){
   const pesoGridHTML=buildPesoGridApp(pesos,ST.u.inicioBloque,ST.u.semana);
   const pesoGridSection=`<div class="card" style="margin:12px 0"><div style="font-size:13px;font-weight:700;margin-bottom:8px">📊 Registro de pesos</div>${pesoGridHTML}</div>`;
 
-  // Fotos
+  // Fotos — bloque activo (vista original por posición dentro del bloque)
   let fotosH=`<div class="fscroll">`;
   revSems.forEach((rs,gi)=>{
     const locked=rs>semana;
@@ -1112,13 +1112,10 @@ function renderProgreso(){
     const gtit=rs===0?'Inicio':'S'+rs;
     fotosH+=`<div class="fgrp"><div class="fgrp-t ${col}">${gtit}</div>`;
     ['Frente','Perfil D.','Perfil I.','Espalda'].forEach((pos,pi)=>{
-      // Look for foto in correct place based on semana
       let stored=null;
       if(isCur){
-        // Current revision: look in ST.rev.fotos
         stored=getFoto(ST.rev.fotos,pi);
       } else {
-        // Past/future: look in ST.revHistorial
         stored=(ST.revHistorial&&ST.revHistorial[rs]&&getFoto(ST.revHistorial[rs].fotos,pi))||null;
       }
       fotosH+=`<div class="fslot ${locked?'locked':stored?'has':''}" onclick="${locked?'':'triggerPF('+gi+','+pi+')'}">
@@ -1130,6 +1127,93 @@ function renderProgreso(){
     fotosH+=`</div>`;
   });
   fotosH+=`</div><input type="file" accept="image/*,.heic,.heif,image/heic,image/heif" id="pfin" onchange="loadPF(this)">`;
+
+  // Cross-block comparison — solo si hay más de 1 bloque cargado
+  const revBloques=ST.revBloques||[];
+  const posSemsApp=tipo==='programa'?[0,4,8,12]:[0,3,7,11];
+  const posLabelsApp=['Inicio','Rev 1','Rev 2','Rev 3'];
+  const posColorsApp=['#0DBF6F','#2E6DA4','#9B59B6','#E74C3C'];
+  const blqColsApp=['#2E6DA4','#9B59B6','#E74C3C','#F39C12','#1ABC9C'];
+  const selPosApp=ST._progPosChip!=null?ST._progPosChip:1; // default Rev 1
+
+  let crossH='';
+  if(revBloques.length>1){
+    const semSelApp=posSemsApp[selPosApp]||posSemsApp[1];
+    // Chips de posición
+    const chipsAppH=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+      ${posLabelsApp.map((lbl,pi)=>{
+        const semPos=posSemsApp[pi];
+        const hayData=revBloques.some(bl=>bl.rows.some(r=>r.semana===semPos));
+        const isSel=pi===selPosApp;
+        return`<button onclick="ST._progPosChip=${pi};render()"
+          style="padding:5px 12px;border-radius:16px;border:2px solid ${posColorsApp[pi]};
+            background:${isSel?posColorsApp[pi]:'transparent'};
+            color:${isSel?'#fff':posColorsApp[pi]};
+            font-size:11px;font-weight:700;opacity:${hayData?1:.4}">
+          ${lbl}
+        </button>`;
+      }).join('')}
+    </div>`;
+
+    // Grid: scroll horizontal, columnas = bloques
+    const fotosPorBloqueApp=revBloques.map(bl=>{
+      const row=bl.rows.find(r=>r.semana===semSelApp);
+      if(!row) return {};
+      const fMap={};
+      if(Array.isArray(row.fotos_urls)){
+        row.fotos_urls.forEach((url,pi)=>{if(url) fMap[pi]=url;});
+      } else if(row.fotos&&typeof row.fotos==='object'){
+        const _PM={frente:0,perfil_d:1,perfil_i:2,espalda:3};
+        Object.entries(row.fotos).forEach(([k,url])=>{
+          if(!url) return;
+          const m2=k.match(/^s\d+_(\d+)$/);
+          if(m2){fMap[parseInt(m2[1])]=url;return;}
+          const pi2=_PM[k];
+          if(pi2!==undefined) fMap[pi2]=url;
+        });
+      }
+      // Active block: also check ST.rev.fotos
+      if(bl.estado==='activo'){
+        [0,1,2,3].forEach(pi=>{
+          const fk='s'+semSelApp+'_'+pi;
+          const fv=getFoto(ST.rev.fotos,pi)||(ST.revHistorial[semSelApp]&&getFoto(ST.revHistorial[semSelApp].fotos,pi));
+          if(fv) fMap[pi]=fv;
+        });
+      }
+      return fMap;
+    });
+
+    const POSES_APP=['Frente','Perfil D.','Perfil I.','Espalda'];
+    const posSelLblApp=posLabelsApp[selPosApp]||('S'+semSelApp);
+    let gridH=`<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><div style="display:flex;gap:10px;min-width:max-content;padding-bottom:8px">`;
+    // Column per pose, header = bloque
+    POSES_APP.forEach((pos,pi)=>{
+      gridH+=`<div style="display:flex;flex-direction:column;gap:6px;min-width:90px">`;
+      gridH+=`<div style="font-size:10px;font-weight:700;color:var(--t3);text-align:center;padding:4px">${pos}</div>`;
+      revBloques.forEach((bl,bi)=>{
+        const hasFoto=fotosPorBloqueApp[bi][pi];
+        const blLbl='B'+bl.numero_bloque+(bl.estado==='activo'?' ●':'');
+        gridH+=`<div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+          <div style="font-size:8px;font-weight:700;color:#fff;background:${blqColsApp[bi%blqColsApp.length]};padding:2px 7px;border-radius:10px;white-space:nowrap">${blLbl}</div>
+          <div style="width:80px;height:100px;border-radius:8px;overflow:hidden;background:var(--bg);border:1.5px solid var(--bor);display:flex;align-items:center;justify-content:center">
+            ${hasFoto
+              ?`<img src="${hasFoto}" style="width:100%;height:100%;object-fit:cover">`
+              :`<div style="font-size:11px;color:var(--t3)">—</div>`
+            }
+          </div>
+        </div>`;
+      });
+      gridH+=`</div>`;
+    });
+    gridH+=`</div></div>`;
+
+    crossH=`<div style="margin-top:16px;padding-top:12px;border-top:1.5px solid var(--bor)">
+      <div style="font-size:11px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📊 Comparar por bloque</div>
+      ${chipsAppH}
+      <div style="font-size:11px;color:var(--t3);margin-bottom:10px">${posSelLblApp} — semana ${semSelApp} de cada bloque</div>
+      ${gridH}
+    </div>`;
+  }
 
   // Medidas comparativa
   const MEDS=[['peso','Peso','kg'],['pecho','Pecho','cm'],['cintura','Cintura','cm'],['cadera','Cadera','cm'],['bicepsd','Bíceps der.','cm'],['bicepsi','Bíceps izq.','cm'],['muslod','Muslo der.','cm'],['musloi','Muslo izq.','cm'],['gemelod','Gemelo der.','cm'],['gemeloi','Gemelo izq.','cm']];
@@ -1178,7 +1262,7 @@ function renderProgreso(){
     <h2>📸 Fotos de progreso</h2>
     <span style="color:var(--t3)">${ST.fotosOpen?'▲':'▼'}</span>
   </div>
-  ${ST.fotosOpen?`<div class="cb" style="padding-bottom:8px">${fotosH}</div>`:''}
+  ${ST.fotosOpen?`<div class="cb" style="padding-bottom:8px">${fotosH}${crossH}</div>`:''}
 </div>
 
 ${buildMedidasTable(revSems,ST.revHistorial||{})}

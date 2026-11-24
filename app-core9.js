@@ -101,7 +101,18 @@ function S(s){
     api('GET','/api/entreno/revisiones/all').then(function(rows){
       if(rows&&rows.length){
         if(!ST.revHistorial)ST.revHistorial={};
-        rows.forEach(function(d){ST.revHistorial[d.semana]=d;});
+        // Legacy: index by semana for active block (backward compat)
+        rows.forEach(function(d){
+          if(d.bloque_estado==='activo')ST.revHistorial[d.semana]=d;
+        });
+        // New: organize by bloque for cross-block comparison
+        var bmap={};
+        rows.forEach(function(d){
+          var bn=d.numero_bloque||1;
+          if(!bmap[bn])bmap[bn]={numero_bloque:bn,estado:d.bloque_estado,rows:[]};
+          bmap[bn].rows.push(d);
+        });
+        ST.revBloques=Object.values(bmap).sort(function(a,b){return a.numero_bloque-b.numero_bloque;});
         render();
       }
     }).catch(function(){ST._revAllLoaded=false;});
