@@ -1012,12 +1012,11 @@ function buildMedidasTable(revSems,hist){
     // Buscar S0; si no existe, usar la última semana de ese bloque (= inicio del siguiente)
     var row0=bl.rows.find(function(r){return r.semana===0;});
     if(!row0) row0=bl.rows.reduce(function(best,r){return(!best||r.semana>best.semana)?r:best;},null);
-    if(row0){
+    if(row0&&!cols.some(function(c){return c.nb===bl.numero_bloque;})){
       var m=row0.medidas||{};
       if(typeof m==='string'){try{m=JSON.parse(m);}catch(e){m={};}}
-      if(Object.keys(m).length>0&&!cols.some(function(c){return c.nb===bl.numero_bloque;})){
-        cols=[{rs:row0.semana,meds:m,label:'Inicio B'+bl.numero_bloque,nb:bl.numero_bloque},...cols];
-      }
+      // Siempre añadir columna Inicio BN aunque esté vacía, para que el cliente vea "de dónde viene"
+      cols=[{rs:row0.semana,meds:m,label:'Inicio B'+bl.numero_bloque,nb:bl.numero_bloque},...cols];
     }
   });
   // Eliminar columna S0 del bloque activo si está vacía y ya hay columna de inicio de bloque anterior
@@ -1137,35 +1136,57 @@ function renderProgreso(){
   const pesoGridHTML=buildPesoGridApp(pesos,ST.u.inicioBloque,ST.u.semana);
   const pesoGridSection=`<div class="card" style="margin:12px 0"><div style="font-size:13px;font-weight:700;margin-bottom:8px">📊 Registro de pesos</div>${pesoGridHTML}</div>`;
 
-  // Si no hay fotos de Inicio (S0) en el bloque activo, inyectar las del último bloque anterior
-  // (S11/S12 del bloque completado = el "inicio" real del cliente)
-  if(!(ST.revHistorial&&ST.revHistorial[0]&&ST.revHistorial[0].fotos&&Object.keys(ST.revHistorial[0].fotos).length>0)){
-    var _bPrev=(ST.revBloques||[]).filter(function(bl){return bl.estado!=='activo'&&bl.rows&&bl.rows.length>0;});
-    if(_bPrev.length>0){
-      var _blUlt=_bPrev[_bPrev.length-1];
-      var _rowUlt=_blUlt.rows.reduce(function(best,r){return(!best||r.semana>best.semana)?r:best;},null);
-      if(_rowUlt&&_rowUlt.fotos){
-        var _fotosRaw=typeof _rowUlt.fotos==='string'?JSON.parse(_rowUlt.fotos||'{}'):(_rowUlt.fotos||{});
-        // Convertir al formato que entiende getFoto: rev_N o s{sem}_{pi}
-        var _fotosIni={};
-        var _PMi={frente:0,perfil_d:1,perfil_i:2,espalda:3};
-        Object.entries(_fotosRaw).forEach(function(e){
-          var k=e[0],url=e[1]; if(!url) return;
-          var mr=k.match(/^rev_(\d+)$/); if(mr){_fotosIni['rev_'+mr[1]]=url;return;}
-          var mb=k.match(/^b\d+_s\d+_(\d+)$/); if(mb){_fotosIni['rev_'+mb[1]]=url;return;}
-          var ms=k.match(/^s\d+_(\d+)$/); if(ms){_fotosIni['rev_'+ms[1]]=url;return;}
-          var pi2=_PMi[k]; if(pi2!=null){_fotosIni['rev_'+pi2]=url;}
-        });
-        if(Object.keys(_fotosIni).length>0){
-          if(!ST.revHistorial) ST.revHistorial={};
-          ST.revHistorial[0]={fotos:_fotosIni,_fromBlqAnterior:true};
-        }
+  // Helper: extraer mapa {pi: url} de un row de revisión
+  function _parseFotosRow(row){
+    var fMap={};
+    if(!row) return fMap;
+    var _PMr={frente:0,perfil_d:1,perfil_i:2,espalda:3};
+    if(Array.isArray(row.fotos_urls)){
+      row.fotos_urls.forEach(function(url,pi){if(url) fMap[pi]=url;});
+    } else if(row.fotos){
+      var fots=typeof row.fotos==='string'?JSON.parse(row.fotos||'{}'):(row.fotos||{});
+      Object.entries(fots).forEach(function(e){
+        var k=e[0],url=e[1]; if(!url) return;
+        var mr=k.match(/^rev_(\d+)$/); if(mr){if(fMap[parseInt(mr[1])]==null)fMap[parseInt(mr[1])]=url;return;}
+        var mb=k.match(/^b\d+_s\d+_(\d+)$/); if(mb){if(fMap[parseInt(mb[1])]==null)fMap[parseInt(mb[1])]=url;return;}
+        var ms=k.match(/^s\d+_(\d+)$/); if(ms){if(fMap[parseInt(ms[1])]==null)fMap[parseInt(ms[1])]=url;return;}
+        var pi2=_PMr[k]; if(pi2!=null&&fMap[pi2]==null) fMap[pi2]=url;
+      });
+    }
+    return fMap;
+  }
+
+  // Buscar grupo "Inicio B1": primer bloque completado, S0 o último semana
+  var _revBlqsAll=ST.revBloques||[];
+  var _blqsComp=_revBlqsAll.filter(function(bl){return bl.estado!=='activo'&&bl.rows&&bl.rows.length>0;});
+  var _fotosB1Grp=null; // {label, fMap}
+  if(_blqsComp.length>0){
+    var _bl1=_blqsComp[0];
+    var _rowIni1=_bl1.rows.find(function(r){return r.semana===0;})||
+                 _bl1.rows.reduce(function(best,r){return(!best||r.semana>best.semana)?r:best;},null);
+    if(_rowIni1){
+      var _fMap1=_parseFotosRow(_rowIni1);
+      if(Object.keys(_fMap1).length>0){
+        _fotosB1Grp={label:'Inicio B'+_bl1.numero_bloque,fMap:_fMap1};
       }
     }
   }
 
   // Fotos — bloque activo (vista original por posición dentro del bloque)
   let fotosH=`<div class="fscroll">`;
+  // Si hay bloques anteriores completados, mostrar grupo "Inicio B1" fijo a la izquierda (read-only)
+  if(_fotosB1Grp){
+    fotosH+=`<div class="fgrp"><div class="fgrp-t ft-vd" style="font-size:11px">${_fotosB1Grp.label}</div>`;
+    ['Frente','Perfil D.','Perfil I.','Espalda'].forEach(function(pos,pi){
+      var url=_fotosB1Grp.fMap[pi]||null;
+      fotosH+=`<div class="fslot ${url?'has':''}" onclick="">
+        ${url
+          ?`<img src="${url}" alt="${pos}"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.4);color:#fff;font-size:9px;font-weight:600;text-align:center;padding:2px">${pos}</div>`
+          :`<div class="fslot-lbl">${pos}</div>`}
+      </div>`;
+    });
+    fotosH+=`</div>`;
+  }
   revSems.forEach((rs,gi)=>{
     const locked=rs>semana;
     const isCur=rs===nextRev&&!(ST.revHistorial&&ST.revHistorial[rs]&&ST.revHistorial[rs].fotos&&Object.keys(ST.revHistorial[rs].fotos).length>0)&&!ST.rev.done;
