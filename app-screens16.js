@@ -1005,23 +1005,25 @@ function buildMedidasTable(revSems,hist){
     if(typeof meds==='string'){try{meds=JSON.parse(meds);}catch(e){meds={};}}
     return{rs:rs,meds:meds,label:rs===0?'Inicio':'S'+rs};
   });
-  // Si el bloque activo no tiene datos, buscar medidas de inicio en bloques anteriores
-  var hasAny=cols.some(function(c){return Object.keys(c.meds).length>0;});
-  if(!hasAny){
-    var allBloques=ST.revBloques||[];
-    var blqPrev=allBloques.filter(function(bl){return bl.estado!=='activo'&&bl.rows&&bl.rows.length>0;});
-    blqPrev.forEach(function(bl,i){
-      // Buscar S0; si no existe, usar la última semana de ese bloque (= inicio del siguiente)
-      var row0=bl.rows.find(function(r){return r.semana===0;});
-      if(!row0) row0=bl.rows.reduce(function(best,r){return(!best||r.semana>best.semana)?r:best;},null);
-      if(row0){
-        var m=row0.medidas||{};
-        if(typeof m==='string'){try{m=JSON.parse(m);}catch(e){m={};}}
-        if(Object.keys(m).length>0&&!cols.some(function(c){return c.nb===bl.numero_bloque;})){
-          cols=[{rs:row0.semana,meds:m,label:'Inicio B'+bl.numero_bloque,nb:bl.numero_bloque},...cols];
-        }
+  // Buscar medidas de inicio en bloques anteriores (siempre, no solo cuando el activo está vacío)
+  var allBloques=ST.revBloques||[];
+  var blqPrev=allBloques.filter(function(bl){return bl.estado!=='activo'&&bl.rows&&bl.rows.length>0;});
+  blqPrev.forEach(function(bl){
+    // Buscar S0; si no existe, usar la última semana de ese bloque (= inicio del siguiente)
+    var row0=bl.rows.find(function(r){return r.semana===0;});
+    if(!row0) row0=bl.rows.reduce(function(best,r){return(!best||r.semana>best.semana)?r:best;},null);
+    if(row0){
+      var m=row0.medidas||{};
+      if(typeof m==='string'){try{m=JSON.parse(m);}catch(e){m={};}}
+      if(Object.keys(m).length>0&&!cols.some(function(c){return c.nb===bl.numero_bloque;})){
+        cols=[{rs:row0.semana,meds:m,label:'Inicio B'+bl.numero_bloque,nb:bl.numero_bloque},...cols];
       }
-    });
+    }
+  });
+  // Eliminar columna S0 del bloque activo si está vacía y ya hay columna de inicio de bloque anterior
+  var hayInicioBlqAnterior=cols.some(function(c){return c.nb!=null;});
+  if(hayInicioBlqAnterior){
+    cols=cols.filter(function(c){return!(c.rs===0&&c.nb==null&&Object.keys(c.meds).length===0);});
   }
   hasAny=cols.some(function(c){return Object.keys(c.meds).length>0;});
   if(!hasAny)return'<div class="card" style="margin-bottom:12px"><div class="ch"><h2>📏 Medidas corporales</h2></div><div style="padding:14px;text-align:center;color:var(--t3);font-size:13px">Aparecerán tras tu primera revisión</div></div>';
@@ -1135,6 +1137,33 @@ function renderProgreso(){
   const pesoGridHTML=buildPesoGridApp(pesos,ST.u.inicioBloque,ST.u.semana);
   const pesoGridSection=`<div class="card" style="margin:12px 0"><div style="font-size:13px;font-weight:700;margin-bottom:8px">📊 Registro de pesos</div>${pesoGridHTML}</div>`;
 
+  // Si no hay fotos de Inicio (S0) en el bloque activo, inyectar las del último bloque anterior
+  // (S11/S12 del bloque completado = el "inicio" real del cliente)
+  if(!(ST.revHistorial&&ST.revHistorial[0]&&ST.revHistorial[0].fotos&&Object.keys(ST.revHistorial[0].fotos).length>0)){
+    var _bPrev=(ST.revBloques||[]).filter(function(bl){return bl.estado!=='activo'&&bl.rows&&bl.rows.length>0;});
+    if(_bPrev.length>0){
+      var _blUlt=_bPrev[_bPrev.length-1];
+      var _rowUlt=_blUlt.rows.reduce(function(best,r){return(!best||r.semana>best.semana)?r:best;},null);
+      if(_rowUlt&&_rowUlt.fotos){
+        var _fotosRaw=typeof _rowUlt.fotos==='string'?JSON.parse(_rowUlt.fotos||'{}'):(_rowUlt.fotos||{});
+        // Convertir al formato que entiende getFoto: rev_N o s{sem}_{pi}
+        var _fotosIni={};
+        var _PMi={frente:0,perfil_d:1,perfil_i:2,espalda:3};
+        Object.entries(_fotosRaw).forEach(function(e){
+          var k=e[0],url=e[1]; if(!url) return;
+          var mr=k.match(/^rev_(\d+)$/); if(mr){_fotosIni['rev_'+mr[1]]=url;return;}
+          var mb=k.match(/^b\d+_s\d+_(\d+)$/); if(mb){_fotosIni['rev_'+mb[1]]=url;return;}
+          var ms=k.match(/^s\d+_(\d+)$/); if(ms){_fotosIni['rev_'+ms[1]]=url;return;}
+          var pi2=_PMi[k]; if(pi2!=null){_fotosIni['rev_'+pi2]=url;}
+        });
+        if(Object.keys(_fotosIni).length>0){
+          if(!ST.revHistorial) ST.revHistorial={};
+          ST.revHistorial[0]={fotos:_fotosIni,_fromBlqAnterior:true};
+        }
+      }
+    }
+  }
+
   // Fotos — bloque activo (vista original por posición dentro del bloque)
   let fotosH=`<div class="fscroll">`;
   revSems.forEach((rs,gi)=>{
@@ -1169,143 +1198,7 @@ function renderProgreso(){
   // Default a Inicio (pos 0) si el bloque activo es nuevo (semana 0-2), si no Rev 1
   const selPosApp=ST._progPosChip!=null?ST._progPosChip:(semana<=2?0:1);
 
-  let crossH='';
-  // Mostrar comparativa si hay al menos un bloque con revisiones (aunque el activo esté vacío)
-  const revBloquesConDatos=revBloques.filter(bl=>bl.rows&&bl.rows.length>0);
-  if(revBloques.length>1||revBloquesConDatos.length>0){
-    const semSelApp=posSemsApp[selPosApp]||posSemsApp[1];
-    // Chips de posición
-    const chipsAppH=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
-      ${posLabelsApp.map((lbl,pi)=>{
-        const semPos=posSemsApp[pi];
-        const hayData=revBloques.some(bl=>bl.rows.some(r=>r.semana===semPos));
-        const isSel=pi===selPosApp;
-        return`<button onclick="ST._progPosChip=${pi};render()"
-          style="padding:5px 12px;border-radius:16px;border:2px solid ${posColorsApp[pi]};
-            background:${isSel?posColorsApp[pi]:'transparent'};
-            color:${isSel?'#fff':posColorsApp[pi]};
-            font-size:11px;font-weight:700;opacity:${hayData?1:.4}">
-          ${lbl}
-        </button>`;
-      }).join('')}
-    </div>`;
-
-    // Grid: scroll horizontal, columnas = bloques
-    // Helper: extraer fotos de una row → {0:url, 1:url, ...}
-    function _rowFotos(row){
-      const fMap={};
-      if(!row) return fMap;
-      if(Array.isArray(row.fotos_urls)){
-        row.fotos_urls.forEach((url,pi)=>{if(url) fMap[pi]=url;});
-      }
-      const rawF=row.fotos||{};
-      const _raws=typeof rawF==='string'?JSON.parse(rawF||'{}'):rawF;
-      const _PM={frente:0,perfil_d:1,perfil_i:2,espalda:3};
-      Object.entries(_raws).forEach(([k,url])=>{
-        if(!url) return;
-        // rev_N (formato Pablo / panel nuevo)
-        const mr=k.match(/^rev_(\d+)$/); if(mr){if(fMap[parseInt(mr[1])]==null)fMap[parseInt(mr[1])]=url;return;}
-        // b{nb}_s{sem}_{pi}
-        const mb=k.match(/^b\d+_s\d+_(\d+)$/); if(mb){if(fMap[parseInt(mb[1])]==null)fMap[parseInt(mb[1])]=url;return;}
-        // s{sem}_{pi}
-        const ms=k.match(/^s\d+_(\d+)$/); if(ms){if(fMap[parseInt(ms[1])]==null)fMap[parseInt(ms[1])]=url;return;}
-        // frente/perfil_d/perfil_i/espalda
-        const pi2=_PM[k]; if(pi2!=null&&fMap[pi2]==null){fMap[pi2]=url;}
-      });
-      return fMap;
-    }
-
-    const fotosPorBloqueApp=revBloques.map(bl=>{
-      const row=bl.rows.find(r=>r.semana===semSelApp);
-      const fMap=_rowFotos(row);
-      // Bloque activo: también buscar en ST.revHistorial y ST.rev.fotos
-      if(bl.estado==='activo'){
-        [0,1,2,3].forEach(pi=>{
-          if(fMap[pi]) return; // ya tiene foto de BD
-          const fv=getFoto(ST.rev.fotos,pi)||(ST.revHistorial[semSelApp]&&getFoto(ST.revHistorial[semSelApp].fotos,pi));
-          if(fv) fMap[pi]=fv;
-        });
-      }
-      return fMap;
-    });
-
-    // Helper: obtener la fila de "Inicio" de un bloque.
-    // Regla: S0 del propio bloque si existe; si no, la última semana del bloque anterior.
-    function _getInicioRow(bl, blIndex){
-      var row0=bl.rows.find(function(r){return r.semana===0;});
-      if(row0) return row0;
-      // Si no hay S0, buscar la fila de mayor semana del bloque anterior
-      if(blIndex>0){
-        var blPrev=revBloques[blIndex-1];
-        if(blPrev&&blPrev.rows&&blPrev.rows.length>0){
-          return blPrev.rows.reduce(function(best,r){return(!best||r.semana>best.semana)?r:best;},null);
-        }
-      }
-      return null;
-    }
-
-    // También obtener fotos de INICIO para columna fija izquierda
-    const fotosInicioApp=revBloques.map(function(bl,blIndex){
-      if(semSelApp===0) return null; // ya se muestra en la selección normal
-      const row0=_getInicioRow(bl,blIndex);
-      const fMap=_rowFotos(row0);
-      if(bl.estado==='activo'&&Object.keys(fMap).length===0){
-        // Intentar desde ST.revHistorial[0]
-        [0,1,2,3].forEach(pi=>{
-          const fv=ST.revHistorial[0]&&getFoto(ST.revHistorial[0].fotos,pi);
-          if(fv) fMap[pi]=fv;
-        });
-      }
-      return Object.keys(fMap).length>0?fMap:null;
-    });
-    const hayFotosInicio=fotosInicioApp.some(f=>f!=null);
-
-    const POSES_APP=['Frente','Perfil D.','Perfil I.','Espalda'];
-    const posSelLblApp=posLabelsApp[selPosApp]||('S'+semSelApp);
-
-    // Layout: columnas = poses, dentro de cada pose: fila Inicio (fija, si existe) + filas bloques
-    // Scroll horizontal para deslizar entre poses
-    let gridH=`<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:-4px"><div style="display:flex;gap:8px;padding:4px;padding-bottom:10px">`;
-    POSES_APP.forEach((pos,pi)=>{
-      gridH+=`<div style="flex-shrink:0;display:flex;flex-direction:column;gap:6px;width:90px">`;
-      gridH+=`<div style="font-size:10px;font-weight:700;color:var(--t3);text-align:center;padding-bottom:2px;border-bottom:1.5px solid var(--bor2)">${pos}</div>`;
-      // Columna Inicio fija (si la semana seleccionada no es 0 y hay fotos de inicio)
-      if(semSelApp!==0&&hayFotosInicio){
-        const mejorInicio=fotosInicioApp.find(f=>f&&f[pi]);
-        const fIni=mejorInicio&&mejorInicio[pi];
-        gridH+=`<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
-          <div style="font-size:8px;font-weight:700;color:#fff;background:#0DBF6F;padding:1px 7px;border-radius:10px;white-space:nowrap">Inicio</div>
-          <div style="width:86px;height:108px;border-radius:7px;overflow:hidden;background:var(--bg);border:2px solid #0DBF6F;display:flex;align-items:center;justify-content:center">
-            ${fIni?`<img src="${fIni}" style="width:100%;height:100%;object-fit:cover" onclick="verFoto('${fIni}')">`:`<div style="font-size:11px;color:var(--t3)">—</div>`}
-          </div>
-        </div>`;
-        if(revBloques.length>0)gridH+=`<div style="font-size:9px;color:var(--t3);text-align:center;border-top:1px dashed var(--bor2);padding-top:4px">↓ ${posSelLblApp}</div>`;
-      }
-      // Filas por bloque
-      revBloques.forEach((bl,bi)=>{
-        const hasFoto=fotosPorBloqueApp[bi][pi];
-        const blLbl='B'+bl.numero_bloque+(bl.estado==='activo'?' ●':'');
-        gridH+=`<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
-          <div style="font-size:8px;font-weight:700;color:#fff;background:${blqColsApp[bi%blqColsApp.length]};padding:1px 7px;border-radius:10px;white-space:nowrap">${blLbl}</div>
-          <div style="width:86px;height:108px;border-radius:7px;overflow:hidden;background:var(--bg);border:1.5px solid ${hasFoto?blqColsApp[bi%blqColsApp.length]:'var(--bor)'};display:flex;align-items:center;justify-content:center">
-            ${hasFoto
-              ?`<img src="${hasFoto}" style="width:100%;height:100%;object-fit:cover" onclick="verFoto('${hasFoto}')">`
-              :`<div style="font-size:11px;color:var(--t3)">—</div>`
-            }
-          </div>
-        </div>`;
-      });
-      gridH+=`</div>`;
-    });
-    gridH+=`</div></div>`;
-
-    crossH=`<div style="margin-top:16px;padding-top:12px;border-top:1.5px solid var(--bor)">
-      <div style="font-size:11px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📸 Fotos de progreso</div>
-      ${chipsAppH}
-      <div style="font-size:11px;color:var(--t3);margin-bottom:10px">${posSelLblApp} — semana ${semSelApp} de cada bloque${semSelApp!==0&&hayFotosInicio?' · Inicio siempre visible a la izquierda':''}</div>
-      ${gridH}
-    </div>`;
-  }
+  const crossH='';
 
   // Medidas comparativa
   const MEDS=[['peso','Peso','kg'],['pecho','Pecho','cm'],['cintura','Cintura','cm'],['cadera','Cadera','cm'],['bicepsd','Bíceps der.','cm'],['bicepsi','Bíceps izq.','cm'],['muslod','Muslo der.','cm'],['musloi','Muslo izq.','cm'],['gemelod','Gemelo der.','cm'],['gemeloi','Gemelo izq.','cm']];
