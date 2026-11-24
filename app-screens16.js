@@ -1047,11 +1047,19 @@ function toggleProgSection(sec){
   if(ct&&SEC==='progreso'){var sp=ct.scrollTop;ct.innerHTML=renderProgreso();ct.scrollTop=sp;}
 }
 
-// Helper: get foto URL supporting both formats (rev_0/rev_1 and frente/espalda/perfil_d/perfil_i)
+// Helper: get foto URL supporting all formats:
+// rev_0/rev_1/rev_2/rev_3, frente/perfil_d/perfil_i/espalda, s{sem}_{pi}
 var _FOTO_POS_KEYS=['frente','perfil_d','perfil_i','espalda'];
 function getFoto(fotos, pi) {
   if (!fotos) return null;
-  return fotos['rev_'+pi] || fotos[_FOTO_POS_KEYS[pi]] || null;
+  if (fotos['rev_'+pi]) return fotos['rev_'+pi];
+  if (fotos[_FOTO_POS_KEYS[pi]]) return fotos[_FOTO_POS_KEYS[pi]];
+  // s{sem}_{pi} format: search any semana
+  const sufx='_'+pi;
+  for (const k of Object.keys(fotos)) {
+    if (k.endsWith(sufx) && /^s\d+_\d+$/.test(k) && fotos[k]) return fotos[k];
+  }
+  return null;
 }
 
 function renderProgreso(){
@@ -1118,7 +1126,7 @@ function renderProgreso(){
       } else {
         stored=(ST.revHistorial&&ST.revHistorial[rs]&&getFoto(ST.revHistorial[rs].fotos,pi))||null;
       }
-      fotosH+=`<div class="fslot ${locked?'locked':stored?'has':''}" onclick="${locked?'':'triggerPF('+gi+','+pi+')'}">
+      fotosH+=`<div class="fslot ${locked?'locked':stored?'has':''}" onclick="${locked?'':'triggerPF('+gi+','+pi+','+rs+','+(isCur?1:0)+')'}">
         ${stored
           ?`<button data-gi="${gi}" data-pi="${pi}" data-rs="${rs}" data-cur="${isCur?1:0}" onclick="event.preventDefault();event.stopPropagation();confirmarBorrarFoto(this)" style="position:absolute;top:4px;left:4px;background:rgba(220,30,30,.85);border:none;border-radius:50%;width:26px;height:26px;color:#fff;font-size:13px;cursor:pointer;z-index:3">🗑</button><img src="${stored}" alt="${pos}"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.4);color:#fff;font-size:9px;font-weight:600;text-align:center;padding:2px">${pos}</div>`
           :`<div class="fslot-lbl">${locked?'🔒':pos}</div>`}
@@ -1286,9 +1294,45 @@ ${(function(){
 })()}`;
 }
 
-let _pfGi=0,_pfPi=0;
-function triggerPF(gi,pi){_pfGi=gi;_pfPi=pi;document.getElementById('pfin').click();}
-function loadPF(inp){const f=inp.files[0];if(!f)return;toast('Procesando foto...','');_procesarFotoRev(f,function(b64){if(!b64){toast('Error al procesar la foto. Prueba con otra imagen.','rj');return;}ST.rev.fotos['prog_'+_pfGi+'_'+_pfPi]=b64;save();render();toast('Foto lista ✓','vd');});}
+let _pfGi=0,_pfPi=0,_pfRs=0,_pfIsCur=1;
+function triggerPF(gi,pi,rs,isCur){_pfGi=gi;_pfPi=pi;_pfRs=rs!=null?rs:0;_pfIsCur=isCur!=null?isCur:1;document.getElementById('pfin').click();}
+function loadPF(inp){
+  const f=inp.files[0];if(!f)return;
+  inp.value=''; // reset so same file can be re-selected
+  toast('Procesando foto...','');
+  _procesarFotoRev(f,function(b64){
+    if(!b64){toast('Error al procesar la foto. Prueba con otra imagen.','rj');return;}
+    if(_pfIsCur){
+      ST.rev.fotos['rev_'+_pfPi]=b64;
+    } else {
+      if(!ST.revHistorial)ST.revHistorial={};
+      if(!ST.revHistorial[_pfRs])ST.revHistorial[_pfRs]={medidas:{},fotos:{},preguntas:{}};
+      ST.revHistorial[_pfRs].fotos['rev_'+_pfPi]=b64;
+    }
+    save();render();toast('Foto lista ✓','vd');
+  });
+}
+function confirmarBorrarFoto(btn){
+  var gi=parseInt(btn.dataset.gi),pi=parseInt(btn.dataset.pi);
+  var rs=parseInt(btn.dataset.rs),isCur=btn.dataset.cur==='1';
+  if(!confirm('¿Borrar esta foto?'))return;
+  if(isCur){
+    delete ST.rev.fotos['rev_'+pi];
+    delete ST.rev.fotos[_FOTO_POS_KEYS[pi]];
+    // Also delete s{sem}_{pi} format if present
+    Object.keys(ST.rev.fotos).forEach(function(k){if(/^s\d+_/.test(k)&&k.endsWith('_'+pi))delete ST.rev.fotos[k];});
+  } else {
+    if(ST.revHistorial&&ST.revHistorial[rs]&&ST.revHistorial[rs].fotos){
+      delete ST.revHistorial[rs].fotos['rev_'+pi];
+      delete ST.revHistorial[rs].fotos[_FOTO_POS_KEYS[pi]];
+      Object.keys(ST.revHistorial[rs].fotos).forEach(function(k){if(/^s\d+_/.test(k)&&k.endsWith('_'+pi))delete ST.revHistorial[rs].fotos[k];});
+    }
+  }
+  save();
+  var ct=document.getElementById('ct');
+  if(ct&&SEC==='progreso'){var sp=ct.scrollTop;ct.innerHTML=renderProgreso();ct.scrollTop=sp;}
+  else render();
+}
 function buildPesosList(pesos){
   var h='<div style="margin-top:8px">';
   [...pesos].reverse().forEach(function(p,ri){

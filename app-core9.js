@@ -102,8 +102,22 @@ function S(s){
       if(rows&&rows.length){
         if(!ST.revHistorial)ST.revHistorial={};
         // Legacy: index by semana for active block (backward compat)
+        // Normalizar fotos a rev_N format
+        var _FKEYS2=['frente','perfil_d','perfil_i','espalda'];
+        function _normFotos(raw){
+          var out={}; if(!raw) return out;
+          Object.keys(raw).forEach(function(k){
+            var url=raw[k]; if(!url) return;
+            var m=k.match(/^s\d+_(\d+)$/);
+            if(m){out['rev_'+m[1]]=url;return;}
+            var idx=_FKEYS2.indexOf(k);
+            if(idx>=0){out['rev_'+idx]=url;return;}
+            if(/^rev_\d+$/.test(k)){out[k]=url;}
+          });
+          return out;
+        }
         rows.forEach(function(d){
-          if(d.bloque_estado==='activo')ST.revHistorial[d.semana]=d;
+          if(d.bloque_estado==='activo')ST.revHistorial[d.semana]=Object.assign({},d,{fotos:_normFotos(d.fotos)});
         });
         // New: organize by bloque for cross-block comparison
         var bmap={};
@@ -682,8 +696,21 @@ async function loadClienteData() {
         // We do NOT fall back to localStorage for fotos/medidas/preguntas because that would restore
         // data the user intentionally deleted (e.g. borrar fotos + guardar → BD queda vacío → local tenía fotos → bug).
         revsBD.forEach(function(d) {
-          // El backend normaliza fotos→{rev_0:url,...}, medidas y preguntas
-          var bdFotos = d.fotos || {};
+          // Normalizar fotos a formato rev_N (el BD puede tener s4_0, frente, etc.)
+          var rawFotos = d.fotos || {};
+          var _FKEYS=['frente','perfil_d','perfil_i','espalda'];
+          var bdFotos = {};
+          Object.keys(rawFotos).forEach(function(k){
+            var url=rawFotos[k]; if(!url) return;
+            // s{sem}_{pi} → rev_{pi}
+            var m=k.match(/^s\d+_(\d+)$/);
+            if(m){bdFotos['rev_'+m[1]]=url;return;}
+            // frente/perfil_d/perfil_i/espalda → rev_{pi}
+            var idx=_FKEYS.indexOf(k);
+            if(idx>=0){bdFotos['rev_'+idx]=url;return;}
+            // already rev_N → keep
+            if(/^rev_\d+$/.test(k)){bdFotos[k]=url;}
+          });
           var bdMedidas = d.medidas || {};
           if (typeof bdMedidas === 'string') { try { bdMedidas = JSON.parse(bdMedidas); } catch(e) { bdMedidas = {}; } }
           var bdPreguntas = d.preguntas || {};
