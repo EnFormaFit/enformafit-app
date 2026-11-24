@@ -754,6 +754,19 @@ async function loadClienteData() {
             };
           }
         });
+        // Construir revBloques aquí también (no solo en setTab('progreso'))
+        // para que la comparación cross-block esté disponible sin pasar por Progreso primero
+        var bmap2={};
+        revsBD.forEach(function(d){
+          var bn=d.numero_bloque||1;
+          if(!bmap2[bn])bmap2[bn]={numero_bloque:bn,estado:d.bloque_estado,rows:[]};
+          bmap2[bn].rows.push(d);
+        });
+        var activoBn2=ST.p.numeroBloque||null;
+        if(activoBn2&&!bmap2[activoBn2]){
+          bmap2[activoBn2]={numero_bloque:activoBn2,estado:'activo',rows:[]};
+        }
+        ST.revBloques=Object.values(bmap2).sort(function(a,b){return a.numero_bloque-b.numero_bloque;});
         ST._revAllLoaded = true;
         // Mark rev as done if current revision semana already submitted
         const tipo = ST.u && ST.u.tipo;

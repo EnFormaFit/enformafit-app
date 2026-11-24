@@ -1461,6 +1461,77 @@ function renderRevision(){
   });
   histH+='</div></div>';
 
+  // ── Bloques anteriores — acordeón ────────────────────────────────────────────
+  const blqCols2=['#2E6DA4','#9B59B6','#E74C3C','#F39C12','#1ABC9C','#E67E22'];
+  const revBloques=ST.revBloques||[];
+  const activoNb=ST.p&&ST.p.numeroBloque||null;
+  const blqPasados=revBloques.filter(function(bl){
+    return bl.estado!=='activo' && bl.rows && bl.rows.length>0;
+  });
+  if(blqPasados.length>0){
+    if(!ST._revBlqOpen) ST._revBlqOpen={};
+    histH+='<div class="card" style="margin-bottom:12px"><div class="ch"><h2>📦 Bloques anteriores</h2></div><div class="cb" style="padding:0">';
+    blqPasados.forEach(function(bl,bi){
+      const nb=bl.numero_bloque;
+      const colBlq=blqCols2[(nb-1)%blqCols2.length];
+      const isOpen=!!ST._revBlqOpen[nb];
+      const nRevs=bl.rows.length;
+      histH+=`<div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 15px;border-bottom:1px solid var(--bor2);cursor:pointer"
+             onclick="ST._revBlqOpen[${nb}]=!ST._revBlqOpen[${nb}];render()">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="display:inline-block;background:${colBlq};color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px">B${nb}</span>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--t1)">Bloque ${nb}</div>
+              <div style="font-size:11px;color:var(--t3)">${nRevs} revisión${nRevs!==1?'es':''} · ${bl.estado==='completado'?'✅ Completado':'🔒 Finalizado'}</div>
+            </div>
+          </div>
+          <span style="font-size:16px;color:var(--az2);transition:transform .2s;display:inline-block;transform:rotate(${isOpen?180:0}deg)">▼</span>
+        </div>`;
+      if(isOpen){
+        // Ordenar filas por semana
+        var rowsSorted=bl.rows.slice().sort(function(a,b){return (a.semana||0)-(b.semana||0);});
+        rowsSorted.forEach(function(d){
+          var _rawF=d.fotos||{};
+          var _bdF={};
+          if(Array.isArray(d.fotos_urls)){d.fotos_urls.forEach(function(url,pi){if(url)_bdF['rev_'+pi]=url;});}
+          Object.keys(_rawF).forEach(function(k){
+            var url=_rawF[k];if(!url)return;
+            var mb=k.match(/^b\d+_s\d+_(\d+)$/);if(mb){if(!_bdF['rev_'+mb[1]])_bdF['rev_'+mb[1]]=url;return;}
+            var m=k.match(/^s\d+_(\d+)$/);if(m){if(!_bdF['rev_'+m[1]])_bdF['rev_'+m[1]]=url;return;}
+            var _fk=['frente','perfil_d','perfil_i','espalda'];var idx=_fk.indexOf(k);
+            if(idx>=0){if(!_bdF['rev_'+idx])_bdF['rev_'+idx]=url;return;}
+            if(/^rev_\d+$/.test(k)&&!_bdF[k]){_bdF[k]=url;}
+          });
+          var hasFotos=Object.keys(_bdF).length>0;
+          var meds=d.medidas||{};if(typeof meds==='string'){try{meds=JSON.parse(meds);}catch(e){meds={};}}
+          var hasMeds=Object.keys(meds).length>0;
+          var MORD=['hombros','pecho','brazoi','brazod','cintura','musloi','muslod','gemeloi','gemelod'];
+          var MLBL={hombros:'Hombros',pecho:'Pecho',brazoi:'Brazo I',brazod:'Brazo D',cintura:'Cintura',musloi:'Muslo I',muslod:'Muslo D',gemeloi:'Gemelo I',gemelod:'Gemelo D'};
+          histH+=`<div style="padding:10px 15px;border-bottom:1px solid var(--bor2);background:var(--bg2)">
+            <div style="font-size:12px;font-weight:700;color:${colBlq};margin-bottom:6px">Semana ${d.semana}</div>`;
+          if(hasFotos){
+            histH+='<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">';
+            for(var _pi=0;_pi<4;_pi++){
+              var _url=_bdF['rev_'+_pi];
+              if(_url)histH+=`<img src="${_url}" style="width:60px;height:76px;object-fit:cover;border-radius:5px;cursor:pointer" onclick="verFoto('${_url}')">`;
+            }
+            histH+='</div>';
+          }
+          if(hasMeds){
+            histH+='<div style="display:flex;flex-wrap:wrap;gap:4px">';
+            MORD.forEach(function(k){if(meds[k])histH+=`<span style="font-size:10px;background:var(--bg);border:1px solid var(--bor2);border-radius:4px;padding:2px 6px">${MLBL[k]}: <b>${meds[k]}</b></span>`;});
+            histH+='</div>';
+          }
+          if(!hasFotos&&!hasMeds){histH+='<span style="font-size:11px;color:var(--t3)">Sin fotos ni medidas</span>';}
+          histH+='</div>';
+        });
+      }
+      histH+='</div>';
+    });
+    histH+='</div></div>';
+  }
+
   // ── Si ya está enviada — mostrar resumen ────────────────────────────────────
   if(done){
     const PREGS=['¿Cómo te sientes esta semana?','¿Cuáles fueron tus mayores éxitos?','¿Cómo te sentiste con ellos?','¿Qué tal los entrenamientos?','¿Qué tal la nutrición?','¿Qué mejorarías?','¿Algo más que quieras compartir?'];
