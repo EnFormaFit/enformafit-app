@@ -715,13 +715,19 @@ async function loadClienteData() {
           if (typeof bdMedidas === 'string') { try { bdMedidas = JSON.parse(bdMedidas); } catch(e) { bdMedidas = {}; } }
           var bdPreguntas = d.preguntas || {};
           if (typeof bdPreguntas === 'string') { try { bdPreguntas = JSON.parse(bdPreguntas); } catch(e) { bdPreguntas = {}; } }
-          ST.revHistorial[d.semana] = {
-            semana: d.semana,
-            medidas: bdMedidas,
-            preguntas: bdPreguntas,
-            fotos: bdFotos,
-            fecha: d.fecha_subida || d.fecha
-          };
+          // Solo indexar por semana las revisiones del bloque ACTIVO.
+          // Las de bloques anteriores solo se usan en revBloques (cross-block).
+          // Si mezclamos bloques, revisiones de bloques pasados aparecen en las
+          // posiciones del bloque nuevo (mismo número de semana = misma clave).
+          if (d.bloque_estado === 'activo') {
+            ST.revHistorial[d.semana] = {
+              semana: d.semana,
+              medidas: bdMedidas,
+              preguntas: bdPreguntas,
+              fotos: bdFotos,
+              fecha: d.fecha_subida || d.fecha
+            };
+          }
         });
         ST._revAllLoaded = true;
         // Mark rev as done if current revision semana already submitted
