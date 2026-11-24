@@ -560,7 +560,16 @@ async function loadClienteData() {
     const plan = await api('GET', '/api/entreno/mi-plan');
 
     // Semana y bloque
+    // Si el bloque cambió respecto al caché → limpiar revHistorial y ST.rev
+    // (evita que datos del bloque anterior aparezcan como revisiones del nuevo)
+    const prevBloqueId = ST.p.bloqueId || '';
     ST.p.bloqueId = plan.bloque_id || '';
+    if(prevBloqueId && prevBloqueId !== ST.p.bloqueId){
+      ST.revHistorial = {};
+      ST.rev = {done:false,fotos:{},medidas:{},preguntas:{},step:0};
+      ST.medidasIni = {};
+      ST._revAllLoaded = false;
+    }
     ST.p.fechaInicio = plan.fecha_inicio || null;
     ST.u.semana = plan.semana_actual !== undefined ? plan.semana_actual : 1;
     // Auto-reset check-in when calendar week changes (every Sunday a new window opens)
