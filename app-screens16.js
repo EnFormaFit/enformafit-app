@@ -1142,10 +1142,13 @@ function renderProgreso(){
   const posLabelsApp=['Inicio','Rev 1','Rev 2','Rev 3'];
   const posColorsApp=['#0DBF6F','#2E6DA4','#9B59B6','#E74C3C'];
   const blqColsApp=['#2E6DA4','#9B59B6','#E74C3C','#F39C12','#1ABC9C'];
-  const selPosApp=ST._progPosChip!=null?ST._progPosChip:1; // default Rev 1
+  // Default a Inicio (pos 0) si el bloque activo es nuevo (semana 0-2), si no Rev 1
+  const selPosApp=ST._progPosChip!=null?ST._progPosChip:(semana<=2?0:1);
 
   let crossH='';
-  if(revBloques.length>1){
+  // Mostrar comparativa si hay al menos un bloque con revisiones (aunque el activo esté vacío)
+  const revBloquesConDatos=revBloques.filter(bl=>bl.rows&&bl.rows.length>0);
+  if(revBloques.length>1||revBloquesConDatos.length>0){
     const semSelApp=posSemsApp[selPosApp]||posSemsApp[1];
     // Chips de posición
     const chipsAppH=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">

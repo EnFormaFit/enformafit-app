@@ -126,6 +126,12 @@ function S(s){
           if(!bmap[bn])bmap[bn]={numero_bloque:bn,estado:d.bloque_estado,rows:[]};
           bmap[bn].rows.push(d);
         });
+        // Siempre incluir el bloque activo aunque esté vacío,
+        // para que cross-block aparezca cuando hay bloques anteriores con datos
+        var activoBn=ST.p.numeroBloque||null;
+        if(activoBn&&!bmap[activoBn]){
+          bmap[activoBn]={numero_bloque:activoBn,estado:'activo',rows:[]};
+        }
         ST.revBloques=Object.values(bmap).sort(function(a,b){return a.numero_bloque-b.numero_bloque;});
         render();
       }
@@ -564,6 +570,7 @@ async function loadClienteData() {
     // (evita que datos del bloque anterior aparezcan como revisiones del nuevo)
     const prevBloqueId = ST.p.bloqueId || '';
     ST.p.bloqueId = plan.bloque_id || '';
+    ST.p.numeroBloque = plan.numero_bloque || 1;
     if(prevBloqueId && prevBloqueId !== ST.p.bloqueId){
       ST.revHistorial = {};
       ST.rev = {done:false,fotos:{},medidas:{},preguntas:{},step:0};
