@@ -998,19 +998,36 @@ function buildPesoGridApp(pesos,inicioBloque,semActual){
 
 function buildMedidasTable(revSems,hist){
   var MEDS=[['hombros','Hombros'],['pecho','Pecho'],['brazoi','Brazo izq.'],['brazod','Brazo dcho.'],['cintura','Cintura'],['musloi','Muslo izq.'],['muslod','Muslo dcho.'],['gemeloi','Gemelo izq.'],['gemelod','Gemelo dcho.']];
-  // Get medidas for each revision semana
+  // Get medidas for each revision semana del bloque activo
   var cols=revSems.map(function(rs){
     var h=hist[rs];
     var meds=h&&h.medidas?h.medidas:{};
-    return{rs:rs,meds:meds};
+    if(typeof meds==='string'){try{meds=JSON.parse(meds);}catch(e){meds={};}}
+    return{rs:rs,meds:meds,label:rs===0?'Inicio':'S'+rs};
   });
+  // Si el bloque activo no tiene datos, buscar medidas de inicio en bloques anteriores
   var hasAny=cols.some(function(c){return Object.keys(c.meds).length>0;});
+  if(!hasAny){
+    // Buscar en revBloques el primer bloque con medidas S0
+    var blqPrev=(ST.revBloques||[]).filter(function(bl){return bl.estado!=='activo'&&bl.rows&&bl.rows.length>0;});
+    blqPrev.forEach(function(bl){
+      var row0=bl.rows.find(function(r){return r.semana===0;});
+      if(row0){var m=row0.medidas||{};if(typeof m==='string'){try{m=JSON.parse(m);}catch(e){m={};}}
+        if(Object.keys(m).length>0&&!cols.some(function(c){return c.nb===bl.numero_bloque;})){
+          cols=[{rs:0,meds:m,label:'Inicio B'+bl.numero_bloque,nb:bl.numero_bloque},...cols];
+        }
+      }
+    });
+  }
+  hasAny=cols.some(function(c){return Object.keys(c.meds).length>0;});
   if(!hasAny)return'<div class="card" style="margin-bottom:12px"><div class="ch"><h2>📏 Medidas corporales</h2></div><div style="padding:14px;text-align:center;color:var(--t3);font-size:13px">Aparecerán tras tu primera revisión</div></div>';
   var html='<div class="card" style="margin-bottom:12px"><div class="ch"><h2>📏 Medidas corporales</h2></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
   // Header row
   html+='<tr><th style="text-align:left;padding:6px 8px;border-bottom:2px solid var(--bor);color:var(--t3)">Medida</th>';
   cols.forEach(function(c){
-    html+='<th style="text-align:center;padding:6px 8px;border-bottom:2px solid var(--bor);color:var(--az);white-space:nowrap">'+(c.rs===0?'Inicio':'S'+c.rs)+'</th>';
+    var isIni=c.nb!=null||c.rs===0;
+    var thStyle='text-align:center;padding:6px 8px;border-bottom:2px solid var(--bor);white-space:nowrap;'+(isIni?'color:#0DBF6F;background:#0DBF6F12;':'color:var(--az);');
+    html+='<th style="'+thStyle+'">'+(c.label||(c.rs===0?'Inicio':'S'+c.rs))+'</th>';
   });
   html+='</tr>';
   // Data rows
@@ -1031,7 +1048,10 @@ function buildMedidasTable(revSems,hist){
         else if(typeof v==='string'&&v!=='')val=parseFloat(v)||v;
         else if(typeof v==='object'){var arr=Object.values(v).filter(function(x){return x;});val=arr[arr.length-1]||'';}
       }
-      html+='<td style="text-align:center;padding:6px 8px;border-bottom:1px solid var(--bor2);font-weight:'+(val?'700':'400')+';color:'+(val?'var(--az)':'var(--t3)')+'">'+( val?val+' cm':'—')+'</td>';
+      var isIni2=c.nb!=null||c.rs===0;
+      var tdBg=isIni2?(val?'background:#0DBF6F12;':'background:#0DBF6F08;'):'';
+      var tdColor=isIni2?(val?'color:#0DBF6F;':'color:var(--t3);'):(val?'color:var(--az);':'color:var(--t3);');
+      html+='<td style="text-align:center;padding:6px 8px;border-bottom:1px solid var(--bor2);font-weight:'+(val?'700':'400')+';'+tdColor+tdBg+'">'+( val?val+' cm':'—')+'</td>';
     });
     html+='</tr>';
   });
@@ -1167,26 +1187,37 @@ function renderProgreso(){
     </div>`;
 
     // Grid: scroll horizontal, columnas = bloques
-    const fotosPorBloqueApp=revBloques.map(bl=>{
-      const row=bl.rows.find(r=>r.semana===semSelApp);
-      if(!row) return {};
+    // Helper: extraer fotos de una row → {0:url, 1:url, ...}
+    function _rowFotos(row){
       const fMap={};
+      if(!row) return fMap;
       if(Array.isArray(row.fotos_urls)){
         row.fotos_urls.forEach((url,pi)=>{if(url) fMap[pi]=url;});
-      } else if(row.fotos&&typeof row.fotos==='object'){
-        const _PM={frente:0,perfil_d:1,perfil_i:2,espalda:3};
-        Object.entries(row.fotos).forEach(([k,url])=>{
-          if(!url) return;
-          const m2=k.match(/^s\d+_(\d+)$/);
-          if(m2){fMap[parseInt(m2[1])]=url;return;}
-          const pi2=_PM[k];
-          if(pi2!==undefined) fMap[pi2]=url;
-        });
       }
-      // Active block: also check ST.rev.fotos
+      const rawF=row.fotos||{};
+      const _raws=typeof rawF==='string'?JSON.parse(rawF||'{}'):rawF;
+      const _PM={frente:0,perfil_d:1,perfil_i:2,espalda:3};
+      Object.entries(_raws).forEach(([k,url])=>{
+        if(!url) return;
+        // rev_N (formato Pablo / panel nuevo)
+        const mr=k.match(/^rev_(\d+)$/); if(mr){if(fMap[parseInt(mr[1])]==null)fMap[parseInt(mr[1])]=url;return;}
+        // b{nb}_s{sem}_{pi}
+        const mb=k.match(/^b\d+_s\d+_(\d+)$/); if(mb){if(fMap[parseInt(mb[1])]==null)fMap[parseInt(mb[1])]=url;return;}
+        // s{sem}_{pi}
+        const ms=k.match(/^s\d+_(\d+)$/); if(ms){if(fMap[parseInt(ms[1])]==null)fMap[parseInt(ms[1])]=url;return;}
+        // frente/perfil_d/perfil_i/espalda
+        const pi2=_PM[k]; if(pi2!=null&&fMap[pi2]==null){fMap[pi2]=url;}
+      });
+      return fMap;
+    }
+
+    const fotosPorBloqueApp=revBloques.map(bl=>{
+      const row=bl.rows.find(r=>r.semana===semSelApp);
+      const fMap=_rowFotos(row);
+      // Bloque activo: también buscar en ST.revHistorial y ST.rev.fotos
       if(bl.estado==='activo'){
         [0,1,2,3].forEach(pi=>{
-          const fk='s'+semSelApp+'_'+pi;
+          if(fMap[pi]) return; // ya tiene foto de BD
           const fv=getFoto(ST.rev.fotos,pi)||(ST.revHistorial[semSelApp]&&getFoto(ST.revHistorial[semSelApp].fotos,pi));
           if(fv) fMap[pi]=fv;
         });
@@ -1194,21 +1225,52 @@ function renderProgreso(){
       return fMap;
     });
 
+    // También obtener fotos de INICIO (S0) para columna fija izquierda
+    const fotosInicioApp=revBloques.map(bl=>{
+      if(semSelApp===0) return null; // ya se muestra en la selección normal
+      const row0=bl.rows.find(r=>r.semana===0);
+      const fMap=_rowFotos(row0);
+      if(bl.estado==='activo'&&Object.keys(fMap).length===0){
+        // Intentar desde ST.revHistorial[0]
+        [0,1,2,3].forEach(pi=>{
+          const fv=ST.revHistorial[0]&&getFoto(ST.revHistorial[0].fotos,pi);
+          if(fv) fMap[pi]=fv;
+        });
+      }
+      return Object.keys(fMap).length>0?fMap:null;
+    });
+    const hayFotosInicio=fotosInicioApp.some(f=>f!=null);
+
     const POSES_APP=['Frente','Perfil D.','Perfil I.','Espalda'];
     const posSelLblApp=posLabelsApp[selPosApp]||('S'+semSelApp);
-    let gridH=`<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><div style="display:flex;gap:10px;min-width:max-content;padding-bottom:8px">`;
-    // Column per pose, header = bloque
+
+    // Layout: columnas = poses, dentro de cada pose: fila Inicio (fija, si existe) + filas bloques
+    // Scroll horizontal para deslizar entre poses
+    let gridH=`<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:-4px"><div style="display:flex;gap:8px;padding:4px;padding-bottom:10px">`;
     POSES_APP.forEach((pos,pi)=>{
-      gridH+=`<div style="display:flex;flex-direction:column;gap:6px;min-width:90px">`;
-      gridH+=`<div style="font-size:10px;font-weight:700;color:var(--t3);text-align:center;padding:4px">${pos}</div>`;
+      gridH+=`<div style="flex-shrink:0;display:flex;flex-direction:column;gap:6px;width:90px">`;
+      gridH+=`<div style="font-size:10px;font-weight:700;color:var(--t3);text-align:center;padding-bottom:2px;border-bottom:1.5px solid var(--bor2)">${pos}</div>`;
+      // Columna Inicio fija (si la semana seleccionada no es 0 y hay fotos de inicio)
+      if(semSelApp!==0&&hayFotosInicio){
+        const mejorInicio=fotosInicioApp.find(f=>f&&f[pi]);
+        const fIni=mejorInicio&&mejorInicio[pi];
+        gridH+=`<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <div style="font-size:8px;font-weight:700;color:#fff;background:#0DBF6F;padding:1px 7px;border-radius:10px;white-space:nowrap">Inicio</div>
+          <div style="width:86px;height:108px;border-radius:7px;overflow:hidden;background:var(--bg);border:2px solid #0DBF6F;display:flex;align-items:center;justify-content:center">
+            ${fIni?`<img src="${fIni}" style="width:100%;height:100%;object-fit:cover" onclick="verFoto('${fIni}')">`:`<div style="font-size:11px;color:var(--t3)">—</div>`}
+          </div>
+        </div>`;
+        if(revBloques.length>0)gridH+=`<div style="font-size:9px;color:var(--t3);text-align:center;border-top:1px dashed var(--bor2);padding-top:4px">↓ ${posSelLblApp}</div>`;
+      }
+      // Filas por bloque
       revBloques.forEach((bl,bi)=>{
         const hasFoto=fotosPorBloqueApp[bi][pi];
         const blLbl='B'+bl.numero_bloque+(bl.estado==='activo'?' ●':'');
-        gridH+=`<div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-          <div style="font-size:8px;font-weight:700;color:#fff;background:${blqColsApp[bi%blqColsApp.length]};padding:2px 7px;border-radius:10px;white-space:nowrap">${blLbl}</div>
-          <div style="width:80px;height:100px;border-radius:8px;overflow:hidden;background:var(--bg);border:1.5px solid var(--bor);display:flex;align-items:center;justify-content:center">
+        gridH+=`<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <div style="font-size:8px;font-weight:700;color:#fff;background:${blqColsApp[bi%blqColsApp.length]};padding:1px 7px;border-radius:10px;white-space:nowrap">${blLbl}</div>
+          <div style="width:86px;height:108px;border-radius:7px;overflow:hidden;background:var(--bg);border:1.5px solid ${hasFoto?blqColsApp[bi%blqColsApp.length]:'var(--bor)'};display:flex;align-items:center;justify-content:center">
             ${hasFoto
-              ?`<img src="${hasFoto}" style="width:100%;height:100%;object-fit:cover">`
+              ?`<img src="${hasFoto}" style="width:100%;height:100%;object-fit:cover" onclick="verFoto('${hasFoto}')">`
               :`<div style="font-size:11px;color:var(--t3)">—</div>`
             }
           </div>
@@ -1219,9 +1281,9 @@ function renderProgreso(){
     gridH+=`</div></div>`;
 
     crossH=`<div style="margin-top:16px;padding-top:12px;border-top:1.5px solid var(--bor)">
-      <div style="font-size:11px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📊 Comparar por bloque</div>
+      <div style="font-size:11px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📸 Fotos de progreso</div>
       ${chipsAppH}
-      <div style="font-size:11px;color:var(--t3);margin-bottom:10px">${posSelLblApp} — semana ${semSelApp} de cada bloque</div>
+      <div style="font-size:11px;color:var(--t3);margin-bottom:10px">${posSelLblApp} — semana ${semSelApp} de cada bloque${semSelApp!==0&&hayFotosInicio?' · Inicio siempre visible a la izquierda':''}</div>
       ${gridH}
     </div>`;
   }
@@ -1461,71 +1523,92 @@ function renderRevision(){
   });
   histH+='</div></div>';
 
-  // ── Bloques anteriores — acordeón ────────────────────────────────────────────
+  // ── Bloques anteriores ───────────────────────────────────────────────────────
   const blqCols2=['#2E6DA4','#9B59B6','#E74C3C','#F39C12','#1ABC9C','#E67E22'];
-  const revBloques=ST.revBloques||[];
-  const activoNb=ST.p&&ST.p.numeroBloque||null;
-  const blqPasados=revBloques.filter(function(bl){
+  const revBloquesPasados=(ST.revBloques||[]).filter(function(bl){
     return bl.estado!=='activo' && bl.rows && bl.rows.length>0;
   });
-  if(blqPasados.length>0){
+  // Helper local para parsear fotos de una row
+  function _rF2(row){
+    var fMap={}; if(!row) return fMap;
+    if(Array.isArray(row.fotos_urls)){row.fotos_urls.forEach(function(url,pi){if(url)fMap[pi]=url;});}
+    var rawF=row.fotos||{}; if(typeof rawF==='string'){try{rawF=JSON.parse(rawF);}catch(e){rawF={};}}
+    var _PM2={frente:0,perfil_d:1,perfil_i:2,espalda:3};
+    Object.keys(rawF).forEach(function(k){
+      var url=rawF[k]; if(!url) return;
+      var mr=k.match(/^rev_(\d+)$/); if(mr){if(fMap[+mr[1]]==null)fMap[+mr[1]]=url;return;}
+      var mb=k.match(/^b\d+_s\d+_(\d+)$/); if(mb){if(fMap[+mb[1]]==null)fMap[+mb[1]]=url;return;}
+      var ms=k.match(/^s\d+_(\d+)$/); if(ms){if(fMap[+ms[1]]==null)fMap[+ms[1]]=url;return;}
+      var pi2=_PM2[k]; if(pi2!=null&&fMap[pi2]==null){fMap[pi2]=url;}
+    });
+    return fMap;
+  }
+  if(revBloquesPasados.length>0){
     if(!ST._revBlqOpen) ST._revBlqOpen={};
-    histH+='<div class="card" style="margin-bottom:12px"><div class="ch"><h2>📦 Bloques anteriores</h2></div><div class="cb" style="padding:0">';
-    blqPasados.forEach(function(bl,bi){
-      const nb=bl.numero_bloque;
-      const colBlq=blqCols2[(nb-1)%blqCols2.length];
-      const isOpen=!!ST._revBlqOpen[nb];
-      const nRevs=bl.rows.length;
-      histH+=`<div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 15px;border-bottom:1px solid var(--bor2);cursor:pointer"
-             onclick="ST._revBlqOpen[${nb}]=!ST._revBlqOpen[${nb}];render()">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="display:inline-block;background:${colBlq};color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px">B${nb}</span>
+    histH+='<div class="card" style="margin-bottom:12px">';
+    histH+='<div class="ch"><h2>📦 Bloques anteriores</h2></div>';
+    histH+='<div class="cb" style="padding:0">';
+    revBloquesPasados.forEach(function(bl){
+      var nb=bl.numero_bloque;
+      var colBlq=blqCols2[(nb-1)%blqCols2.length];
+      var isOpen=!!ST._revBlqOpen[nb];
+      // Revisiones ordenadas: S0 (inicio) primero, luego el resto
+      var rowsSorted=bl.rows.slice().sort(function(a,b){return (a.semana||0)-(b.semana||0);});
+      var totalRevs=rowsSorted.length;
+      // Encabezado acordeón
+      histH+=`<div style="border-bottom:1px solid var(--bor2)">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 15px;cursor:pointer"
+             onclick="if(!ST._revBlqOpen)ST._revBlqOpen={};ST._revBlqOpen[${nb}]=!ST._revBlqOpen[${nb}];render()">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:32px;height:32px;border-radius:50%;background:${colBlq};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0">${nb}</div>
             <div>
-              <div style="font-size:14px;font-weight:700;color:var(--t1)">Bloque ${nb}</div>
-              <div style="font-size:11px;color:var(--t3)">${nRevs} revisión${nRevs!==1?'es':''} · ${bl.estado==='completado'?'✅ Completado':'🔒 Finalizado'}</div>
+              <div style="font-size:13px;font-weight:700;color:var(--t1)">Bloque ${nb}</div>
+              <div style="font-size:11px;color:var(--t3);margin-top:1px">✅ ${totalRevs} revisión${totalRevs!==1?'es':''}</div>
             </div>
           </div>
-          <span style="font-size:16px;color:var(--az2);transition:transform .2s;display:inline-block;transform:rotate(${isOpen?180:0}deg)">▼</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--az2)" stroke-width="2.5"
+               style="transition:transform .2s;transform:rotate(${isOpen?180:0}deg);flex-shrink:0">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
         </div>`;
       if(isOpen){
-        // Ordenar filas por semana
-        var rowsSorted=bl.rows.slice().sort(function(a,b){return (a.semana||0)-(b.semana||0);});
+        histH+='<div style="background:var(--bg2);padding:10px 14px;display:flex;flex-direction:column;gap:14px">';
         rowsSorted.forEach(function(d){
-          var _rawF=d.fotos||{};
-          var _bdF={};
-          if(Array.isArray(d.fotos_urls)){d.fotos_urls.forEach(function(url,pi){if(url)_bdF['rev_'+pi]=url;});}
-          Object.keys(_rawF).forEach(function(k){
-            var url=_rawF[k];if(!url)return;
-            var mb=k.match(/^b\d+_s\d+_(\d+)$/);if(mb){if(!_bdF['rev_'+mb[1]])_bdF['rev_'+mb[1]]=url;return;}
-            var m=k.match(/^s\d+_(\d+)$/);if(m){if(!_bdF['rev_'+m[1]])_bdF['rev_'+m[1]]=url;return;}
-            var _fk=['frente','perfil_d','perfil_i','espalda'];var idx=_fk.indexOf(k);
-            if(idx>=0){if(!_bdF['rev_'+idx])_bdF['rev_'+idx]=url;return;}
-            if(/^rev_\d+$/.test(k)&&!_bdF[k]){_bdF[k]=url;}
-          });
-          var hasFotos=Object.keys(_bdF).length>0;
-          var meds=d.medidas||{};if(typeof meds==='string'){try{meds=JSON.parse(meds);}catch(e){meds={};}}
+          var fMap=_rF2(d);
+          var hasFotos=Object.keys(fMap).length>0;
+          var meds=d.medidas||{}; if(typeof meds==='string'){try{meds=JSON.parse(meds);}catch(e){meds={};}}
           var hasMeds=Object.keys(meds).length>0;
           var MORD=['hombros','pecho','brazoi','brazod','cintura','musloi','muslod','gemeloi','gemelod'];
           var MLBL={hombros:'Hombros',pecho:'Pecho',brazoi:'Brazo I',brazod:'Brazo D',cintura:'Cintura',musloi:'Muslo I',muslod:'Muslo D',gemeloi:'Gemelo I',gemelod:'Gemelo D'};
-          histH+=`<div style="padding:10px 15px;border-bottom:1px solid var(--bor2);background:var(--bg2)">
-            <div style="font-size:12px;font-weight:700;color:${colBlq};margin-bottom:6px">Semana ${d.semana}</div>`;
+          histH+=`<div style="border-radius:10px;overflow:hidden;border:1.5px solid var(--bor)">
+            <div style="background:${colBlq}18;padding:8px 12px;border-bottom:1px solid var(--bor)">
+              <span style="font-size:12px;font-weight:700;color:${colBlq}">${d.semana===0?'🏁 Inicio (S0)':'📋 Semana '+d.semana}</span>
+              ${d.fecha_subida?`<span style="font-size:10px;color:var(--t3);margin-left:8px">${new Date(d.fecha_subida).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}</span>`:''}
+            </div>
+            <div style="padding:10px 12px">`;
           if(hasFotos){
-            histH+='<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">';
+            histH+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><div style="display:flex;gap:6px;padding-bottom:4px">';
+            var PNAMES=['Frente','P.Der','P.Izq','Espalda'];
             for(var _pi=0;_pi<4;_pi++){
-              var _url=_bdF['rev_'+_pi];
-              if(_url)histH+=`<img src="${_url}" style="width:60px;height:76px;object-fit:cover;border-radius:5px;cursor:pointer" onclick="verFoto('${_url}')">`;
+              var _url=fMap[_pi];
+              histH+=`<div style="flex-shrink:0;text-align:center">
+                <div style="font-size:9px;color:var(--t3);margin-bottom:2px">${PNAMES[_pi]}</div>
+                <div style="width:68px;height:88px;border-radius:7px;overflow:hidden;background:var(--bg);border:1.5px solid ${_url?colBlq:'var(--bor)'};display:flex;align-items:center;justify-content:center">
+                  ${_url?`<img src="${_url}" style="width:100%;height:100%;object-fit:cover;cursor:pointer" onclick="verFoto('${_url}')">`:`<div style="font-size:14px">—</div>`}
+                </div>
+              </div>`;
             }
-            histH+='</div>';
+            histH+='</div></div>';
           }
           if(hasMeds){
-            histH+='<div style="display:flex;flex-wrap:wrap;gap:4px">';
-            MORD.forEach(function(k){if(meds[k])histH+=`<span style="font-size:10px;background:var(--bg);border:1px solid var(--bor2);border-radius:4px;padding:2px 6px">${MLBL[k]}: <b>${meds[k]}</b></span>`;});
+            histH+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">';
+            MORD.forEach(function(k){if(meds[k])histH+=`<span style="font-size:10px;background:var(--bg);border:1px solid var(--bor2);border-radius:6px;padding:3px 7px;white-space:nowrap">${MLBL[k]}: <b>${meds[k]}</b></span>`;});
             histH+='</div>';
           }
-          if(!hasFotos&&!hasMeds){histH+='<span style="font-size:11px;color:var(--t3)">Sin fotos ni medidas</span>';}
-          histH+='</div>';
+          if(!hasFotos&&!hasMeds){histH+='<span style="font-size:11px;color:var(--t3)">Sin fotos ni medidas registradas</span>';}
+          histH+='</div></div>';
         });
+        histH+='</div>';
       }
       histH+='</div>';
     });
