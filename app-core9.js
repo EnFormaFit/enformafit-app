@@ -696,20 +696,29 @@ async function loadClienteData() {
         // We do NOT fall back to localStorage for fotos/medidas/preguntas because that would restore
         // data the user intentionally deleted (e.g. borrar fotos + guardar → BD queda vacío → local tenía fotos → bug).
         revsBD.forEach(function(d) {
-          // Normalizar fotos a formato rev_N (el BD puede tener s4_0, frente, etc.)
+          // Normalizar fotos a formato rev_N
+          // Fuentes (prioridad: fotos_urls > fotos JSON > claves legacy)
           var rawFotos = d.fotos || {};
           var _FKEYS=['frente','perfil_d','perfil_i','espalda'];
           var bdFotos = {};
+          // Fuente 1: fotos_urls (array de Cloudinary — el sistema nuevo)
+          if(Array.isArray(d.fotos_urls)){
+            d.fotos_urls.forEach(function(url,pi){if(url) bdFotos['rev_'+pi]=url;});
+          }
+          // Fuente 2: fotos JSON (formato legacy y nuevo panel b{nb}_s{sem}_{pi})
           Object.keys(rawFotos).forEach(function(k){
             var url=rawFotos[k]; if(!url) return;
+            // b{nb}_s{sem}_{pi} — nuevo formato del panel
+            var mb=k.match(/^b\d+_s\d+_(\d+)$/);
+            if(mb){if(!bdFotos['rev_'+mb[1]])bdFotos['rev_'+mb[1]]=url;return;}
             // s{sem}_{pi} → rev_{pi}
             var m=k.match(/^s\d+_(\d+)$/);
-            if(m){bdFotos['rev_'+m[1]]=url;return;}
+            if(m){if(!bdFotos['rev_'+m[1]])bdFotos['rev_'+m[1]]=url;return;}
             // frente/perfil_d/perfil_i/espalda → rev_{pi}
             var idx=_FKEYS.indexOf(k);
-            if(idx>=0){bdFotos['rev_'+idx]=url;return;}
+            if(idx>=0){if(!bdFotos['rev_'+idx])bdFotos['rev_'+idx]=url;return;}
             // already rev_N → keep
-            if(/^rev_\d+$/.test(k)){bdFotos[k]=url;}
+            if(/^rev_\d+$/.test(k)&&!bdFotos[k]){bdFotos[k]=url;}
           });
           var bdMedidas = d.medidas || {};
           if (typeof bdMedidas === 'string') { try { bdMedidas = JSON.parse(bdMedidas); } catch(e) { bdMedidas = {}; } }
