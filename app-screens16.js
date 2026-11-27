@@ -410,7 +410,7 @@ function renderEj(ej,ei,di,grabIdxs){
     const _antCacheKey=(_semVer-1)+'_'+di;
     const _antData=ENT_CACHE&&ENT_CACHE[_antCacheKey]?ENT_CACHE[_antCacheKey]:{};
     const _antRec=_antData[ej.nom+'_'+(si+1)];
-    if(_antRec&&_antRec.kg){antKg=_antRec.kg+'kg';antReps=_antRec.reps?'×'+_antRec.reps:'';}
+    if(_antRec&&(_antRec.kg||_antRec.reps)){antKg=_antRec.kg?_antRec.kg+'kg':'BW';antReps=_antRec.reps?'×'+_antRec.reps:'';}
     sers+=`<div class="serrow">
       <div class="sern">${si+1}</div>
       <div class="serant">${antKg}${antReps}</div>
