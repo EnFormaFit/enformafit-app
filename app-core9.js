@@ -455,6 +455,47 @@ function autoGuardarSerie(di, ei, si) {
   }, 300);
 }
 
+// Guardado inmediato al perder el foco (onblur) — sin setTimeout
+function autoGuardarSerieInmediato(di, ei, si) {
+  var ej = DIAS[di] && DIAS[di].ejercicios ? DIAS[di].ejercicios[ei] : null;
+  if (!ej) return;
+  var key = di + '_' + ei;
+  var st = ST.ejStates && ST.ejStates[key];
+  if (!st || !st.series || !st.series[si]) return;
+  var s = st.series[si];
+  save();
+  updateHistEnt(ej.nom, di, si, ST.semVer || ST.u.semana || 1, s.kg, s.repsH, s.rir, s.done);
+  // Cancelar el timeout pendiente de autoGuardarSerie para evitar doble llamada
+  clearTimeout(window['_serSave_' + key + '_' + si]);
+  var bloque_id = ST.p.bloqueId || null;
+  var semana = ST.semVer || ST.u.semana || 1;
+  api('POST', '/api/entreno/registrar-serie', {
+    bloque_id: bloque_id,
+    semana: semana,
+    dia: String(di),
+    ejercicio: ej.nom,
+    serie: si + 1,
+    kg: parseFloat(s.kg) > 0 ? parseFloat(s.kg) : null,
+    reps_reales: parseInt(s.repsH) > 0 ? parseInt(s.repsH) : null,
+    rir_real: (s.rir !== undefined && s.rir !== null && s.rir !== '') ? parseInt(s.rir) : null,
+    completada: s.done === true
+  }).then(function() {
+    var cacheKey = semana + '_' + di;
+    if (!ENT_CACHE[cacheKey]) ENT_CACHE[cacheKey] = {};
+    ENT_CACHE[cacheKey][ej.nom + '_' + (si + 1)] = { kg: s.kg, reps: s.repsH, rir: s.rir, done: s.done };
+  }).catch(function(e) {
+    if (e.message === 'sin_conexion') {
+      if (typeof queueRequest === 'function') queueRequest('POST', '/api/entreno/registrar-serie', {
+        bloque_id: bloque_id, semana: semana, dia: String(di), ejercicio: ej.nom, serie: si + 1,
+        kg: parseFloat(s.kg) > 0 ? parseFloat(s.kg) : null,
+        reps_reales: parseInt(s.repsH) > 0 ? parseInt(s.repsH) : null,
+        rir_real: (s.rir !== undefined && s.rir !== null && s.rir !== '') ? parseInt(s.rir) : null,
+        completada: s.done === true
+      });
+    } else { console.error('[SerieBlur] Error:', e.message || e); }
+  });
+}
+
 // Función legacy - mantener para compatibilidad
 function cargarHistorial() {}
 
